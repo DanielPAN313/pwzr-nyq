@@ -2,6 +2,7 @@ node_modules/
 .env
 .env.server
 .chrome-preview-check/
+android/
 mirror-*.log
 tunnel*.log
 tunnel*.txt

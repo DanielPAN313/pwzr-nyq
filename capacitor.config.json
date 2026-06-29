@@ -1,0 +1,12 @@
+{
+  "appId": "com.nanjing.sportbooking",
+  "appName": "宁约球",
+  "webDir": "site",
+  "server": {
+    "androidScheme": "http",
+    "cleartext": true
+  },
+  "android": {
+    "allowMixedContent": true
+  }
+}

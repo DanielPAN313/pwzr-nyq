@@ -1,0 +1,215 @@
+/* Liquid glass bottom tabbar. Loaded after sports-app.css on mobile. */
+@media (max-width: 720px) {
+  .mobile-tabbar {
+    --tab-count: 5;
+    --tab-gap: 4px;
+    --tab-pad: 5px;
+    position: fixed !important;
+    display: grid !important;
+    grid-template-columns: repeat(var(--tab-count), minmax(0, 1fr)) !important;
+    gap: var(--tab-gap) !important;
+    overflow: hidden !important;
+    isolation: isolate !important;
+    border-color: rgba(116, 224, 164, 0.22) !important;
+    background:
+      radial-gradient(circle at 22% 0%, rgba(57, 202, 121, 0.22), transparent 38%),
+      linear-gradient(180deg, rgba(22, 52, 37, 0.72), rgba(7, 28, 19, 0.82)),
+      rgba(4, 24, 16, 0.74) !important;
+    box-shadow:
+      0 18px 34px rgba(4, 18, 12, 0.34),
+      0 1px 0 rgba(255, 255, 255, 0.12) inset,
+      0 -1px 0 rgba(116, 224, 164, 0.10) inset !important;
+    -webkit-backdrop-filter: blur(24px) saturate(1.28);
+    backdrop-filter: blur(24px) saturate(1.28);
+  }
+
+  .mobile-tabbar::before,
+  .mobile-tabbar::after {
+    content: '';
+    position: absolute;
+    left: var(--tab-pad);
+    top: var(--tab-pad);
+    bottom: var(--tab-pad);
+    width: calc((100% - (var(--tab-pad) * 2) - (var(--tab-gap) * (var(--tab-count) - 1))) / var(--tab-count));
+    pointer-events: none;
+    transform: translate3d(calc(var(--tab-index) * (100% + var(--tab-gap))), 0, 0);
+    will-change: transform, opacity, filter;
+  }
+
+  .mobile-tabbar::before {
+    z-index: 1;
+    border: 1px solid rgba(156, 242, 189, 0.30);
+    border-radius: 999px;
+    background:
+      radial-gradient(circle at 28% 16%, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0.08) 31%, transparent 56%),
+      radial-gradient(circle at 68% 70%, rgba(215, 243, 106, 0.22), transparent 55%),
+      linear-gradient(135deg, rgba(30, 92, 60, 0.68), rgba(12, 64, 40, 0.52) 48%, rgba(43, 137, 82, 0.34));
+    box-shadow:
+      0 12px 26px rgba(0, 9, 5, 0.26),
+      0 0 18px rgba(88, 223, 142, 0.18),
+      0 1px 0 rgba(255, 255, 255, 0.18) inset,
+      0 -8px 16px rgba(7, 23, 14, 0.18) inset;
+    opacity: 0;
+    transition:
+      transform 460ms cubic-bezier(0.16, 1, 0.28, 1),
+      opacity 140ms ease,
+      border-radius 260ms ease,
+      box-shadow 260ms ease,
+      filter 260ms ease;
+    -webkit-backdrop-filter: blur(18px) saturate(1.38);
+    backdrop-filter: blur(18px) saturate(1.38);
+  }
+
+  .mobile-tabbar::after {
+    z-index: 0;
+    border-radius: 999px;
+    background:
+      radial-gradient(ellipse at center, rgba(215, 243, 106, 0.22), rgba(80, 215, 138, 0.20) 42%, transparent 72%);
+    filter: blur(8px);
+    opacity: 0;
+    transition:
+      transform 520ms cubic-bezier(0.16, 1, 0.28, 1),
+      opacity 220ms ease,
+      filter 320ms ease;
+  }
+
+  .mobile-tabbar.has-active-tab::before {
+    opacity: 1;
+  }
+
+  .mobile-tabbar.is-tab-moving::before {
+    animation: mobile-tab-glass-pulse 460ms ease-out both;
+  }
+
+  .mobile-tabbar.is-tab-moving::after {
+    opacity: 1;
+    animation: mobile-tab-liquid-trail 520ms ease-out both;
+  }
+
+  .mobile-tabbar button {
+    position: relative !important;
+    z-index: 2 !important;
+    overflow: hidden !important;
+    background: transparent !important;
+    color: rgba(232, 246, 235, 0.82) !important;
+    transition:
+      color 260ms ease,
+      transform 360ms cubic-bezier(0.16, 1, 0.28, 1),
+      opacity 180ms ease;
+  }
+
+  .mobile-tabbar button span,
+  .mobile-tabbar button strong {
+    position: relative;
+    z-index: 1;
+  }
+
+  .mobile-tabbar button::before {
+    content: '';
+    position: absolute;
+    inset: 5px 10px auto;
+    height: 11px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.34), transparent);
+    opacity: 0;
+    transform: translateY(-8px) scaleX(0.58);
+    transition:
+      opacity 220ms ease,
+      transform 360ms cubic-bezier(0.16, 1, 0.28, 1);
+  }
+
+  .mobile-tabbar button::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 5px;
+    width: 4px;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(215, 243, 106, 0.92);
+    box-shadow: 0 0 8px rgba(215, 243, 106, 0.28);
+    opacity: 0;
+    transform: translateX(-50%) scale(0.72);
+    transition:
+      opacity 220ms ease,
+      transform 360ms cubic-bezier(0.16, 1, 0.28, 1);
+  }
+
+  .mobile-tabbar button.is-active {
+    background: transparent !important;
+    color: #d7f36a !important;
+    transform: translateY(-1px);
+  }
+
+  .mobile-tabbar button.is-active::before {
+    opacity: 1;
+    transform: translateY(0) scaleX(1);
+  }
+
+  .mobile-tabbar button.is-active::after {
+    opacity: 0.72;
+    transform: translateX(-50%) scale(1);
+  }
+
+  .mobile-tabbar button:disabled {
+    opacity: 1;
+  }
+
+  .mobile-tabbar button:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mobile-tabbar::before,
+    .mobile-tabbar::after,
+    .mobile-tabbar button,
+    .mobile-tabbar button::before,
+    .mobile-tabbar button::after {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+}
+
+@keyframes mobile-tab-glass-pulse {
+  0% {
+    border-radius: 999px;
+    filter: saturate(1.2) brightness(1);
+    box-shadow:
+      0 8px 18px rgba(0, 9, 5, 0.22),
+      0 1px 0 rgba(255, 255, 255, 0.18) inset,
+      0 -8px 16px rgba(7, 23, 14, 0.15) inset;
+  }
+
+  46% {
+    border-radius: 24px 14px 24px 14px;
+    filter: saturate(1.58) brightness(1.04);
+    box-shadow:
+      0 14px 30px rgba(0, 9, 5, 0.30),
+      0 0 22px rgba(88, 223, 142, 0.22),
+      0 1px 0 rgba(255, 255, 255, 0.20) inset,
+      0 -10px 20px rgba(7, 23, 14, 0.18) inset;
+  }
+
+  100% {
+    border-radius: 999px;
+    filter: saturate(1.38) brightness(1);
+  }
+}
+
+@keyframes mobile-tab-liquid-trail {
+  0% {
+    opacity: 0.18;
+    filter: blur(6px);
+  }
+
+  38% {
+    opacity: 0.9;
+    filter: blur(11px);
+  }
+
+  100% {
+    opacity: 0;
+    filter: blur(12px);
+  }
+}

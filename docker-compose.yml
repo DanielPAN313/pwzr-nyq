@@ -1,0 +1,40 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: another-me-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-change_root_password}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-another_me}
+      MYSQL_USER: ${MYSQL_USER:-anotherme}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-change_app_password}
+    ports:
+      - "${MYSQL_PUBLIC_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u${MYSQL_USER:-anotherme} -p${MYSQL_PASSWORD:-change_app_password} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build: .
+    container_name: another-me-web
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      PORT: ${PORT:-4174}
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: ${MYSQL_USER:-anotherme}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-change_app_password}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-another_me}
+    ports:
+      - "${PORT:-4174}:${PORT:-4174}"
+
+volumes:
+  mysql_data:

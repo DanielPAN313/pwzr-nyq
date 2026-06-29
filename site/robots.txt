@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# AI agent discovery
+# Quick start: https://www.anotherme.local/llms.txt
+# Full docs: https://www.anotherme.local/llms-full.txt
+# API spec: https://www.anotherme.local/openapi.json
+Sitemap: https://www.anotherme.local/sitemap.xml

@@ -1,0 +1,26 @@
+[
+  {
+    "id": "d2969268-3acc-446f-894c-73e00fe7ece9",
+    "name": "A user demo agent",
+    "owner": "A user",
+    "tagline": "B can open this agent",
+    "description": "This test verifies shared upload storage in another-me-mirror.",
+    "chatUrl": "https://example.com/chat",
+    "apiUrl": "https://example.com/api/chat",
+    "demoVideoUrl": "https://example.com/demo.mp4",
+    "category": "Research",
+    "created_at": "2026-06-06T06:51:40.022Z"
+  },
+  {
+    "id": "local-demo-research-agent",
+    "name": "Research Buddy Agent",
+    "owner": "Local Demo",
+    "tagline": "A sample uploaded agent that other users can open.",
+    "description": "Summarizes papers, drafts outreach, and answers questions from a hosted chat endpoint.",
+    "chatUrl": "https://example.com/agent-chat",
+    "apiUrl": "",
+    "demoVideoUrl": "",
+    "category": "Research",
+    "created_at": "2026-06-06T06:51:30.680Z"
+  }
+]

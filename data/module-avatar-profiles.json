@@ -1,0 +1,12 @@
+[
+  {
+    "id": "ccc27cb9-3ee1-4dd9-9742-fd03f9748c41",
+    "agentName": "Smoke Avatar",
+    "role": "test role",
+    "personality": "calm",
+    "visualStyle": "clean card",
+    "color": "Lavender and black",
+    "prompt": "Create a virtual avatar for Smoke Avatar: test role. Personality: calm. Visual style: clean card. Color direction: Lavender and black.",
+    "created_at": "2026-06-06T07:05:37.507Z"
+  }
+]

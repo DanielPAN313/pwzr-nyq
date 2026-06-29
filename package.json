@@ -1,0 +1,16 @@
+{
+  "name": "another-me-mirror",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "mirror": "node scripts/serve-local-mirror.mjs"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.4.1",
+    "@capacitor/cli": "^8.4.1",
+    "@capacitor/core": "^8.4.1",
+    "bcryptjs": "^3.0.2",
+    "mysql2": "^3.15.3"
+  }
+}

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Module 01 · Agent Launch</title>
+    <link rel="stylesheet" href="/local-auth.css" />
+    <link rel="stylesheet" href="/modules/module.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <div class="topbar">
+        <a class="button" href="/modules/">All Modules</a>
+        <nav class="nav">
+          <a href="/modules/avatar">Avatar</a>
+          <a href="/modules/social">Social</a>
+        </nav>
+      </div>
+
+      <h1>Agent upload and one-click launch.</h1>
+      <p class="lede">
+        V0 uses a manifest-style upload. Users submit profile, repository, chat endpoint,
+        API endpoint, video demo, and hackathon metadata. Other users can open the agent
+        immediately from the shared gallery.
+      </p>
+
+      <div class="layout">
+        <section class="panel">
+          <h2>Upload Manifest</h2>
+          <form id="agentForm">
+            <label>Agent name <input name="name" required placeholder="Research Buddy" /></label>
+            <label>Owner <input name="owner" required placeholder="Alex / Team name" /></label>
+            <label>Tagline <input name="tagline" placeholder="Find papers and draft answers" /></label>
+            <label>Description <textarea name="description" rows="5" required placeholder="What the agent does and how others should use it."></textarea></label>
+            <label>Chat URL <input name="chatUrl" type="url" required placeholder="https://your-agent.example.com/chat" /></label>
+            <label>API URL <input name="apiUrl" type="url" placeholder="https://your-agent.example.com/api/chat" /></label>
+            <label>Repository URL <input name="repoUrl" type="url" placeholder="https://github.com/team/agent" /></label>
+            <label>Video demo URL <input name="demoVideoUrl" type="url" placeholder="https://your-site/demo.mp4" /></label>
+            <label>Hackathon event <input name="eventName" placeholder="AI Agents Hack Night" /></label>
+            <label>Track
+              <select name="category">
+                <option>Research</option>
+                <option>Writing</option>
+                <option>Code</option>
+                <option>Marketing</option>
+                <option>Ops</option>
+                <option>General</option>
+              </select>
+            </label>
+            <button id="submitButton" type="submit">Publish Agent</button>
+            <div id="status" class="status">Waiting for agent details.</div>
+          </form>
+        </section>
+
+        <section>
+          <h2>Hackathon Agent Gallery</h2>
+          <p class="lede">Shared server data. If user A publishes here, user B sees the card after refresh.</p>
+          <div id="agentGrid" class="grid"></div>
+        </section>
+      </div>
+    </main>
+    <script src="/local-auth.js"></script>
+    <script src="/modules/agent-launch.js"></script>
+  </body>
+</html>

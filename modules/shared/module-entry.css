@@ -1,0 +1,78 @@
+#hackathon-modules-sidebar {
+  margin-top: 18px;
+  padding: 12px;
+  border: 2px solid #111827;
+  background: #ffffff;
+  box-shadow: 4px 4px 0 #111827;
+  color: #111827;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+#hackathon-modules-sidebar .module-sidebar-eyebrow {
+  margin-bottom: 8px;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+#hackathon-modules-sidebar .module-sidebar-list {
+  display: grid;
+  gap: 7px;
+}
+
+#hackathon-modules-sidebar .module-sidebar-hub {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 32px;
+  margin-top: 10px;
+  border: 2px solid #111827;
+  padding: 6px 8px;
+  background: #6d5dfc;
+  color: #fff;
+  box-shadow: 2px 2px 0 #111827;
+  text-decoration: none;
+  font-family: "Archivo Black", "Arial Black", sans-serif;
+  font-size: 11px;
+}
+
+#hackathon-modules-sidebar .module-entry-card {
+  display: block;
+  min-height: 0;
+  border: 2px solid #111827;
+  padding: 8px;
+  background: #eef2ff;
+  color: #111827;
+  text-decoration: none;
+  box-shadow: 2px 2px 0 #111827;
+}
+
+#hackathon-modules-sidebar .module-entry-card-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: #64748b;
+  font-size: 9px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+#hackathon-modules-sidebar .module-entry-card h3 {
+  font-family: "Archivo Black", "Arial Black", sans-serif;
+  font-size: 12px;
+  line-height: 1.1;
+  margin: 0;
+  letter-spacing: 0;
+}
+
+#hackathon-modules-sidebar .module-entry-card p {
+  display: none;
+}
+
+#hackathon-modules-sidebar .module-sidebar-error {
+  color: #334155;
+  font-size: 11px;
+  line-height: 1.45;
+}

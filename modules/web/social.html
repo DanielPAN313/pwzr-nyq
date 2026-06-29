@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Module 03 · Social</title>
+    <link rel="stylesheet" href="/local-auth.css" />
+    <link rel="stylesheet" href="/modules/module.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <div class="topbar">
+        <a class="button" href="/modules/">All Modules</a>
+        <nav class="nav">
+          <a href="/modules/agent-launch">Agent Launch</a>
+          <a href="/modules/avatar">Avatar</a>
+        </nav>
+      </div>
+
+      <h1>Agent matching and conversation reports.</h1>
+      <p class="lede">
+        V0 reads uploaded agents, lets you pick two of them, and returns a structured mock report.
+        The real API relay can replace the mock without changing the page shape.
+      </p>
+
+      <div class="layout">
+        <section class="panel">
+          <h2>Start Interaction</h2>
+          <form id="socialForm">
+            <label>Agent A <select name="agentA" id="agentA" required></select></label>
+            <label>Agent B <select name="agentB" id="agentB" required></select></label>
+            <label>Topic <textarea name="topic" rows="4" required placeholder="Plan a hackathon demo together."></textarea></label>
+            <button id="submitButton" type="submit">Run Match And Report</button>
+            <div id="status" class="status">Waiting for agent selection.</div>
+          </form>
+        </section>
+
+        <section>
+          <h2>Report</h2>
+          <pre id="report" class="report">No report yet.</pre>
+        </section>
+      </div>
+    </main>
+    <script src="/local-auth.js"></script>
+    <script src="/modules/social.js"></script>
+  </body>
+</html>

@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>模块 01 · Another Me</title>
+    <link rel="stylesheet" href="/local-auth.css" />
+    <link rel="stylesheet" href="/module-parts/01-agent-launch/page.css" />
+  </head>
+  <body>
+    <main class="workspace">
+      <aside class="history-pane">
+        <div class="pane-actions">
+          <a class="icon-button" href="/" title="返回 Dashboard">D</a>
+          <a class="icon-button" href="/modules/" title="全部模块">M</a>
+          <button id="newChatButton" class="icon-button" type="button" title="新建聊天">+</button>
+        </div>
+
+        <label class="search-box">
+          <span>搜索</span>
+          <input id="historySearch" type="search" placeholder="搜索历史记录" />
+        </label>
+
+        <nav class="history-nav">
+          <button class="history-tab active" type="button">Another Me</button>
+          <button id="myAgentsButton" class="history-tab" type="button">我的 Agent</button>
+        </nav>
+
+        <div class="history-section">
+          <div class="history-title">聊天</div>
+          <div id="historyList" class="history-list"></div>
+        </div>
+
+      </aside>
+
+      <section class="chat-pane">
+        <header class="chat-topbar">
+          <div>
+            <h1>Another Me</h1>
+          </div>
+          <div id="runtimeBadge" class="runtime-badge">Skill / MCP / Another Me</div>
+        </header>
+
+        <div id="emptyState" class="empty-state">
+          <h2>Hi，今天从哪里开始</h2>
+          <div class="prompt-row">
+            <button type="button" data-prompt="帮我把当前 agent 上传功能拆成 2 小时内能完成的 demo checklist。">拆一个 demo checklist</button>
+            <button type="button" data-prompt="解释 Skill、MCP、Another Me 三者的关系。">解释 Skill / MCP / Another Me</button>
+            <button type="button" data-prompt="帮我设计一个别人点击就能和我的 Another Me 聊天的最小流程。">设计 Another Me 聊天流程</button>
+            <button type="button" data-prompt="基于 Another Me，帮我规划开发者模式和用户模式。">规划开发者模式</button>
+          </div>
+        </div>
+
+        <div id="messages" class="messages" aria-live="polite"></div>
+
+        <form id="chatForm" class="composer">
+          <textarea name="message" rows="4" required placeholder="和 Another Me 说点什么"></textarea>
+          <div class="composer-actions">
+            <button class="tool-chip" type="button" data-module="skill">Skill</button>
+            <button class="tool-chip" type="button" data-module="mcp">MCP</button>
+            <button class="tool-chip" type="button" data-module="another">Another Me</button>
+            <button id="sendButton" class="send-button" type="submit">发送</button>
+          </div>
+        </form>
+        <div id="chatStatus" class="status">右侧可以添加 Skill、MCP 或构造 Another Me。</div>
+      </section>
+
+      <aside class="module-pane">
+        <header class="module-header">
+          <div class="section-kicker">模块</div>
+          <h2 id="moduleTitle">Skill</h2>
+        </header>
+
+        <div class="module-switcher">
+          <button class="module-tab active" type="button" data-module="skill">Skill</button>
+          <button class="module-tab" type="button" data-module="mcp">MCP</button>
+          <button class="module-tab" type="button" data-module="another">Another Me</button>
+        </div>
+
+        <section id="skillModule" class="module-panel active">
+          <p class="panel-note">可以只用详细简介创建 Agent，也可以上传 skill zip 增强能力。每次更新右侧内容后，中间对话框都会切到最新 Agent。</p>
+          <form id="agentForm">
+            <label>Agent 名称 <input name="name" placeholder="Research Buddy" /></label>
+            <label>上传者 / 团队 <input name="owner" placeholder="Alex / Team name" /></label>
+            <label>一句话介绍 <input name="tagline" placeholder="查找论文并起草回答" /></label>
+            <label>详细简介 <textarea name="description" rows="4" placeholder="说明这个 Agent 能做什么、如何回答、边界是什么。更新这里会立刻细化当前 Agent。"></textarea></label>
+            <label>上传你的 skill 压缩包 <input name="skillZip" type="file" accept=".zip,application/zip,application/x-zip-compressed" /></label>
+            <label>上传视频 Demo（可选） <input name="demoVideo" type="file" accept="video/*" /></label>
+            <label>赛道
+              <select name="category">
+                <option>研究</option>
+                <option>写作</option>
+                <option>代码</option>
+                <option>营销</option>
+                <option>运营</option>
+                <option>通用</option>
+                <option value="其他">其他</option>
+              </select>
+            </label>
+            <label id="customCategoryField" hidden>具体赛道 <input name="customCategory" placeholder="请输入你的具体赛道" /></label>
+            <div class="form-actions">
+              <button id="updateButton" name="action" value="update" type="submit">更新</button>
+              <button id="draftButton" name="action" value="draft" type="submit">存为草稿</button>
+              <button id="publishButton" name="action" value="publish" type="submit">发布</button>
+            </div>
+            <div id="status" class="status">上传 skill，或只修改详细简介等文字描述来更新当前 Agent。</div>
+          </form>
+        </section>
+
+        <section id="mcpModule" class="module-panel">
+          <p class="panel-note">MCP 入口先预留。后续可以在这里添加工具服务器，让 Another Me 拥有搜索、文件、数据库等能力。</p>
+          <form id="mcpForm">
+            <label>MCP 名称 <input name="mcpName" placeholder="browser-search" /></label>
+            <label>Server URL / Command <input name="mcpEndpoint" placeholder="https://... 或 npx ..." /></label>
+            <label>用途说明 <textarea name="mcpPurpose" rows="4" placeholder="这个 MCP 能帮 Agent 做什么？"></textarea></label>
+            <button type="submit">保存 MCP 配置</button>
+            <div id="mcpStatus" class="status">等待添加 MCP。</div>
+          </form>
+        </section>
+
+        <section id="anotherModule" class="module-panel">
+          <p class="panel-note">填写你的身份、能力和说话风格，生成一个更像你的化身 Agent。</p>
+          <form id="avatarAgentForm">
+            <label>你的名字 <input name="personName" required placeholder="刘同学" /></label>
+            <label>身份 / 角色 <input name="role" required placeholder="AI 黑客松参赛者 / 研究助理" /></label>
+            <label>擅长能力 <textarea name="skills" rows="3" required placeholder="例如：论文阅读、代码实现、产品设计、数据分析。"></textarea></label>
+            <label>性格与表达风格 <textarea name="personality" rows="3" required placeholder="例如：直接、严谨、擅长提出下一步行动建议。"></textarea></label>
+            <label>个人主页 URL <input name="homepageUrl" type="url" placeholder="https://your-site.example.com" /></label>
+            <button id="questionnaireToggle" class="button secondary" type="button" aria-expanded="false" aria-controls="questionnairePanel">填写精准化问卷</button>
+            <div id="questionnairePanel" class="questionnaire" hidden>
+              <p class="panel-note">问卷信息会一起写入化身 Agent，让别人和它聊天时更接近与你本人聊天。</p>
+              <fieldset>
+                <legend>性格底色</legend>
+                <label>别人通常怎么评价你的性格？ <input name="别人通常怎么评价你的性格" placeholder="例如：慢热、直接、可靠、有点幽默、容易共情。" /></label>
+                <label>你在熟人面前和陌生人面前有什么不同？ <textarea name="熟人和陌生人面前的差异" rows="3" placeholder="例如：熟人面前话多，陌生人面前先观察。" /></label>
+                <label>你最容易被什么事情打动？ <input name="最容易被什么打动" placeholder="例如：真诚、长期坚持、把复杂问题讲清楚。" /></label>
+                <label>你最不喜欢别人怎样和你相处？ <input name="不喜欢的相处方式" placeholder="例如：一直催、不讲清上下文、只提要求不给反馈。" /></label>
+              </fieldset>
+              <fieldset>
+                <legend>生活习惯</legend>
+                <label>你一天里最清醒的时间段 <input name="最清醒的时间段" placeholder="例如：深夜、上午、下午喝咖啡后。" /></label>
+                <label>你放松时通常会做什么？ <input name="放松方式" placeholder="例如：刷视频、散步、听播客、打游戏、和朋友聊天。" /></label>
+                <label>你的生活节奏更像哪一种？
+                  <select name="生活节奏">
+                    <option value="">暂不填写</option>
+                    <option>计划型，会提前安排</option>
+                    <option>冲刺型，临近 deadline 爆发</option>
+                    <option>灵感型，有状态时效率很高</option>
+                    <option>稳定型，每天推进一点</option>
+                  </select>
+                </label>
+                <label>有哪些小习惯能代表你？ <textarea name="代表性小习惯" rows="3" placeholder="例如：喜欢列 checklist，经常说先跑起来，习惯先找参考。" /></label>
+              </fieldset>
+              <fieldset>
+                <legend>说话习惯</legend>
+                <label>你平时说话更像哪种风格？
+                  <select name="说话风格">
+                    <option value="">暂不填写</option>
+                    <option>短句直接，先讲结论</option>
+                    <option>解释充分，喜欢给背景</option>
+                    <option>轻松幽默，会开玩笑</option>
+                    <option>温和鼓励，重视情绪</option>
+                    <option>理性克制，尽量准确</option>
+                  </select>
+                </label>
+                <label>你常用的口头禅或表达 <input name="常用口头禅" placeholder="例如：先别急、我觉得、这个要看、先跑通。" /></label>
+                <label>你回复消息通常多长？
+                  <select name="消息长度">
+                    <option value="">暂不填写</option>
+                    <option>很短，只说重点</option>
+                    <option>中等，会解释原因</option>
+                    <option>比较长，会给完整分析</option>
+                  </select>
+                </label>
+                <label>你喜欢用什么语气安慰或支持别人？ <textarea name="安慰和支持别人的语气" rows="3" placeholder="例如：先承认对方不容易，再给一个可执行的小步骤。" /></label>
+              </fieldset>
+              <fieldset>
+                <legend>情绪与压力反应</legend>
+                <label>你压力大时通常会怎样？ <textarea name="压力大时的表现" rows="3" placeholder="例如：话变少、开始列计划、想一个人安静、会变得急。" /></label>
+                <label>别人误解你时，你通常如何回应？ <input name="被误解时的回应" placeholder="例如：先澄清事实，再解释自己的意图。" /></label>
+                <label>你遇到冲突时更倾向于？
+                  <select name="冲突处理方式">
+                    <option value="">暂不填写</option>
+                    <option>先冷静，之后再谈</option>
+                    <option>当场说清楚</option>
+                    <option>先理解对方，再表达自己</option>
+                    <option>尽量避免冲突</option>
+                  </select>
+                </label>
+                <label>什么情况下你的 Agent 应该更谨慎或少说话？ <textarea name="需要谨慎或少说话的场景" rows="3" placeholder="例如：涉及隐私、没有足够上下文、对方明显情绪很差。" /></label>
+              </fieldset>
+              <fieldset>
+                <legend>思考与协作方式</legend>
+                <label>你通常如何做决定？
+                  <select name="决策方式">
+                    <option value="">暂不填写</option>
+                    <option>先快速试错，再根据反馈调整</option>
+                    <option>先收集信息，再谨慎判断</option>
+                    <option>先定目标，再拆成可执行步骤</option>
+                    <option>先听别人的观点，再形成判断</option>
+                  </select>
+                </label>
+                <label>你最在意的协作原则 <input name="协作原则" placeholder="例如：信息透明、及时反馈、先把功能跑通。" /></label>
+                <label>你希望别人找你的 Agent 做什么？ <textarea name="适合找我的 Agent 做什么" rows="3" placeholder="例如：讨论想法、一起拆任务、模拟我的反馈、帮忙判断优先级。" /></textarea></label>
+                <label>你不希望这个 Agent 代表你做什么？ <textarea name="不希望 Agent 代表我做什么" rows="3" placeholder="例如：替我承诺时间、替我做重要决定、编造我的经历。" /></textarea></label>
+              </fieldset>
+              <fieldset>
+                <legend>记忆线索</legend>
+                <label>你的重要经历或身份标签 <textarea name="重要经历或身份标签" rows="3" placeholder="例如：某个项目、研究方向、比赛经历、成长背景。" /></textarea></label>
+                <label>你最近最关心的目标 <input name="最近最关心的目标" placeholder="例如：做好黑客松 demo、申请研究、完成某个产品。" /></label>
+                <label>你的长期偏好或价值观 <textarea name="长期偏好或价值观" rows="3" placeholder="例如：喜欢真实、重视效率、希望做有长期价值的东西。" /></textarea></label>
+                <label>哪些事情不像你？ <textarea name="不像本人的行为" rows="3" placeholder="例如：不要过度客套，不要给很空泛的建议，不要假装很懂。" /></textarea></label>
+              </fieldset>
+            </div>
+            <button id="avatarSubmitButton" type="submit">生成并发布化身 Agent</button>
+            <div id="avatarStatus" class="status">等待填写你的基础信息。</div>
+          </form>
+        </section>
+      </aside>
+    </main>
+    <div id="agentModal" class="modal" hidden>
+      <div class="modal-backdrop" data-close-agent-modal></div>
+      <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="agentModalTitle">
+        <header class="modal-header">
+          <div>
+            <div class="section-kicker">我的 Agent</div>
+            <h2 id="agentModalTitle">草稿 / 已发布</h2>
+          </div>
+          <button id="closeAgentModal" class="icon-button" type="button" title="关闭">×</button>
+        </header>
+        <div class="agent-columns">
+          <section class="agent-column">
+            <h3>草稿</h3>
+            <div id="draftAgentList" class="history-list modal-list"></div>
+          </section>
+          <section class="agent-column">
+            <h3>已发布</h3>
+            <div id="publishedAgentList" class="history-list modal-list"></div>
+          </section>
+        </div>
+      </section>
+    </div>
+    <script src="/local-auth.js"></script>
+    <script src="/module-parts/01-agent-launch/page.js"></script>
+  </body>
+</html>

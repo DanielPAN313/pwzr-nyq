@@ -1,0 +1,32 @@
+.page-title,
+.card-title {
+  display: block;
+  margin-bottom: 10rpx;
+  font-size: 34rpx;
+  font-weight: 850;
+}
+
+.game-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8rpx;
+}
+
+.status {
+  color: #0b6b3e;
+  font-size: 30rpx;
+  font-weight: 800;
+}
+
+.small {
+  min-width: 150rpx;
+  border-radius: 999rpx;
+  font-size: 26rpx;
+}

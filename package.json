@@ -1,10 +1,17 @@
 {
-  "name": "nyq-miniapp-h5",
+  "name": "nyq-miniprogram",
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "mirror": "node scripts/serve-local-mirror.mjs"
+    "mirror": "node scripts/serve-local-mirror.mjs",
+    "dev": "node scripts/serve-local-mirror.mjs",
+    "start": "node scripts/serve-local-mirror.mjs",
+    "check:miniprogram": "node scripts/check-miniprogram.mjs",
+    "check": "npm run check:miniprogram"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",

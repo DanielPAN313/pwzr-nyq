@@ -1,116 +1,109 @@
-# Server deployment with MySQL
+# 服务端部署
 
-This project can run on a server with Docker Compose. The Compose setup starts two services:
+这个项目可以用 Docker Compose 部署本地接口和 MySQL。当前部署只服务于「宁约球」小程序联调，不包含 Android、APK 或 Capacitor 流程。
 
-- `web`: the Node.js mirror site
-- `mysql`: a MySQL 8 database with persistent data
+Compose 会启动两个服务：
 
-The database data is stored in the Docker volume `mysql_data`, so it is not lost when the containers restart.
+- `web`：Node.js 本地接口服务
+- `mysql`：MySQL 8 数据库
 
-## 1. Prepare the server
+数据库数据保存在 Docker volume `mysql_data`，容器重启不会丢失。
 
-Install Docker and Docker Compose on the server first.
+## 1. 准备服务器
 
-Copy this project folder to the server, then enter the project directory:
+先安装 Docker 和 Docker Compose，然后进入项目目录：
 
 ```bash
-cd AI_Lab_agent
+cd pwzr-nyq
 ```
 
-## 2. Create the server env file
-
-Copy the example file:
+## 2. 创建环境变量
 
 ```bash
 cp .env.server.example .env.server
 ```
 
-Edit `.env.server` and replace the passwords:
+编辑 `.env.server`：
 
 ```text
 PORT=4174
 
-MYSQL_DATABASE=another_me
-MYSQL_USER=anotherme
+MYSQL_DATABASE=nyq
+MYSQL_USER=nyq
 MYSQL_PASSWORD=replace_with_a_strong_app_password
 MYSQL_ROOT_PASSWORD=replace_with_a_strong_root_password
 MYSQL_PUBLIC_PORT=3306
 ```
 
-Use strong passwords on the real server. Do not commit or share `.env.server`.
+真实服务器必须使用强密码。不要提交或分享 `.env.server`。
 
-## 3. Start the website and database
+## 3. 启动服务
 
 ```bash
 docker compose --env-file .env.server up -d --build
 ```
 
-After it starts, open:
+启动后接口默认地址：
 
 ```text
-http://SERVER_IP:4174/dashboard
+http://SERVER_IP:4174/
 ```
 
-Replace `SERVER_IP` with the real public IP or domain name of the server.
+上线给小程序使用时必须配置 HTTPS 域名，并在微信公众平台加入合法请求域名。
 
-## 4. View the database
-
-Enter the MySQL container:
+## 4. 查看数据库
 
 ```bash
-docker compose --env-file .env.server exec mysql mysql -uanotherme -p another_me
+docker compose --env-file .env.server exec mysql mysql -unyq -p nyq
 ```
 
-Then run:
+示例查询：
 
 ```sql
-SELECT id, username, create_time, status FROM user;
+SHOW TABLES;
+SELECT id, username, status FROM user LIMIT 10;
 ```
 
-Passwords are stored as bcrypt hashes in `password_hash`, not plaintext.
-
-## 5. Backup the database
-
-Create a SQL backup:
+## 5. 备份数据库
 
 ```bash
-docker compose --env-file .env.server exec mysql mysqldump -uanotherme -p another_me > backup-another-me.sql
+docker compose --env-file .env.server exec mysql mysqldump -unyq -p nyq > backup-nyq.sql
 ```
 
-Keep this backup file private because it contains user data and password hashes.
+备份文件可能包含用户数据，不能公开提交。
 
-## 6. Import local users into the server
+## 6. 导入本地数据
 
-On the local computer, export the local database:
+本地导出：
 
 ```bash
-mysqldump -uroot -p another_me > local-another-me.sql
+mysqldump -uroot -p nyq > local-nyq.sql
 ```
 
-Copy `local-another-me.sql` to the server project folder, then import it:
+复制到服务器项目目录后导入：
 
 ```bash
-docker compose --env-file .env.server exec -T mysql mysql -uanotherme -p another_me < local-another-me.sql
+docker compose --env-file .env.server exec -T mysql mysql -unyq -p nyq < local-nyq.sql
 ```
 
-## 7. Common commands
+## 7. 常用命令
 
-Stop the services:
+停止：
 
 ```bash
 docker compose --env-file .env.server down
 ```
 
-Restart the services:
+重启：
 
 ```bash
 docker compose --env-file .env.server restart
 ```
 
-View logs:
+查看日志：
 
 ```bash
 docker compose --env-file .env.server logs -f
 ```
 
-Do not delete the `mysql_data` Docker volume unless you intentionally want to remove all database data.
+不要删除 `mysql_data` volume，除非你确认要清空所有数据库数据。

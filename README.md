@@ -1,27 +1,66 @@
-# 宁约球小程序 / H5 MVP
+# 宁约球微信小程序
 
-面向南京高校和园区的「足球 / 篮球约局 + 场馆预订 + 信用管理」产品原型。当前仓库只保留小程序/H5 主线代码，方便 Windows 和 macOS 都能用 Codex 复现、继续开发和测试。
+这是「宁约球」微信小程序项目，面向南京高校和园区的足球、篮球约局与场馆预订场景。当前仓库的主线是微信小程序开发和上线准备，不再按 Android、APK、Capacitor 或 H5 手机壳方向推进。
 
-## 当前主流程
+## 当前结论
 
-- 用户端：登录、找球场、预订场地、看附近球局、发局、报名支付占位、个人订单与信用记录。
-- 场馆端：新增场馆、查看订单、核销订单、今日收入统计。
-- 运营后台：用户封禁/解封、场馆审核、基础数据看板。
-- 数据库：用户、场馆、球局、报名、订单、信用事件都写入 MySQL。
+- 主开发入口：`miniprogram/`
+- 本地后端与接口：`scripts/serve-local-mirror.mjs`
+- 数据库结构：`db/schema.sql`
+- 产品与协作文档：`docs/`
+- 旧 H5 原型参考：`site/`
 
-## 给同伴的快速启动
+不要把 `android/`、APK、Capacitor、安卓模拟器、旧 H5 手机壳当成当前开发方向。它们只是历史产物或参考材料。
 
-需要先安装：
+## MacBook 复现步骤
+
+### 1. 安装工具
 
 - Node.js 20 或更高版本
-- MySQL 8
+- 微信开发者工具
+- Git
+- MySQL 8，可选；只看小程序界面时可以先不装
 
-然后运行：
+### 2. 克隆仓库
 
 ```bash
-npm install
+git clone https://github.com/DanielPAN313/pwzr-nyq.git
+cd pwzr-nyq
+```
+
+### 3. 安装依赖并体检
+
+```bash
+npm ci
+npm run check
+```
+
+`npm run check` 会检查小程序工程是否可打开：`app.json`、页面四件套、tabBar 路由、JSON 语法、UTF-8 编码和浏览器 API 误用。
+
+### 4. 打开微信小程序
+
+在微信开发者工具里选择「导入项目」：
+
+```text
+项目目录：miniprogram/
+AppID：没有正式 AppID 时选择测试号 / touristappid
+```
+
+导入后应看到 5 个 tab：
+
+- 首页
+- 订场
+- 球局
+- 消息
+- 我的
+
+### 5. 可选：启动本地接口
+
+如果要联调接口：
+
+```bash
 cp .env.example .env
-npm run mirror
+npm run dev
 ```
 
 默认地址：
@@ -33,51 +72,71 @@ http://localhost:4174/
 如果端口被占用：
 
 ```bash
-PORT=4190 npm run mirror
+PORT=4190 npm run dev
 ```
 
-Windows PowerShell 可以这样写：
+Windows PowerShell：
 
 ```powershell
-$env:PORT="4190"; npm run mirror
+$env:PORT="4190"; npm run dev
 ```
 
-## MySQL 初始化
+小程序默认接口地址在 `miniprogram/app.js`：
 
-```sql
-CREATE DATABASE another_me CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE another_me;
-SOURCE db/schema.sql;
+```js
+apiBaseUrl: "http://localhost:4174"
 ```
 
-复制 `.env.example` 为 `.env`，填入数据库配置：
+真机或线上版本需要替换成 HTTPS 域名，并在微信公众平台配置合法请求域名。
 
-```env
-MYSQL_HOST=127.0.0.1
-MYSQL_PORT=3306
-MYSQL_USER=root
-MYSQL_PASSWORD=your_password
-MYSQL_DATABASE=another_me
-PORT=4174
+## 协作规则
+
+每次提交前先跑：
+
+```bash
+npm run check
 ```
 
-启动服务后会自动补齐业务表，并写入南京样板区的种子场馆和球局。
+小程序页面放在：
 
-## 仓库边界
+```text
+miniprogram/pages/
+```
 
-- 当前目标：小程序/H5 开发与上架准备。
-- 不需要 Android Studio、Gradle、模拟器或 APK 构建。
-- 本地如果存在 `android/` 目录，那只是历史安卓壳文件，已被 `.gitignore` 忽略，不参与协作开发。
+新增页面时必须同时完成：
 
-## 试点范围
+- 新建 `.js`
+- 新建 `.json`
+- 新建 `.wxml`
+- 新建 `.wxss`
+- 在 `miniprogram/app.json` 注册页面
+- 如果是底部 tab 页面，也要注册到 `tabBar.list`
 
-- 城市：南京
-- 核心区域：南师附中江宁分校、江宁大学城、江宁开发区、百家湖
-- 合作目标：周边 3-5 家室内/黄金时段优先场馆
+后端接口改动放在：
 
-## 上线前需要替换的生产能力
+```text
+scripts/serve-local-mirror.mjs
+db/schema.sql
+```
 
-- 微信一键登录：当前为 MySQL 用户名密码演示登录，接口位置是 `/api/auth/login` 和 `/api/auth/register`。
-- 微信支付：当前报名会直接生成 paid 订单和核销码，生产环境需要接微信支付回调后再写入 paid。
-- 地图 SDK：当前是 H5 可演示地图面板，小程序上线应替换腾讯位置服务或高德地图组件。
-- 权限系统：当前三端共用登录态演示，生产环境应区分用户、场馆管理员和运营管理员角色。
+旧 H5 只能作为业务流程和文案参考，不要把新功能继续做在 `site/`。
+
+## 上线前重点
+
+- 微信登录：`wx.login` + 后端换取 openid/session
+- 微信支付：统一下单、支付回调、订单状态流转
+- HTTPS 后端：备案域名、合法请求域名、生产数据库
+- 场馆端：场馆登录、时段维护、订单核销、收入统计
+- 合规材料：隐私政策、用户协议、支付说明、场馆合作说明
+
+## 目录速览
+
+```text
+miniprogram/               微信小程序主工程
+scripts/                   本地 Node 服务与 API
+db/                        MySQL schema
+docs/                      产品、协作、部署文档
+site/                      旧 H5 原型，仅参考
+modules/                   旧模块实验，仅参考
+android/                   历史安卓壳，已忽略
+```

@@ -1,0 +1,32 @@
+.page-title,
+.card-title {
+  display: block;
+  margin-bottom: 10rpx;
+  font-size: 34rpx;
+  font-weight: 850;
+}
+
+.venue-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8rpx;
+}
+
+.price {
+  color: #ff7b33;
+  font-size: 34rpx;
+  font-weight: 900;
+}
+
+.small {
+  min-width: 150rpx;
+  border-radius: 999rpx;
+  font-size: 26rpx;
+}

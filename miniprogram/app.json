@@ -1,0 +1,45 @@
+{
+  "pages": [
+    "pages/home/home",
+    "pages/venues/venues",
+    "pages/games/games",
+    "pages/messages/messages",
+    "pages/me/me"
+  ],
+  "window": {
+    "navigationBarTitleText": "宁约球",
+    "navigationBarBackgroundColor": "#0b6b3e",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f4f7f2"
+  },
+  "tabBar": {
+    "color": "#6f7c72",
+    "selectedColor": "#0b6b3e",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/home/home",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/venues/venues",
+        "text": "订场"
+      },
+      {
+        "pagePath": "pages/games/games",
+        "text": "球局"
+      },
+      {
+        "pagePath": "pages/messages/messages",
+        "text": "消息"
+      },
+      {
+        "pagePath": "pages/me/me",
+        "text": "我的"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

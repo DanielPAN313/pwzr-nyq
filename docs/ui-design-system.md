@@ -1,105 +1,84 @@
-# Snap Sport UI Design System
+# 宁约球小程序设计系统
 
-## Scope
+## 作用域
 
-This design system applies to the static H5 app in `site/` and companion pages under `modules/`.
+这个设计系统用于微信小程序主工程：
 
-Primary files:
+```text
+miniprogram/
+```
 
-- `site/index.html`
-- `site/sports-app.js`
-- `site/sports-app.css`
-- `site/local-auth.js`
-- `site/local-auth.css`
-- `modules/web/*`
+旧 `site/` 和 `modules/` 只能作为业务流程、文案和视觉参考，不再作为设计系统的主实现面。
 
-## Design Intent
+## 设计目标
 
-Design Snap Sport as a compact campus sports product, not a marketing site. Users should quickly compare venues, join games, pay, check in, review players, and read credit status. Venue and admin users should scan operational data without visual clutter.
+宁约球应该像一个紧凑、可靠、年轻的校园运动工具，而不是营销页。用户进入后要能快速完成找场、订场、找球局、报名、支付占位、核销、查看信用分等操作。
 
-Current visual direction: youthful green sports app with liquid-glass surfaces. Use translucent panels, backdrop blur, thin white/green borders, soft highlights, and layered depth while keeping text readable.
+视觉气质：
 
-## Tokens
+- 年轻、运动、绿色、可信
+- 接近微信小程序原生交互
+- 信息密度适中，手机上易扫读
+- 场馆、订单、核销、信用状态要清晰
 
-Use these core tokens in CSS:
+## 色彩
 
 ```css
-:root {
-  --bg: #f4f7f2;
-  --panel: #ffffff;
-  --panel-soft: #f8faf6;
-  --ink: #102016;
-  --muted: #647067;
-  --subtle: #8b968e;
-  --line: #dbe4d8;
-  --line-strong: #b8c7b3;
-  --green: #12824f;
-  --green-dark: #083923;
-  --lime: #d7f36a;
-  --blue: #2563eb;
-  --orange: #f07a32;
-  --red: #cf2e2e;
-  --radius: 8px;
-  --shadow: 0 12px 28px rgba(28, 49, 35, 0.10);
+page {
+  background: #f4f7f2;
+  color: #102016;
+}
+
+.primary {
+  background: #12824f;
+  color: #ffffff;
 }
 ```
 
-## Layout
+核心色：
 
-- Keep content inside `width: min(1180px, calc(100% - 32px))`.
-- Use 16px gutters on mobile and wider gutters on desktop.
-- Use sticky top navigation for mode switching and session actions.
-- Use cards for repeated entities only: venues, games, orders, users, metrics, notifications.
-- Do not nest cards inside cards.
-- Prefer dense list rows and tables for admin/venue workflows.
-- The homepage opening section may use a larger immersive green glass hero, as long as the next booking/list content is still visible without excessive scrolling.
+- 背景：`#f4f7f2`
+- 卡片：`#ffffff`
+- 主文字：`#102016`
+- 弱文字：`#6f7c72`
+- 主绿色：`#12824f`
+- 深绿色：`#0b6b3e`
+- 边框：`#dbe4d8`
+- 提醒橙：`#f07a32`
+- 风险红：`#cf2e2e`
 
-## Components
+## 布局
 
-### Buttons
+- 页面统一使用 `.page` 容器，左右留 `24rpx`。
+- 模块块面使用 `.section`，只承载明确的一组信息。
+- 卡片用于场馆、球局、订单、消息这类重复实体。
+- 不要卡片套卡片。
+- 列表行优先清晰可扫，不要做成过大的宣传块。
+- 底部 tab 页面要给内容留足安全区空间。
 
-- Primary actions use green.
-- Payment or warning actions may use orange.
-- Destructive actions use red.
-- Secondary actions use white surfaces with a subtle border.
-- Minimum height is 40px, preferably 44px on mobile.
+## 组件规则
 
-### Tabs and Filters
+- 主操作按钮使用绿色。
+- 支付、提醒、补缴类操作可以使用橙色。
+- 取消、封禁、删除类操作使用红色。
+- 状态标签要短：如 `可订`、`缺2人`、`待支付`、`已核销`。
+- 筛选项尽量用短中文，允许换行，不能横向溢出。
+- 表单 label 放在输入项上方或左侧，错误提示靠近字段。
 
-- Use segmented tabs or pill filters.
-- Active state must be unmistakable.
-- Filter rows must wrap without horizontal overflow.
+## 小程序实现约束
 
-### Forms
+- 使用 WXML/WXSS/JS，不使用浏览器 DOM API。
+- 请求使用 `wx.request`，路由使用 `wx.navigateTo` 或 `wx.switchTab`。
+- 本地缓存使用 `wx.setStorageSync` / `wx.getStorageSync`。
+- 不要在小程序页面里使用 `window`、`document`、`localStorage`、`fetch`。
+- 新增 tab 页面后必须同时更新 `miniprogram/app.json` 的 `pages` 和 `tabBar.list`。
 
-- Labels appear above inputs.
-- Inputs use subtle borders and clear focus states.
-- Validation and helper text stay near the field.
+## 检查
 
-### Cards and Lists
+提交前运行：
 
-- Cards use consistent padding, radius, border, and shadow.
-- Status badges use semantic color.
-- Dense operational data should be a table or compact list, not a large promo card.
-- Liquid-glass cards should use `background: rgba(255,255,255,.18-.72)`, `backdrop-filter: blur(...)`, thin borders, and clear text contrast.
+```bash
+npm run check
+```
 
-### Modals and Sheets
-
-- Use for booking, payment, join confirmation, support, and review flows.
-- Keep primary actions easy to reach on mobile.
-- Backdrop should dim and focus attention without hiding important context.
-
-## Responsive Rules
-
-- Check 375px and 1280px widths.
-- No horizontal overflow.
-- Long Chinese labels must wrap.
-- Floating controls must not cover primary actions.
-- Mobile tabbar and return-home button need enough bottom padding in the page.
-
-## Implementation Rules
-
-- Preserve API endpoints, status keys, auth/session behavior, localStorage keys, and database field names.
-- Prefer adding or adjusting CSS classes over rewriting JavaScript render logic.
-- Escape user-provided values through the existing `h()` helper in JavaScript templates.
-- Keep JavaScript template strings syntactically simple.
+这个命令会检查页面注册、页面四件套、JSON 语法、UTF-8 编码和浏览器 API 误用。

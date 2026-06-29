@@ -1,170 +1,96 @@
-# Three-Person Collaboration Plan
+# 小程序协作计划
 
-## Goal
+## 目标
 
-Keep the current Another Me mirror style unchanged while three people build separate modules:
+三个人围绕同一个微信小程序工程协作，默认只改 `miniprogram/`、`scripts/`、`db/` 和 `docs/`。历史 Android、APK、Capacitor、旧 H5 手机壳都不作为当前任务继续推进。
 
-- Module 01: agent upload and one-click launch.
-- Module 02: agent virtual avatar generation.
-- Module 03: agent social.
+## 推荐分工
 
-## Backup
+### 同伴 A：用户端与首页
 
-A copy was created before the modular split:
+主要文件：
 
-`/gpfs/users/liujinxiu/research/hackason/another-me-mirror-backup-20260606-065900`
+- `miniprogram/pages/home/`
+- `miniprogram/pages/me/`
+- `miniprogram/utils/api.js`
 
-## Project Layout
+当前目标：
 
-Work inside these areas only:
+- 完善首页入口、推荐球局、推荐场馆
+- 做微信登录入口和用户资料展示
+- 展示订单、信用分、报名记录入口
 
-```text
-modules/
-  01-agent-launch/
-  02-avatar/
-  03-social/
-modules/web/
-  index.html
-  module.css
-  agent-launch.html
-  agent-launch.js
-  avatar.html
-  avatar.js
-  social.html
-  social.js
-data/
-scripts/serve-local-mirror.mjs
-```
+### 同伴 B：场馆与订单
 
-Do not edit `site/assets/index-Dg-aU52M.js` unless all three people agree. It is a built/minified bundle and is easy to break.
+主要文件：
 
-## Module Ownership
+- `miniprogram/pages/venues/`
+- `scripts/serve-local-mirror.mjs`
+- `db/schema.sql`
 
-### Person 1: Agent Upload And Launch
+当前目标：
 
-Files:
+- 完善场馆列表、筛选、时段库存
+- 跑通场地预订、订单生成、核销码展示
+- 保持接口字段和数据库字段一致
 
-- `modules/01-agent-launch/README.md`
-- `modules/web/agent-launch.html`
-- `modules/web/agent-launch.js`
+### 同伴 C：球局与消息
 
-API:
+主要文件：
 
-- `GET /api/module-agent-launch/agents`
-- `POST /api/module-agent-launch/agents`
+- `miniprogram/pages/games/`
+- `miniprogram/pages/messages/`
+- `scripts/serve-local-mirror.mjs`
 
-Data:
+当前目标：
 
-- `data/module-agent-launch-agents.json`
+- 完善附近球局、发起球局、报名占位
+- 展示报名提醒、订单提醒、场馆通知
+- 预留支付成功、成局、满员锁局等状态
 
-V0 requirement:
-
-- A user uploads an agent manifest.
-- Another user sees it in the gallery.
-- The `Open Agent` button opens the uploaded chat URL.
-
-### Person 2: Agent Avatar
-
-Files:
-
-- `modules/02-avatar/README.md`
-- `modules/web/avatar.html`
-- `modules/web/avatar.js`
-
-API:
-
-- `GET /api/module-avatar/profiles`
-- `POST /api/module-avatar/profiles`
-
-Data:
-
-- `data/module-avatar-profiles.json`
-
-V0 requirement:
-
-- Questionnaire exists.
-- Submit creates an avatar prompt/profile card.
-- Later, this can call a real image/VLM model.
-
-### Person 3: Agent Social
-
-Files:
-
-- `modules/03-social/README.md`
-- `modules/web/social.html`
-- `modules/web/social.js`
-
-API:
-
-- `POST /api/module-social/conversations`
-
-Data:
-
-- `data/module-social-conversations.json`
-
-V0 requirement:
-
-- Read uploaded agents from module 01.
-- Select two agents.
-- Generate a structured report.
-- Later, replace mock report with real API relay.
-
-## How To Work Without Stepping On Each Other
-
-1. Each person edits only their module files.
-2. Shared style changes go into `modules/web/module.css`; discuss before changing it.
-3. Shared server changes go into `scripts/serve-local-mirror.mjs`; add only namespaced endpoints.
-4. Never rename another person's fields without telling them.
-5. Test from the browser before saying a module is done.
-
-## Merge Routine
-
-Use this checklist whenever combining changes:
-
-1. Start the mirror:
+## 本地开发流程
 
 ```bash
-npm run mirror
+npm ci
+npm run check
+npm run dev
 ```
 
-2. Open:
+微信开发者工具导入：
 
 ```text
-http://localhost:4174/modules/
+miniprogram/
 ```
 
-3. Smoke-test all modules:
+没有正式 AppID 时使用测试号即可。
 
-- `/modules/agent-launch`
-- `/modules/avatar`
-- `/modules/social`
-
-4. Check API health:
+## 提交前检查
 
 ```bash
-curl http://localhost:4174/api/module-agent-launch/agents
-curl http://localhost:4174/api/module-avatar/profiles
+npm run check
 ```
 
-5. If a module breaks, revert only that module's files. Do not touch other modules.
+检查通过后再提交。这个命令会验证：
 
-## Style Rules
+- `miniprogram/app.json` 可解析
+- 每个注册页面都有 `.js/.json/.wxml/.wxss`
+- tabBar 页面已注册
+- 页面 JSON 可解析
+- 小程序 JS 没有误用 `window/document/localStorage/fetch` 等浏览器 API
+- 文件没有 UTF-8 替换字符
 
-Keep the same family as the current local module pages:
+## 不要踩的坑
 
-- light lavender background
-- black hard borders
-- square shadow offset
-- Archivo Black headings
-- JetBrains Mono body
-- no marketing-style redesign
-- no unrelated color palette changes
+- 不要把新页面写进 `site/`
+- 不要恢复 Android/APK/Capacitor 作为主线
+- 不要提交 `.env`、日志、截图、APK、`node_modules`
+- 不要在小程序页面里使用浏览器 DOM API
+- 不要直接改线上支付、订单、信用分状态语义，除非团队已经确认
 
-## Current Module URLs
+## 合并建议
 
-```text
-http://localhost:4174/modules/
-http://localhost:4174/modules/agent-launch
-http://localhost:4174/modules/avatar
-http://localhost:4174/modules/social
-```
+1. 先拉最新代码。
+2. 跑 `npm ci` 和 `npm run check`。
+3. 在微信开发者工具里打开 `miniprogram/`。
+4. 自测自己负责的 tab。
+5. 如果改了接口，同时说明新增或变更的 API 路径和字段。

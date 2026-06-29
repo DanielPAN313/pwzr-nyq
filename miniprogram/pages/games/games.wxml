@@ -1,0 +1,15 @@
+<view class="page">
+  <view class="section">
+    <view class="page-title">附近球局</view>
+    <text class="muted">后续接入报名、AA 支付、成局状态和到场核销。</text>
+  </view>
+
+  <view wx:for="{{games}}" wx:key="title" class="section game-card">
+    <text class="card-title">{{item.title}}</text>
+    <text class="muted">{{item.time}}</text>
+    <view class="card-row">
+      <text class="status">{{item.status}}</text>
+      <button class="primary small">报名</button>
+    </view>
+  </view>
+</view>

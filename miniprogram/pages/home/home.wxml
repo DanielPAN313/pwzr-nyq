@@ -1,0 +1,27 @@
+<view class="page">
+  <view class="hero">
+    <text class="eyebrow">南京样板区</text>
+    <text class="title">开球，去宁约球</text>
+    <text class="subtitle">找附近球局、抢黄金场地、报名支付、到场核销。</text>
+  </view>
+
+  <view class="section">
+    <view class="section-title">常用入口</view>
+    <view class="quick-grid">
+      <button
+        wx:for="{{quickActions}}"
+        wx:key="label"
+        class="quick-card"
+        bindtap="switchTab"
+        data-target="{{item.target}}"
+      >
+        {{item.label}}
+      </button>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">下一步开发</view>
+    <text class="muted">这里会从旧 H5 原型迁移真实首页数据、推荐场馆、今日球局和订单提醒。</text>
+  </view>
+</view>

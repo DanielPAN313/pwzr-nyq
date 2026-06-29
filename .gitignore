@@ -1,8 +1,16 @@
 node_modules/
 .env
 .env.server
+.DS_Store
+.idea/
+.vscode/
 .chrome-preview-check/
 android/
+dist/
+coverage/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 mirror-*.log
 tunnel*.log
 tunnel*.txt
@@ -18,3 +26,6 @@ nyq-*.png
 tmp_*.cjs
 tmp_*.js
 tools/*.exe
+miniprogram/miniprogram_npm/
+miniprogram/.cache/
+miniprogram/.temp/

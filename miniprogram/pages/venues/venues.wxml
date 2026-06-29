@@ -1,0 +1,15 @@
+<view class="page">
+  <view class="section">
+    <view class="page-title">附近可订场馆</view>
+    <text class="muted">后续接入真实时段、价格、筛选和预订支付。</text>
+  </view>
+
+  <view wx:for="{{venues}}" wx:key="name" class="section venue-card">
+    <text class="card-title">{{item.name}}</text>
+    <text class="muted">{{item.area}}</text>
+    <view class="card-row">
+      <text class="price">¥{{item.price}}</text>
+      <button class="primary small">订场</button>
+    </view>
+  </view>
+</view>

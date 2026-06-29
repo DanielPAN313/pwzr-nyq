@@ -1,0 +1,7 @@
+.page-title,
+.card-title {
+  display: block;
+  margin-bottom: 10rpx;
+  font-size: 34rpx;
+  font-weight: 850;
+}

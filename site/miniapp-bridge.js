@@ -12,10 +12,21 @@
   var ROUTE_PAGES = Object.assign({}, TAB_PAGES, {
     'pages/orders/orders': 'orders',
     'pages/credit/credit': 'credit',
+    'pages/my-games/my-games': 'my-games',
     'pages/create/create': 'create',
     'pages/teams/teams': 'teams',
+    'pages/ai/ai': 'ai',
+    'pages/data/data': 'data',
+    'pages/favorites/favorites': 'favorites',
     'pages/demo/demo': 'demo',
   });
+
+  var VIEW_PAGES = Object.keys(ROUTE_PAGES).reduce(function (acc, path) {
+    acc[ROUTE_PAGES[path]] = path;
+    return acc;
+  }, {});
+
+  var pageStack = [];
 
   function ok(callback, payload) {
     if (typeof callback === 'function') callback(payload);
@@ -31,17 +42,82 @@
 
   function normalizePage(url) {
     var clean = String(url || '').split('?')[0].replace(/^\/+/, '');
-    return ROUTE_PAGES[clean] || ROUTE_PAGES[clean.replace(/\.html$/, '')] || 'home';
+    return ROUTE_PAGES[clean] || ROUTE_PAGES[clean.replace(/\.html$/, '')] || clean || 'home';
+  }
+
+  function viewToPath(view) {
+    return VIEW_PAGES[normalizePage(view)] || 'pages/home/home';
+  }
+
+  function queryObject(url) {
+    var raw = String(url || '');
+    var query = raw.indexOf('?') >= 0 ? raw.slice(raw.indexOf('?') + 1) : '';
+    var params = new URLSearchParams(query);
+    var out = {};
+    params.forEach(function (value, key) {
+      out[key] = value;
+    });
+    return out;
+  }
+
+  function currentView() {
+    var url = new URL(window.location.href);
+    return normalizePage(url.searchParams.get('page') || url.searchParams.get('path') || 'home');
+  }
+
+  function currentPath() {
+    var url = new URL(window.location.href);
+    var path = String(url.searchParams.get('path') || '').replace(/^\/+/, '');
+    return ROUTE_PAGES[path] ? path : viewToPath(url.searchParams.get('page') || currentView());
+  }
+
+  function syncPageStack(target, query, replace) {
+    var path = viewToPath(target);
+    var page = {
+      route: path,
+      options: query || {},
+      __previewView: normalizePage(target),
+    };
+    if (replace && pageStack.length) {
+      pageStack[pageStack.length - 1] = page;
+    } else {
+      pageStack.push(page);
+      if (pageStack.length > 10) pageStack.shift();
+    }
   }
 
   function routeTo(page, replace) {
     var target = normalizePage(page);
+    var query = queryObject(page);
     var url = new URL(window.location.href);
     url.searchParams.set('page', target);
+    url.searchParams.set('path', viewToPath(target));
+    Object.keys(query).forEach(function (key) {
+      url.searchParams.set(key, query[key]);
+    });
     url.hash = '';
+    syncPageStack(target, query, replace);
     window.history[replace ? 'replaceState' : 'pushState']({ page: target }, '', url.pathname + url.search);
     window.dispatchEvent(new PopStateEvent('popstate', { state: { page: target } }));
   }
+
+  function launchOptions() {
+    var url = new URL(window.location.href);
+    var path = currentPath();
+    var query = {};
+    url.searchParams.forEach(function (value, key) {
+      if (key !== 'page' && key !== 'path') query[key] = value;
+    });
+    return {
+      path: path,
+      query: query,
+      scene: Number(query.scene || 1001),
+      shareTicket: query.shareTicket || '',
+      referrerInfo: {},
+    };
+  }
+
+  syncPageStack(currentView(), launchOptions().query, true);
 
   function storageKey(key) {
     return 'wx_bridge_' + key;
@@ -133,7 +209,16 @@
     },
 
     navigateBack: function () {
+      if (pageStack.length > 1) pageStack.pop();
       window.history.back();
+    },
+
+    getLaunchOptionsSync: function () {
+      return launchOptions();
+    },
+
+    getEnterOptionsSync: function () {
+      return launchOptions();
     },
 
     getStorageSync: function (key) {
@@ -170,5 +255,9 @@
       ok(options && options.success, result);
       complete(options && options.complete, result);
     },
+  };
+
+  window.getCurrentPages = function () {
+    return pageStack.slice();
   };
 })();

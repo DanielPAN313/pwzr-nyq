@@ -63,16 +63,33 @@
     'favorites',
     'demo',
   ];
+  var ROUTE_PATH_VIEWS = {
+    'pages/home/home': 'home',
+    'pages/venues/venues': 'venues',
+    'pages/games/games': 'games',
+    'pages/messages/messages': 'messages',
+    'pages/me/me': 'me',
+    'pages/orders/orders': 'orders',
+    'pages/credit/credit': 'credit',
+    'pages/my-games/my-games': 'my-games',
+    'pages/create/create': 'create',
+    'pages/teams/teams': 'teams',
+    'pages/ai/ai': 'ai',
+    'pages/data/data': 'data',
+    'pages/favorites/favorites': 'favorites',
+    'pages/demo/demo': 'demo',
+  };
 
   function normalizeRouteView(view) {
-    var next = String(view || '').trim().toLowerCase();
+    var next = String(view || '').split('?')[0].replace(/^\/+/, '').trim().toLowerCase();
+    if (ROUTE_PATH_VIEWS[next]) return ROUTE_PATH_VIEWS[next];
     return ROUTABLE_USER_VIEWS.indexOf(next) >= 0 ? next : 'home';
   }
 
   function readPreviewRoute() {
     try {
       var url = new URL(window.location.href);
-      var fromQuery = url.searchParams.get('page') || url.searchParams.get('view');
+      var fromQuery = url.searchParams.get('page') || url.searchParams.get('view') || url.searchParams.get('path');
       var fromHash = String(url.hash || '').replace(/^#\/?/, '');
       return normalizeRouteView(fromQuery || fromHash || 'home');
     } catch (error) {

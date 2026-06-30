@@ -36,6 +36,7 @@ requireIncludes("mobile-preview-lock.css", [
 
 requireIncludes("sports-app.js", [
   "ROUTABLE_USER_VIEWS",
+  "ROUTE_PATH_VIEWS",
   "readPreviewRoute",
   "syncPreviewRoute",
   "window.addEventListener('popstate'",
@@ -46,6 +47,9 @@ requireIncludes("miniapp-bridge.js", [
   "__isH5MiniProgramBridge",
   "request: function",
   "switchTab: function",
+  "getLaunchOptionsSync",
+  "getEnterOptionsSync",
+  "window.getCurrentPages",
   "getSystemInfoSync",
 ]);
 

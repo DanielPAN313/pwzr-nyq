@@ -235,6 +235,19 @@
     };
   }
 
+  function previewTempFile(kind) {
+    var type = kind || 'image';
+    var ext = type === 'video' ? 'mp4' : 'jpg';
+    return {
+      tempFilePath: 'h5-preview://temp/' + type + '-demo.' + ext,
+      size: type === 'video' ? 2048000 : 128000,
+      fileType: type,
+      duration: type === 'video' ? 12 : 0,
+      width: 1080,
+      height: 1080,
+    };
+  }
+
   window.wx = {
     __isH5MiniProgramBridge: true,
 
@@ -509,6 +522,70 @@
         return;
       }
       done(window.localStorage.getItem(storageKey('clipboard')) || '');
+    },
+
+    chooseImage: function (options) {
+      var opts = options || {};
+      var count = Math.max(1, Math.min(Number(opts.count || 1), 9));
+      var files = Array.from({ length: count }, function () { return previewTempFile('image'); });
+      var result = bridgeResult('chooseImage', {
+        tempFilePaths: files.map(function (file) { return file.tempFilePath; }),
+        tempFiles: files,
+      });
+      ok(opts.success, result);
+      complete(opts.complete, result);
+    },
+
+    chooseMedia: function (options) {
+      var opts = options || {};
+      var mediaType = Array.isArray(opts.mediaType) && opts.mediaType.indexOf('video') >= 0 ? 'video' : 'image';
+      var count = Math.max(1, Math.min(Number(opts.count || 1), 9));
+      var files = Array.from({ length: count }, function () { return previewTempFile(mediaType); });
+      var result = bridgeResult('chooseMedia', { tempFiles: files, type: mediaType });
+      ok(opts.success, result);
+      complete(opts.complete, result);
+    },
+
+    uploadFile: function (options) {
+      var opts = options || {};
+      var result = bridgeResult('uploadFile', {
+        statusCode: 200,
+        data: JSON.stringify({
+          ok: true,
+          preview: true,
+          filePath: opts.filePath || '',
+          name: opts.name || 'file',
+        }),
+      });
+      ok(opts.success, result);
+      complete(opts.complete, result);
+    },
+
+    downloadFile: function (options) {
+      var opts = options || {};
+      var result = bridgeResult('downloadFile', {
+        statusCode: 200,
+        tempFilePath: opts.url || 'h5-preview://temp/download-demo.bin',
+      });
+      ok(opts.success, result);
+      complete(opts.complete, result);
+    },
+
+    previewImage: function (options) {
+      var result = bridgeResult('previewImage', {
+        current: options && options.current,
+        urls: options && options.urls || [],
+      });
+      ok(options && options.success, result);
+      complete(options && options.complete, result);
+    },
+
+    saveImageToPhotosAlbum: function (options) {
+      var result = bridgeResult('saveImageToPhotosAlbum', {
+        filePath: options && options.filePath || '',
+      });
+      ok(options && options.success, result);
+      complete(options && options.complete, result);
     },
 
     vibrateShort: function (options) {

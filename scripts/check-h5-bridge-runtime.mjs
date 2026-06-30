@@ -226,6 +226,40 @@ context.wx.getSetting({
   },
 });
 assert(settingOk, "wx.getSetting authSetting mismatch");
+let imagePath = "";
+context.wx.chooseImage({
+  count: 1,
+  success(result) {
+    imagePath = result.tempFilePaths[0];
+  },
+});
+assert(imagePath.startsWith("h5-preview://temp/image-demo"), "wx.chooseImage temp path mismatch");
+let mediaType = "";
+context.wx.chooseMedia({
+  mediaType: ["video"],
+  success(result) {
+    mediaType = result.type;
+  },
+});
+assert(mediaType === "video", "wx.chooseMedia should return video type");
+let uploadOk = false;
+context.wx.uploadFile({
+  url: "/api/upload",
+  filePath: imagePath,
+  name: "file",
+  success(result) {
+    uploadOk = result.statusCode === 200 && JSON.parse(result.data).preview === true;
+  },
+});
+assert(uploadOk, "wx.uploadFile mock did not return preview result");
+let downloadPath = "";
+context.wx.downloadFile({
+  url: "https://example.com/demo.jpg",
+  success(result) {
+    downloadPath = result.tempFilePath;
+  },
+});
+assert(downloadPath === "https://example.com/demo.jpg", "wx.downloadFile temp path mismatch");
 assert(context.wx.getSystemInfoSync().windowWidth === 390, "wx.getSystemInfoSync should report preview width");
 assert(context.wx.getWindowInfo().windowWidth === 390, "wx.getWindowInfo should report preview width");
 assert(context.wx.getDeviceInfo().platform === "h5-preview", "wx.getDeviceInfo platform mismatch");

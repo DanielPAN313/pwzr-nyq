@@ -165,8 +165,19 @@ assert(paid, "wx.requestPayment mock did not resolve");
 
 assert(context.wx.getAccountInfoSync().miniProgram.appId === "touristappid", "wx.getAccountInfoSync appId mismatch");
 assert(context.wx.getSystemInfoSync().windowWidth === 390, "wx.getSystemInfoSync should report preview width");
+assert(context.wx.getWindowInfo().windowWidth === 390, "wx.getWindowInfo should report preview width");
+assert(context.wx.getDeviceInfo().platform === "h5-preview", "wx.getDeviceInfo platform mismatch");
+assert(context.wx.getAppBaseInfo().host.appId === "touristappid", "wx.getAppBaseInfo host appId mismatch");
+assert(context.wx.getMenuButtonBoundingClientRect().width > 0, "wx.getMenuButtonBoundingClientRect width missing");
+assert(context.wx.canIUse("button.open-type.getUserInfo") === true, "wx.canIUse should return true in preview");
+assert(context.wx.env.USER_DATA_PATH === "h5-preview://user-data", "wx.env.USER_DATA_PATH mismatch");
 assert(context.getCurrentPages().length > 0, "getCurrentPages should expose preview page stack");
 
+let nextTickCalled = false;
+context.wx.nextTick(() => {
+  nextTickCalled = true;
+});
 for (const timer of timers.splice(0)) timer();
+assert(nextTickCalled, "wx.nextTick callback was not called");
 
 console.log("H5 Mini Program bridge runtime check passed.");

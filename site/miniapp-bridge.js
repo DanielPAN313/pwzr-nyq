@@ -172,6 +172,41 @@
     return instance;
   }
 
+  function previewWindowInfo() {
+    var height = window.innerHeight || 844;
+    return {
+      pixelRatio: 2,
+      screenWidth: 390,
+      screenHeight: window.screen && window.screen.height || height,
+      windowWidth: 390,
+      windowHeight: height,
+      statusBarHeight: 24,
+      safeArea: { top: 0, left: 0, right: 390, bottom: height, width: 390, height: height },
+      screenTop: 0,
+    };
+  }
+
+  function previewDeviceInfo() {
+    return {
+      brand: 'browser',
+      model: 'MiniProgram Preview',
+      system: 'H5 Preview',
+      platform: 'h5-preview',
+      deviceOrientation: 'portrait',
+    };
+  }
+
+  function previewAppBaseInfo() {
+    return {
+      SDKVersion: 'h5-preview',
+      enableDebug: true,
+      host: { appId: 'touristappid' },
+      language: 'zh_CN',
+      version: '0.0.0-h5-preview',
+      theme: 'light',
+    };
+  }
+
   window.wx = {
     __isH5MiniProgramBridge: true,
 
@@ -306,16 +341,44 @@
     },
 
     getSystemInfoSync: function () {
-      return {
+      return Object.assign({
         platform: 'h5-preview',
         brand: 'browser',
         model: 'MiniProgram Preview',
-        windowWidth: 390,
-        screenWidth: 390,
-        windowHeight: window.innerHeight,
-        screenHeight: window.screen && window.screen.height || window.innerHeight,
-        safeArea: { top: 0, left: 0, right: 390, bottom: window.innerHeight, width: 390, height: window.innerHeight },
+      }, previewWindowInfo(), previewDeviceInfo(), previewAppBaseInfo());
+    },
+
+    getWindowInfo: function () {
+      return previewWindowInfo();
+    },
+
+    getDeviceInfo: function () {
+      return previewDeviceInfo();
+    },
+
+    getAppBaseInfo: function () {
+      return previewAppBaseInfo();
+    },
+
+    getMenuButtonBoundingClientRect: function () {
+      return {
+        width: 87,
+        height: 32,
+        top: 8,
+        right: 378,
+        bottom: 40,
+        left: 291,
       };
+    },
+
+    canIUse: function () {
+      return true;
+    },
+
+    nextTick: function (callback) {
+      window.setTimeout(function () {
+        if (typeof callback === 'function') callback();
+      }, 0);
     },
 
     getAccountInfoSync: function () {
@@ -386,6 +449,10 @@
 
   window.getCurrentPages = function () {
     return pageStack.slice();
+  };
+
+  window.wx.env = {
+    USER_DATA_PATH: 'h5-preview://user-data',
   };
 
   var previewApp = null;

@@ -157,10 +157,12 @@ const context = makeContext();
 vm.runInContext(bridgeSource, context, { filename: "site/miniapp-bridge.js" });
 
 const registeredPages = [];
+const registeredPageByPath = new Map();
 const originalPage = context.Page;
 context.Page = function pageWithRegistry(definition) {
   const page = originalPage(definition);
   registeredPages.push(page);
+  if (page.route) registeredPageByPath.set(page.route, page);
   return page;
 };
 
@@ -201,12 +203,26 @@ for (const pagePath of appJson.pages) {
   assert(registeredPages.length === before + 1, `${pagePath}.js did not call Page()`);
   const page = registeredPages[registeredPages.length - 1];
   assert(page.route === pagePath, `${pagePath}.js registered with route ${page.route}`);
+  registeredPageByPath.set(pagePath, page);
 }
 
 for (const file of fs.readdirSync(path.join(miniRoot, "utils"))) {
   if (file.endsWith(".js")) loadModule(path.join(miniRoot, "utils", file));
 }
 
+const homePage = registeredPageByPath.get("pages/home/home");
+assert(homePage, "pages/home/home page instance was not registered.");
+assert(typeof homePage.switchTab === "function", "pages/home/home should expose switchTab method.");
+homePage.switchTab.call(homePage, {
+  currentTarget: {
+    dataset: {
+      target: "/pages/games/games",
+    },
+  },
+});
+assert(context.location.search.includes("page=games"), "home.switchTab did not route to games page.");
+assert(context.location.search.includes("path=pages%2Fgames%2Fgames") || context.location.search.includes("path=pages/games/games"), "home.switchTab did not preserve games path.");
+
 for (const timer of timers.splice(0)) timer();
 
-console.log(`Mini Program runtime check passed: loaded app.js and ${registeredPages.length} pages.`);
+console.log(`Mini Program runtime check passed: loaded app.js, ${registeredPages.length} pages, and home.switchTab.`);

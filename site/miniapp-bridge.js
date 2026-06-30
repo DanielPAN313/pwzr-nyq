@@ -27,6 +27,7 @@
   }, {});
 
   var pageStack = [];
+  var networkStatusCallbacks = [];
 
   function ok(callback, payload) {
     if (typeof callback === 'function') callback(payload);
@@ -262,6 +263,26 @@
     };
   }
 
+  function previewNetworkState() {
+    var online = !navigator || navigator.onLine !== false;
+    return {
+      isConnected: online,
+      networkType: online ? 'wifi' : 'none',
+    };
+  }
+
+  function notifyNetworkStatusChange() {
+    var result = previewNetworkState();
+    networkStatusCallbacks.slice().forEach(function (callback) {
+      if (typeof callback === 'function') callback(result);
+    });
+  }
+
+  if (window.addEventListener) {
+    window.addEventListener('online', notifyNetworkStatusChange);
+    window.addEventListener('offline', notifyNetworkStatusChange);
+  }
+
   window.wx = {
     __isH5MiniProgramBridge: true,
 
@@ -350,6 +371,45 @@
         acc[id] = 'accept';
         return acc;
       }, { errMsg: 'requestSubscribeMessage:ok' });
+      ok(opts.success, result);
+      complete(opts.complete, result);
+    },
+
+    showShareMenu: function (options) {
+      var opts = options || {};
+      var result = bridgeResult('showShareMenu', {
+        withShareTicket: !!opts.withShareTicket,
+        menus: Array.isArray(opts.menus) ? opts.menus : [],
+      });
+      ok(opts.success, result);
+      complete(opts.complete, result);
+    },
+
+    hideShareMenu: function (options) {
+      var opts = options || {};
+      var result = bridgeResult('hideShareMenu');
+      ok(opts.success, result);
+      complete(opts.complete, result);
+    },
+
+    updateShareMenu: function (options) {
+      var opts = options || {};
+      var result = bridgeResult('updateShareMenu', {
+        withShareTicket: !!opts.withShareTicket,
+        isPrivateMessage: !!opts.isPrivateMessage,
+      });
+      ok(opts.success, result);
+      complete(opts.complete, result);
+    },
+
+    getShareInfo: function (options) {
+      var opts = options || {};
+      var result = bridgeResult('getShareInfo', {
+        shareTicket: opts.shareTicket || launchOptions().shareTicket || 'h5-preview-share-ticket',
+        encryptedData: 'h5-preview-share-encrypted-data',
+        iv: 'h5-preview-share-iv',
+        cloudID: 'h5-preview-share-cloud-id',
+      });
       ok(opts.success, result);
       complete(opts.complete, result);
     },
@@ -468,6 +528,31 @@
 
     getAppBaseInfo: function () {
       return previewAppBaseInfo();
+    },
+
+    getNetworkType: function (options) {
+      var opts = options || {};
+      var result = bridgeResult('getNetworkType', {
+        networkType: previewNetworkState().networkType,
+      });
+      ok(opts.success, result);
+      complete(opts.complete, result);
+    },
+
+    onNetworkStatusChange: function (callback) {
+      if (typeof callback === 'function' && networkStatusCallbacks.indexOf(callback) < 0) {
+        networkStatusCallbacks.push(callback);
+      }
+    },
+
+    offNetworkStatusChange: function (callback) {
+      if (!callback) {
+        networkStatusCallbacks = [];
+        return;
+      }
+      networkStatusCallbacks = networkStatusCallbacks.filter(function (item) {
+        return item !== callback;
+      });
     },
 
     getMenuButtonBoundingClientRect: function () {

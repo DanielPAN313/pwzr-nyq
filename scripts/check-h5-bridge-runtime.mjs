@@ -13,6 +13,7 @@ function assert(condition, message) {
 
 function makeContext(url = "http://localhost:4174/pages/games/games?scene=1001&from=smoke&scan=NYQ-SMOKE") {
   const location = new URL(url);
+  const eventListeners = new Map();
   const history = {
     entries: [],
     pushState(state, _title, nextUrl) {
@@ -61,6 +62,7 @@ function makeContext(url = "http://localhost:4174/pages/games/games?scene=1001&f
       },
     },
     navigator: {
+      onLine: true,
       vibrate() {
         return true;
       },
@@ -84,8 +86,17 @@ function makeContext(url = "http://localhost:4174/pages/games/games?scene=1001&f
       timers.push(callback);
       return timers.length;
     },
+    addEventListener(type, callback) {
+      if (!eventListeners.has(type)) eventListeners.set(type, []);
+      eventListeners.get(type).push(callback);
+    },
+    removeEventListener(type, callback) {
+      const callbacks = eventListeners.get(type) || [];
+      eventListeners.set(type, callbacks.filter((item) => item !== callback));
+    },
     dispatchEvent(event) {
       this.lastEvent = event;
+      for (const callback of eventListeners.get(event.type) || []) callback(event);
     },
     PopStateEvent: class PopStateEvent {
       constructor(type, init) {
@@ -187,6 +198,38 @@ context.wx.requestSubscribeMessage({
   },
 });
 assert(subscribeAccepted, "wx.requestSubscribeMessage did not accept template");
+let shareMenuOk = false;
+context.wx.showShareMenu({
+  withShareTicket: true,
+  menus: ["shareAppMessage"],
+  success(result) {
+    shareMenuOk = result.errMsg === "showShareMenu:ok" && result.withShareTicket === true;
+  },
+});
+assert(shareMenuOk, "wx.showShareMenu mock did not succeed");
+let shareInfoTicket = "";
+context.wx.getShareInfo({
+  shareTicket: "ticket-demo",
+  success(result) {
+    shareInfoTicket = result.shareTicket;
+  },
+});
+assert(shareInfoTicket === "ticket-demo", "wx.getShareInfo ticket mismatch");
+let updateShareOk = false;
+context.wx.updateShareMenu({
+  isPrivateMessage: true,
+  success(result) {
+    updateShareOk = result.errMsg === "updateShareMenu:ok" && result.isPrivateMessage === true;
+  },
+});
+assert(updateShareOk, "wx.updateShareMenu mock did not succeed");
+let hideShareOk = false;
+context.wx.hideShareMenu({
+  success(result) {
+    hideShareOk = result.errMsg === "hideShareMenu:ok";
+  },
+});
+assert(hideShareOk, "wx.hideShareMenu mock did not succeed");
 let navTitleOk = false;
 context.wx.setNavigationBarTitle({
   title: "Smoke",
@@ -288,6 +331,25 @@ assert(context.wx.getSystemInfoSync().windowWidth === 390, "wx.getSystemInfoSync
 assert(context.wx.getWindowInfo().windowWidth === 390, "wx.getWindowInfo should report preview width");
 assert(context.wx.getDeviceInfo().platform === "h5-preview", "wx.getDeviceInfo platform mismatch");
 assert(context.wx.getAppBaseInfo().host.appId === "touristappid", "wx.getAppBaseInfo host appId mismatch");
+let networkType = "";
+context.wx.getNetworkType({
+  success(result) {
+    networkType = result.networkType;
+  },
+});
+assert(networkType === "wifi", "wx.getNetworkType should report wifi while preview is online");
+let networkChanged = "";
+const networkHandler = (result) => {
+  networkChanged = result.networkType;
+};
+context.wx.onNetworkStatusChange(networkHandler);
+context.navigator.onLine = false;
+context.dispatchEvent({ type: "offline" });
+assert(networkChanged === "none", "wx.onNetworkStatusChange did not report offline state");
+context.wx.offNetworkStatusChange(networkHandler);
+context.navigator.onLine = true;
+context.dispatchEvent({ type: "online" });
+assert(networkChanged === "none", "wx.offNetworkStatusChange did not remove handler");
 assert(context.wx.getMenuButtonBoundingClientRect().width > 0, "wx.getMenuButtonBoundingClientRect width missing");
 assert(context.wx.canIUse("button.open-type.getUserInfo") === true, "wx.canIUse should return true in preview");
 assert(context.wx.env.USER_DATA_PATH === "h5-preview://user-data", "wx.env.USER_DATA_PATH mismatch");

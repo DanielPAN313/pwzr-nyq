@@ -5,12 +5,13 @@
 ## 当前结论
 
 - 主开发入口：`miniprogram/`
+- 未注册阶段预览入口：`site/` + `npm run dev`
 - 本地后端与接口：`scripts/serve-local-mirror.mjs`
 - 数据库结构：`db/schema.sql`
 - 产品与协作文档：`docs/`
-- 旧 H5 原型参考：`site/`
+- 历史 Android 壳参考：`android/`
 
-不要把 `android/`、APK、Capacitor、安卓模拟器、旧 H5 手机壳当成当前开发方向。它们只是历史产物或参考材料。
+不要把 `android/`、APK、Capacitor、安卓模拟器当成当前开发方向。当前方向是微信小程序；在小程序未注册前，用 `site/` 的 H5 小程序预览模拟微信运行环境，方便浏览器开发、同伴改 UI 和本地演示。
 
 ## MacBook 复现步骤
 
@@ -36,6 +37,8 @@ npm run check
 ```
 
 `npm run check` 会检查小程序工程是否可打开：`app.json`、页面四件套、tabBar 路由、JSON 语法、UTF-8 编码和浏览器 API 误用。
+
+它还会执行 H5 小程序预览检查、H5 本地 HTTP 直达检查、`wx` 桥接层运行时检查，以及 `miniprogram/` 实际使用的 `wx.*` API 覆盖检查。
 
 ### 4. 打开微信小程序
 
@@ -89,6 +92,16 @@ apiBaseUrl: "http://localhost:4174"
 
 真机或线上版本需要替换成 HTTPS 域名，并在微信公众平台配置合法请求域名。
 
+未注册小程序时，也可以先直接用浏览器预览：
+
+```text
+http://localhost:4174/
+http://localhost:4174/?page=home
+http://localhost:4174/?path=pages/games/games
+```
+
+H5 预览里已经模拟了常用 `wx` API、底部 tab、页面直达、页面栈、启动参数、扫码、支付、上传下载任务和请求任务，用来让本地开发尽量接近真实微信小程序。
+
 ## 协作规则
 
 每次提交前先跑：
@@ -119,7 +132,9 @@ scripts/serve-local-mirror.mjs
 db/schema.sql
 ```
 
-旧 H5 只能作为业务流程和文案参考，不要把新功能继续做在 `site/`。
+`site/` 现在承担未注册阶段的浏览器预览职责。业务主线和最终小程序代码仍以 `miniprogram/` 为准；如果改了 H5 预览里的交互，也要确认真实小程序目录能继续通过 `npm run check`。
+
+GitHub Actions 已经配置在 Ubuntu 和 macOS 上执行 `npm ci` 与 `npm run check`。同伴在 MacBook 上遇到问题时，可以先对照 Actions 结果判断是本机环境问题还是仓库问题。
 
 ## 上线前重点
 
@@ -136,7 +151,7 @@ miniprogram/               微信小程序主工程
 scripts/                   本地 Node 服务与 API
 db/                        MySQL schema
 docs/                      产品、协作、部署文档
-site/                      旧 H5 原型，仅参考
+site/                      未注册阶段的 H5 小程序预览
 modules/                   旧模块实验，仅参考
 android/                   历史安卓壳，已忽略
 ```

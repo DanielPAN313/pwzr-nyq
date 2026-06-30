@@ -43,6 +43,27 @@ function walk(dir, out = []) {
   return out;
 }
 
+function wxmlEventHandlers(source) {
+  const handlers = new Set();
+  const eventPattern = /\b(?:bind|catch|mut-bind)[\w:-]*\s*=\s*["']([^"']+)["']/g;
+  for (const match of source.matchAll(eventPattern)) {
+    const handler = String(match[1] || "").trim();
+    if (handler && !handler.startsWith("{{")) handlers.add(handler);
+  }
+  return handlers;
+}
+
+function pageMethodNames(source) {
+  const methods = new Set();
+  for (const line of source.split(/\r?\n/)) {
+    const methodMatch = line.match(/^\s*([A-Za-z_$][\w$]*)\s*\([^)]*\)\s*\{/);
+    const propertyMatch = line.match(/^\s*([A-Za-z_$][\w$]*)\s*:\s*(?:function\b|\([^)]*\)\s*=>|[A-Za-z_$][\w$]*\s*=>)/);
+    const match = methodMatch || propertyMatch;
+    if (match) methods.add(match[1]);
+  }
+  return methods;
+}
+
 const appJson = parseJson(path.join(miniRoot, "app.json"));
 const rootProjectConfig = parseJson(path.join(root, "project.config.json"));
 const miniProjectConfig = parseJson(path.join(miniRoot, "project.config.json"));
@@ -80,6 +101,17 @@ if (appJson) {
       const file = path.join(miniRoot, `${page}.${ext}`);
       mustExist(file, `page ${ext}`);
       if (ext === "json" && fs.existsSync(file)) parseJson(file);
+    }
+
+    const jsFile = path.join(miniRoot, `${page}.js`);
+    const wxmlFile = path.join(miniRoot, `${page}.wxml`);
+    if (fs.existsSync(jsFile) && fs.existsSync(wxmlFile)) {
+      const methods = pageMethodNames(readUtf8(jsFile));
+      for (const handler of wxmlEventHandlers(readUtf8(wxmlFile))) {
+        if (!methods.has(handler)) {
+          errors.push(`${rel(wxmlFile)} binds "${handler}" but ${rel(jsFile)} does not expose that Page method.`);
+        }
+      }
     }
   }
 

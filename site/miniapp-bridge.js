@@ -151,6 +151,27 @@
       || window.prompt('H5 预览扫码模拟，请输入扫码结果', 'NYQ-CHECKIN-DEMO');
   }
 
+  function cloneData(value) {
+    if (value == null || typeof value !== 'object') return value;
+    try {
+      return JSON.parse(JSON.stringify(value));
+    } catch (error) {
+      return Array.isArray(value) ? value.slice() : Object.assign({}, value);
+    }
+  }
+
+  function makeMiniProgramInstance(definition, type) {
+    var source = definition || {};
+    var instance = Object.assign({}, source);
+    instance.__previewType = type;
+    instance.data = cloneData(source.data || {});
+    instance.setData = function (next, callback) {
+      instance.data = Object.assign({}, instance.data || {}, next || {});
+      if (typeof callback === 'function') callback.call(instance);
+    };
+    return instance;
+  }
+
   window.wx = {
     __isH5MiniProgramBridge: true,
 
@@ -365,5 +386,43 @@
 
   window.getCurrentPages = function () {
     return pageStack.slice();
+  };
+
+  var previewApp = null;
+  window.App = function (definition) {
+    previewApp = makeMiniProgramInstance(definition, 'app');
+    previewApp.globalData = Object.assign({}, definition && definition.globalData || {});
+    if (typeof previewApp.onLaunch === 'function') previewApp.onLaunch(launchOptions());
+    if (typeof previewApp.onShow === 'function') previewApp.onShow(launchOptions());
+    return previewApp;
+  };
+
+  window.getApp = function () {
+    if (!previewApp) {
+      previewApp = { globalData: {}, __previewType: 'app' };
+    }
+    return previewApp;
+  };
+
+  window.Page = function (definition) {
+    var page = makeMiniProgramInstance(definition, 'page');
+    page.route = currentPath();
+    page.options = launchOptions().query;
+    pageStack.push(page);
+    if (pageStack.length > 10) pageStack.shift();
+    if (typeof page.onLoad === 'function') page.onLoad(page.options);
+    if (typeof page.onShow === 'function') page.onShow();
+    if (typeof page.onReady === 'function') window.setTimeout(function () { page.onReady(); }, 0);
+    return page;
+  };
+
+  window.Component = function (definition) {
+    var component = makeMiniProgramInstance(definition, 'component');
+    component.properties = Object.assign({}, definition && definition.properties || {});
+    component.methods = Object.assign({}, definition && definition.methods || {});
+    if (typeof component.created === 'function') component.created();
+    if (typeof component.attached === 'function') component.attached();
+    if (typeof component.ready === 'function') window.setTimeout(function () { component.ready(); }, 0);
+    return component;
   };
 })();

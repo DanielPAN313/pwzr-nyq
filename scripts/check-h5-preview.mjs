@@ -70,6 +70,11 @@ requireIncludes("miniapp-bridge.js", [
   "scanCode: function",
   "getAccountInfoSync",
   "setClipboardData",
+  "window.App = function",
+  "window.Page = function",
+  "window.Component = function",
+  "window.getApp = function",
+  "setData = function",
 ]);
 
 const appJson = parseJson("miniprogram/app.json");

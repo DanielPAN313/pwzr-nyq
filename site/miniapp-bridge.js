@@ -223,6 +223,37 @@
     return Object.assign({ errMsg: name + ':ok' }, extra || {});
   }
 
+  function makePreviewTask() {
+    var headerCallbacks = [];
+    var task = {
+      __aborted: false,
+      abort: function () {
+        task.__aborted = true;
+        if (task.__abortController) task.__abortController.abort();
+      },
+      onHeadersReceived: function (callback) {
+        if (typeof callback === 'function' && headerCallbacks.indexOf(callback) < 0) {
+          headerCallbacks.push(callback);
+        }
+      },
+      offHeadersReceived: function (callback) {
+        if (!callback) {
+          headerCallbacks = [];
+          return;
+        }
+        headerCallbacks = headerCallbacks.filter(function (item) {
+          return item !== callback;
+        });
+      },
+      __emitHeaders: function (payload) {
+        headerCallbacks.slice().forEach(function (callback) {
+          callback(payload);
+        });
+      },
+    };
+    return task;
+  }
+
   function readMockScanResult() {
     var url = new URL(window.location.href);
     return url.searchParams.get('scan')
@@ -484,9 +515,22 @@
         ? undefined
         : (typeof opts.data === 'string' ? opts.data : JSON.stringify(opts.data));
       if (body && !headers['Content-Type']) headers['Content-Type'] = 'application/json';
+      var requestTask = makePreviewTask();
+      var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      requestTask.__abortController = controller;
 
-      fetch(opts.url, { method: method, headers: headers, body: body })
+      fetch(opts.url, {
+        method: method,
+        headers: headers,
+        body: body,
+        signal: controller ? controller.signal : undefined,
+      })
         .then(function (response) {
+          requestTask.__emitHeaders({
+            header: {},
+            statusCode: response.status,
+            errMsg: 'request:ok',
+          });
           return response.text().then(function (raw) {
             var data = raw;
             try {
@@ -501,15 +545,23 @@
           });
         })
         .then(function (result) {
+          if (requestTask.__aborted) return;
           if (result.statusCode >= 200 && result.statusCode < 300) ok(opts.success, result);
           else fail(opts.fail, result);
           complete(opts.complete, result);
         })
         .catch(function (error) {
+          if (requestTask.__aborted) {
+            var abortResult = { errMsg: 'request:fail abort' };
+            fail(opts.fail, abortResult);
+            complete(opts.complete, abortResult);
+            return;
+          }
           var result = { errMsg: error && error.message ? error.message : 'request:fail' };
           fail(opts.fail, result);
           complete(opts.complete, result);
         });
+      return requestTask;
     },
 
     showToast: function (options) {

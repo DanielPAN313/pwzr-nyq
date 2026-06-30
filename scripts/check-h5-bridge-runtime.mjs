@@ -113,6 +113,15 @@ function makeContext(url = "http://localhost:4174/pages/games/games?scene=1001&f
       this.pageYOffset = Number(options?.top || 0);
       this.lastScrollTo = options;
     },
+    async fetch() {
+      return {
+        ok: true,
+        status: 200,
+        async text() {
+          return JSON.stringify({ ok: true, preview: true });
+        },
+      };
+    },
     PopStateEvent: class PopStateEvent {
       constructor(type, init) {
         this.type = type;
@@ -184,6 +193,24 @@ context.wx.stopPullDownRefresh({
   },
 });
 assert(stopPullOk, "wx.stopPullDownRefresh mock did not succeed");
+
+let requestSuccess = false;
+let requestHeaders = false;
+const requestTask = context.wx.request({
+  url: "/api/smoke",
+  success(result) {
+    requestSuccess = result.statusCode === 200 && result.data.preview === true;
+  },
+});
+assert(typeof requestTask.abort === "function", "wx.request should return RequestTask.abort");
+assert(typeof requestTask.onHeadersReceived === "function", "wx.request should return RequestTask.onHeadersReceived");
+assert(typeof requestTask.offHeadersReceived === "function", "wx.request should return RequestTask.offHeadersReceived");
+requestTask.onHeadersReceived((result) => {
+  requestHeaders = result.statusCode === 200;
+});
+await new Promise((resolve) => setTimeout(resolve, 0));
+assert(requestSuccess, "wx.request mock did not call success");
+assert(requestHeaders, "wx.request RequestTask did not emit headers");
 
 let switched = false;
 context.wx.switchTab({

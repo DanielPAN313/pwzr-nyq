@@ -47,6 +47,76 @@
   };
 
   var app = document.getElementById('app');
+  var ROUTABLE_USER_VIEWS = [
+    'home',
+    'venues',
+    'games',
+    'messages',
+    'me',
+    'orders',
+    'credit',
+    'my-games',
+    'create',
+    'teams',
+    'ai',
+    'data',
+    'favorites',
+    'demo',
+  ];
+
+  function normalizeRouteView(view) {
+    var next = String(view || '').trim().toLowerCase();
+    return ROUTABLE_USER_VIEWS.indexOf(next) >= 0 ? next : 'home';
+  }
+
+  function readPreviewRoute() {
+    try {
+      var url = new URL(window.location.href);
+      var fromQuery = url.searchParams.get('page') || url.searchParams.get('view');
+      var fromHash = String(url.hash || '').replace(/^#\/?/, '');
+      return normalizeRouteView(fromQuery || fromHash || 'home');
+    } catch (error) {
+      return 'home';
+    }
+  }
+
+  function routeLabel(view) {
+    return {
+      home: 'Home',
+      venues: 'Venues',
+      games: 'Games',
+      messages: 'Messages',
+      me: 'Me',
+      orders: 'Orders',
+      credit: 'Credit',
+      'my-games': 'My Games',
+      create: 'Create',
+      teams: 'Teams',
+      ai: 'AI Clips',
+      data: 'Data',
+      favorites: 'Favorites',
+      demo: 'Demo Flow',
+    }[view] || 'Home';
+  }
+
+  function syncPreviewRoute(options) {
+    if (!window.history || !window.history.replaceState) return;
+    try {
+      var url = new URL(window.location.href);
+      var view = normalizeRouteView(state.userView);
+      url.searchParams.set('page', view);
+      url.searchParams.delete('view');
+      url.hash = '';
+      var nextUrl = url.pathname + url.search;
+      var currentUrl = window.location.pathname + window.location.search + window.location.hash;
+      document.title = 'NYQ Mini Program Preview - ' + routeLabel(view);
+      if (nextUrl === currentUrl) return;
+      var method = options && options.replace ? 'replaceState' : 'pushState';
+      window.history[method]({ page: view }, '', nextUrl);
+    } catch (error) {}
+  }
+
+  state.userView = readPreviewRoute();
 
   function session() {
     return window.AnotherMeLocalAuth && window.AnotherMeLocalAuth.getSession
@@ -640,7 +710,7 @@
   }
 
   function goToUserView(view, options) {
-    var nextView = view || 'home';
+    var nextView = normalizeRouteView(view || 'home');
     var shouldRemember = !(options && options.replace);
     var before = currentNavSnapshot();
     if (shouldRemember && before.userView !== nextView) pushNavSnapshot(before);
@@ -654,6 +724,7 @@
     }
     if (nextView === 'venues') track('venue_list_view');
     if (nextView === 'games') track('game_list_view');
+    syncPreviewRoute({ replace: options && options.replaceUrl });
   }
 
   function searchTargetView(keyword) {
@@ -775,6 +846,7 @@
       state.venueSearch = '';
     }
     clearOverlays();
+    syncPreviewRoute({ replace: true });
     render();
   }
 
@@ -2467,6 +2539,7 @@
 
   function render() {
     state.mode = 'user';
+    syncPreviewRoute({ replace: true });
     var content = userMode();
     app.innerHTML = topbar() + returnHomeFab() + '<main class="page">' + content + '</main>' + searchOverlay() + mobileMoreSheet() + (state.friendAddOpen ? friendAddSheet() : '') + (state.toast ? '<div class="toast">' + h(state.toast) + '</div>' : '');
     bindEvents();
@@ -2575,7 +2648,7 @@
         var tabbar = button.closest('.mobile-tabbar');
         if (tabbar && previewMobileTabMove(tabbar, targetView)) return;
         var fromPrimaryTab = Boolean(tabbar) || button.hasAttribute('data-user-view');
-        goToUserView(targetView, fromPrimaryTab ? { replace: true } : null);
+        goToUserView(targetView, fromPrimaryTab ? { replace: true, replaceUrl: true } : null);
         render();
       });
       button.addEventListener('keydown', function (event) {
@@ -2594,7 +2667,7 @@
 
     app.querySelectorAll('[data-return-home]').forEach(function (button) {
       button.addEventListener('click', async function () {
-        goToUserView('home', { replace: true });
+        goToUserView('home', { replace: true, replaceUrl: true });
         render();
         try {
           await loadBootstrap();
@@ -3340,12 +3413,24 @@
 
   async function boot() {
     try {
+      state.userView = readPreviewRoute();
       await loadBootstrap();
       render();
     } catch (error) {
       app.innerHTML = '<div class="boot-screen"><div class="boot-mark">NYQ</div><p>' + h(error.message) + '</p></div>';
     }
   }
+
+  window.addEventListener('popstate', function () {
+    var nextView = readPreviewRoute();
+    if (nextView === state.userView && !hasOpenOverlay()) return;
+    rememberMobileTabMove(nextView);
+    state.mode = 'user';
+    state.userView = nextView;
+    state.navStack = [];
+    clearOverlays();
+    render();
+  });
 
   window.addEventListener('another-me-auth-change', boot);
   boot();

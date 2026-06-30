@@ -44,8 +44,29 @@ function walk(dir, out = []) {
 }
 
 const appJson = parseJson(path.join(miniRoot, "app.json"));
-parseJson(path.join(miniRoot, "project.config.json"));
+const rootProjectConfig = parseJson(path.join(root, "project.config.json"));
+const miniProjectConfig = parseJson(path.join(miniRoot, "project.config.json"));
 parseJson(path.join(miniRoot, "sitemap.json"));
+
+function validateProjectConfig(config, file, expectedRoots) {
+  if (!config) return;
+  const label = rel(file);
+  if (config.compileType !== "miniprogram") {
+    errors.push(`${label} compileType must be "miniprogram".`);
+  }
+  if (config.appid !== "touristappid") {
+    errors.push(`${label} appid should stay "touristappid" until a real Mini Program AppID is registered.`);
+  }
+  if (!expectedRoots.includes(config.miniprogramRoot)) {
+    errors.push(`${label} miniprogramRoot must be one of: ${expectedRoots.join(", ")}.`);
+  }
+  if (config.setting?.urlCheck !== false) {
+    errors.push(`${label} setting.urlCheck must be false for local localhost API development before registration.`);
+  }
+}
+
+validateProjectConfig(rootProjectConfig, path.join(root, "project.config.json"), ["miniprogram/", "miniprogram"]);
+validateProjectConfig(miniProjectConfig, path.join(miniRoot, "project.config.json"), ["./", "."]);
 
 if (appJson) {
   if (!Array.isArray(appJson.pages) || appJson.pages.length === 0) {

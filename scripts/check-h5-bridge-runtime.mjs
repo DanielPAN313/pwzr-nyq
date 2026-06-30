@@ -480,7 +480,8 @@ context.wx.chooseMedia({
 });
 assert(mediaType === "video", "wx.chooseMedia should return video type");
 let uploadOk = false;
-context.wx.uploadFile({
+let uploadProgress = false;
+const uploadTask = context.wx.uploadFile({
   url: "/api/upload",
   filePath: imagePath,
   name: "file",
@@ -488,15 +489,30 @@ context.wx.uploadFile({
     uploadOk = result.statusCode === 200 && JSON.parse(result.data).preview === true;
   },
 });
+assert(typeof uploadTask.abort === "function", "wx.uploadFile should return UploadTask.abort");
+assert(typeof uploadTask.onProgressUpdate === "function", "wx.uploadFile should return UploadTask.onProgressUpdate");
+uploadTask.onProgressUpdate((result) => {
+  uploadProgress = result.progress === 100;
+});
+for (const timer of timers.splice(0)) timer();
 assert(uploadOk, "wx.uploadFile mock did not return preview result");
+assert(uploadProgress, "wx.uploadFile UploadTask did not emit progress");
 let downloadPath = "";
-context.wx.downloadFile({
+let downloadProgress = false;
+const downloadTask = context.wx.downloadFile({
   url: "https://example.com/demo.jpg",
   success(result) {
     downloadPath = result.tempFilePath;
   },
 });
+assert(typeof downloadTask.abort === "function", "wx.downloadFile should return DownloadTask.abort");
+assert(typeof downloadTask.onProgressUpdate === "function", "wx.downloadFile should return DownloadTask.onProgressUpdate");
+downloadTask.onProgressUpdate((result) => {
+  downloadProgress = result.progress === 100;
+});
+for (const timer of timers.splice(0)) timer();
 assert(downloadPath === "https://example.com/demo.jpg", "wx.downloadFile temp path mismatch");
+assert(downloadProgress, "wx.downloadFile DownloadTask did not emit progress");
 let latitude = 0;
 context.wx.getLocation({
   success(result) {

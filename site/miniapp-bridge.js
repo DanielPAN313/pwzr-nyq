@@ -225,6 +225,7 @@
 
   function makePreviewTask() {
     var headerCallbacks = [];
+    var progressCallbacks = [];
     var task = {
       __aborted: false,
       abort: function () {
@@ -245,8 +246,27 @@
           return item !== callback;
         });
       },
+      onProgressUpdate: function (callback) {
+        if (typeof callback === 'function' && progressCallbacks.indexOf(callback) < 0) {
+          progressCallbacks.push(callback);
+        }
+      },
+      offProgressUpdate: function (callback) {
+        if (!callback) {
+          progressCallbacks = [];
+          return;
+        }
+        progressCallbacks = progressCallbacks.filter(function (item) {
+          return item !== callback;
+        });
+      },
       __emitHeaders: function (payload) {
         headerCallbacks.slice().forEach(function (callback) {
+          callback(payload);
+        });
+      },
+      __emitProgress: function (payload) {
+        progressCallbacks.slice().forEach(function (callback) {
           callback(payload);
         });
       },
@@ -1055,6 +1075,7 @@
 
     uploadFile: function (options) {
       var opts = options || {};
+      var task = makePreviewTask();
       var result = bridgeResult('uploadFile', {
         statusCode: 200,
         data: JSON.stringify({
@@ -1066,16 +1087,35 @@
       });
       ok(opts.success, result);
       complete(opts.complete, result);
+      window.setTimeout(function () {
+        if (task.__aborted) return;
+        task.__emitProgress({
+          progress: 100,
+          totalBytesSent: 1,
+          totalBytesExpectedToSend: 1,
+        });
+      }, 0);
+      return task;
     },
 
     downloadFile: function (options) {
       var opts = options || {};
+      var task = makePreviewTask();
       var result = bridgeResult('downloadFile', {
         statusCode: 200,
         tempFilePath: opts.url || 'h5-preview://temp/download-demo.bin',
       });
       ok(opts.success, result);
       complete(opts.complete, result);
+      window.setTimeout(function () {
+        if (task.__aborted) return;
+        task.__emitProgress({
+          progress: 100,
+          totalBytesWritten: 1,
+          totalBytesExpectedToWrite: 1,
+        });
+      }, 0);
+      return task;
     },
 
     previewImage: function (options) {

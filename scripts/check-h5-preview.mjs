@@ -73,6 +73,8 @@ requireIncludes("miniapp-bridge.js", [
   "request: function",
   "onHeadersReceived",
   "offHeadersReceived",
+  "onProgressUpdate",
+  "offProgressUpdate",
   "abort: function",
   "showLoading",
   "hideLoading",

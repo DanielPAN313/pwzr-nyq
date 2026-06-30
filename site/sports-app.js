@@ -90,8 +90,9 @@
     try {
       var url = new URL(window.location.href);
       var fromQuery = url.searchParams.get('page') || url.searchParams.get('view') || url.searchParams.get('path');
+      var fromPathname = url.pathname.replace(/^\/+/, '');
       var fromHash = String(url.hash || '').replace(/^#\/?/, '');
-      return normalizeRouteView(fromQuery || fromHash || 'home');
+      return normalizeRouteView(fromQuery || fromPathname || fromHash || 'home');
     } catch (error) {
       return 'home';
     }

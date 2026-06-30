@@ -62,13 +62,17 @@
 
   function currentView() {
     var url = new URL(window.location.href);
-    return normalizePage(url.searchParams.get('page') || url.searchParams.get('path') || 'home');
+    var pathname = url.pathname.replace(/^\/+/, '');
+    return normalizePage(url.searchParams.get('page') || url.searchParams.get('path') || pathname || 'home');
   }
 
   function currentPath() {
     var url = new URL(window.location.href);
     var path = String(url.searchParams.get('path') || '').replace(/^\/+/, '');
-    return ROUTE_PAGES[path] ? path : viewToPath(url.searchParams.get('page') || currentView());
+    var pathname = url.pathname.replace(/^\/+/, '');
+    if (ROUTE_PAGES[path]) return path;
+    if (ROUTE_PAGES[pathname]) return pathname;
+    return viewToPath(url.searchParams.get('page') || currentView());
   }
 
   function syncPageStack(target, query, replace) {

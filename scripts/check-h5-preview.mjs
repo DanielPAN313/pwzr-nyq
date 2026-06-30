@@ -51,6 +51,7 @@ requireIncludes("sports-app.js", [
   "ROUTABLE_USER_VIEWS",
   "ROUTE_PATH_VIEWS",
   "readPreviewRoute",
+  "url.pathname.replace",
   "syncPreviewRoute",
   "window.addEventListener('popstate'",
 ]);
@@ -62,6 +63,7 @@ requireIncludes("miniapp-bridge.js", [
   "switchTab: function",
   "getLaunchOptionsSync",
   "getEnterOptionsSync",
+  "ROUTE_PAGES[pathname]",
   "window.getCurrentPages",
   "getSystemInfoSync",
 ]);

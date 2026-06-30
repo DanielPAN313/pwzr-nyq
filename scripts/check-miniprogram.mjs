@@ -70,11 +70,29 @@ if (appJson) {
 }
 
 const forbiddenBrowserApis = /\b(window|document|localStorage|sessionStorage|fetch|XMLHttpRequest|navigator)\b/;
+const mojibakeFragments = [
+  "瀹佺害",
+  "棣栭",
+  "璁㈠",
+  "鐞冨",
+  "娑堟伅",
+  "鎴戠",
+  "璇锋",
+  "澶辫触",
+  "鍔犺浇",
+  "棰勮",
+];
+
 for (const file of walk(miniRoot)) {
-  if (!/\.(js|wxml|wxss)$/.test(file)) continue;
+  if (!/\.(js|json|wxml|wxss)$/.test(file)) continue;
   const source = readUtf8(file);
   if (source.includes("\uFFFD")) {
     errors.push(`Replacement character found in ${rel(file)}; check UTF-8 encoding.`);
+  }
+  for (const fragment of mojibakeFragments) {
+    if (source.includes(fragment)) {
+      errors.push(`Possible mojibake text "${fragment}" found in ${rel(file)}; check UTF-8 Chinese text.`);
+    }
   }
   if (file.endsWith(".js") && forbiddenBrowserApis.test(source)) {
     errors.push(`Browser-only API found in ${rel(file)}; use WeChat Mini Program wx.* APIs.`);

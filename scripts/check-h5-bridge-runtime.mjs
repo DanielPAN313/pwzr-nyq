@@ -212,6 +212,35 @@ await new Promise((resolve) => setTimeout(resolve, 0));
 assert(requestSuccess, "wx.request mock did not call success");
 assert(requestHeaders, "wx.request RequestTask did not emit headers");
 
+let navigateEventChannel = null;
+let openerReceived = false;
+let openedReceived = false;
+context.wx.navigateTo({
+  url: "pages/orders/orders?from=event-channel",
+  events: {
+    acceptDataFromOpenedPage(data) {
+      openerReceived = data.ok === true;
+    },
+  },
+  success(result) {
+    navigateEventChannel = result.eventChannel;
+  },
+});
+assert(navigateEventChannel && typeof navigateEventChannel.emit === "function", "wx.navigateTo should return eventChannel");
+const openedPage = context.Page({
+  onLoad() {
+    const eventChannel = this.getOpenerEventChannel();
+    eventChannel.on("acceptDataFromOpenerPage", (data) => {
+      openedReceived = data.from === "opener";
+    });
+    eventChannel.emit("acceptDataFromOpenedPage", { ok: true });
+  },
+});
+assert(typeof openedPage.getOpenerEventChannel === "function", "Page should expose getOpenerEventChannel");
+navigateEventChannel.emit("acceptDataFromOpenerPage", { from: "opener" });
+assert(openerReceived, "EventChannel did not deliver opened page event to opener");
+assert(openedReceived, "EventChannel did not deliver opener event to opened page");
+
 let switched = false;
 context.wx.switchTab({
   url: "pages/me/me",

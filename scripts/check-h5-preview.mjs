@@ -86,6 +86,8 @@ requireIncludes("miniapp-bridge.js", [
   "getShareInfo",
   "setNavigationBarTitle",
   "setNavigationBarColor",
+  "eventChannel",
+  "getOpenerEventChannel",
   "reLaunch: function",
   "switchTab: function",
   "showTabBar",

@@ -28,6 +28,7 @@
 
   var pageStack = [];
   var networkStatusCallbacks = [];
+  var pendingEventChannel = null;
   var tabBarState = {
     visible: true,
     style: {},
@@ -272,6 +273,54 @@
       },
     };
     return task;
+  }
+
+  function makeEventChannel(events) {
+    var callbacks = {};
+
+    function on(name, callback, once) {
+      if (typeof callback !== 'function') return;
+      if (!callbacks[name]) callbacks[name] = [];
+      callbacks[name].push({ callback: callback, once: !!once });
+    }
+
+    var channel = {
+      emit: function (name) {
+        var args = Array.prototype.slice.call(arguments, 1);
+        var handlers = (callbacks[name] || []).slice();
+        handlers.forEach(function (item) {
+          item.callback.apply(null, args);
+        });
+        callbacks[name] = (callbacks[name] || []).filter(function (item) {
+          return !item.once;
+        });
+      },
+      on: function (name, callback) {
+        on(name, callback, false);
+      },
+      once: function (name, callback) {
+        on(name, callback, true);
+      },
+      off: function (name, callback) {
+        if (!name) {
+          callbacks = {};
+          return;
+        }
+        if (!callback) {
+          callbacks[name] = [];
+          return;
+        }
+        callbacks[name] = (callbacks[name] || []).filter(function (item) {
+          return item.callback !== callback;
+        });
+      },
+    };
+
+    Object.keys(events || {}).forEach(function (name) {
+      channel.on(name, events[name]);
+    });
+
+    return channel;
   }
 
   function readMockScanResult() {
@@ -726,9 +775,13 @@
     },
 
     navigateTo: function (options) {
-      routeTo(options && options.url, false, 'navigateTo');
-      ok(options && options.success, { errMsg: 'navigateTo:ok' });
-      complete(options && options.complete, { errMsg: 'navigateTo:ok' });
+      var opts = options || {};
+      var eventChannel = makeEventChannel(opts.events);
+      pendingEventChannel = eventChannel;
+      routeTo(opts.url, false, 'navigateTo');
+      var result = { errMsg: 'navigateTo:ok', eventChannel: eventChannel };
+      ok(opts.success, result);
+      complete(opts.complete, result);
     },
 
     redirectTo: function (options) {
@@ -1254,6 +1307,11 @@
     var page = makeMiniProgramInstance(definition, 'page');
     page.route = currentPath();
     page.options = launchOptions().query;
+    page.__eventChannel = pendingEventChannel;
+    pendingEventChannel = null;
+    page.getOpenerEventChannel = function () {
+      return page.__eventChannel || makeEventChannel();
+    };
     if (pageStack.length && pageStack[pageStack.length - 1].__previewType !== 'page') {
       pageStack[pageStack.length - 1] = page;
     } else {

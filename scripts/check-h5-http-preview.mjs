@@ -1,9 +1,11 @@
 import { spawn } from "node:child_process";
+import fs from "node:fs";
 import net from "node:net";
 import path from "node:path";
 
 const root = process.cwd();
 const serverScript = path.join(root, "scripts", "serve-local-mirror.mjs");
+const appJson = JSON.parse(fs.readFileSync(path.join(root, "miniprogram", "app.json"), "utf8"));
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -69,13 +71,15 @@ child.stderr.on("data", (chunk) => stderr.push(String(chunk)));
 try {
   await waitForServer(baseUrl, child, stderr);
 
-  const appPaths = [
+  const miniProgramPaths = Array.isArray(appJson.pages) ? appJson.pages : [];
+  assert(miniProgramPaths.length > 0, "miniprogram/app.json should register pages for HTTP preview checks.");
+  const appPaths = Array.from(new Set([
     "/",
+    ...miniProgramPaths.map((pagePath) => `/?path=${pagePath}`),
+    ...miniProgramPaths.map((pagePath) => `/${pagePath}`),
     "/?page=games",
-    "/?path=pages/games/games",
-    "/pages/games/games",
     "/pages/orders/orders?scan=NYQ-CHECKIN-DEMO",
-  ];
+  ]));
 
   for (const pathname of appPaths) {
     const { contentType, body } = await readText(baseUrl, pathname);

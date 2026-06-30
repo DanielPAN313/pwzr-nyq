@@ -38,6 +38,7 @@ function requireIncludes(file, snippets) {
 }
 
 mustExistRoot("scripts/check-h5-bridge-runtime.mjs");
+mustExistRoot("scripts/check-h5-bridge-coverage.mjs");
 
 requireIncludes("index.html", [
   '<body class="mobile-share">',

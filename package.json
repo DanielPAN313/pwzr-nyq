@@ -13,7 +13,8 @@
     "check:miniprogram": "node scripts/check-miniprogram.mjs",
     "check:h5-preview": "node scripts/check-h5-preview.mjs",
     "check:h5-bridge": "node scripts/check-h5-bridge-runtime.mjs",
-    "check": "npm run check:miniprogram && npm run check:h5-preview && npm run check:h5-bridge"
+    "check:h5-bridge-coverage": "node scripts/check-h5-bridge-coverage.mjs",
+    "check": "npm run check:miniprogram && npm run check:h5-preview && npm run check:h5-bridge && npm run check:h5-bridge-coverage"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",

@@ -260,6 +260,30 @@ context.wx.downloadFile({
   },
 });
 assert(downloadPath === "https://example.com/demo.jpg", "wx.downloadFile temp path mismatch");
+let latitude = 0;
+context.wx.getLocation({
+  success(result) {
+    latitude = result.latitude;
+  },
+});
+assert(latitude > 31 && latitude < 32, "wx.getLocation should return Nanjing preview latitude");
+let chosenLocation = "";
+context.wx.chooseLocation({
+  success(result) {
+    chosenLocation = result.name;
+  },
+});
+assert(chosenLocation === "南京高校样板区", "wx.chooseLocation name mismatch");
+let openLocationOk = false;
+context.wx.openLocation({
+  latitude,
+  longitude: 118.8586,
+  name: "南京高校样板区",
+  success(result) {
+    openLocationOk = result.errMsg === "openLocation:ok";
+  },
+});
+assert(openLocationOk, "wx.openLocation mock did not succeed");
 assert(context.wx.getSystemInfoSync().windowWidth === 390, "wx.getSystemInfoSync should report preview width");
 assert(context.wx.getWindowInfo().windowWidth === 390, "wx.getWindowInfo should report preview width");
 assert(context.wx.getDeviceInfo().platform === "h5-preview", "wx.getDeviceInfo platform mismatch");

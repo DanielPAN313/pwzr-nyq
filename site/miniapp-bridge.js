@@ -248,6 +248,20 @@
     };
   }
 
+  function previewLocation() {
+    return {
+      latitude: 31.9539,
+      longitude: 118.8586,
+      speed: -1,
+      accuracy: 30,
+      altitude: 0,
+      verticalAccuracy: 0,
+      horizontalAccuracy: 30,
+      name: '南京高校样板区',
+      address: '南京市江宁区',
+    };
+  }
+
   window.wx = {
     __isH5MiniProgramBridge: true,
 
@@ -586,6 +600,30 @@
       });
       ok(options && options.success, result);
       complete(options && options.complete, result);
+    },
+
+    getLocation: function (options) {
+      var result = bridgeResult('getLocation', previewLocation());
+      ok(options && options.success, result);
+      complete(options && options.complete, result);
+    },
+
+    chooseLocation: function (options) {
+      var result = bridgeResult('chooseLocation', previewLocation());
+      ok(options && options.success, result);
+      complete(options && options.complete, result);
+    },
+
+    openLocation: function (options) {
+      var opts = options || {};
+      var result = bridgeResult('openLocation', {
+        latitude: opts.latitude || previewLocation().latitude,
+        longitude: opts.longitude || previewLocation().longitude,
+        name: opts.name || previewLocation().name,
+        address: opts.address || previewLocation().address,
+      });
+      ok(opts.success, result);
+      complete(opts.complete, result);
     },
 
     vibrateShort: function (options) {

@@ -395,3 +395,208 @@ body.mobile-share .topbar {
   body.mobile-share .home-action-dock {
     display: none !important;
   }
+
+/* Final lock: keep localhost H5 preview on the same 390px phone layout at
+   every browser zoom level and window width. */
+html {
+  min-width: 390px !important;
+  overflow-x: auto !important;
+}
+
+body.mobile-share {
+  width: 100% !important;
+  min-width: 390px !important;
+  overflow-x: auto !important;
+}
+
+body.mobile-share .app-shell {
+  width: 390px !important;
+  min-width: 390px !important;
+  max-width: 390px !important;
+  flex: 0 0 390px !important;
+}
+
+body.mobile-share .page {
+  width: 390px !important;
+  min-width: 390px !important;
+  max-width: 390px !important;
+  box-sizing: border-box !important;
+}
+
+body.mobile-share .mobile-tabbar {
+  width: 370px !important;
+  min-width: 370px !important;
+  max-width: 370px !important;
+}
+
+body.mobile-share .layout-2,
+body.mobile-share .venue-shop-layout,
+body.mobile-share .cards-grid,
+body.mobile-share .games-list,
+body.mobile-share .home-game-list,
+body.mobile-share .home-venue-list,
+body.mobile-share .compact-list,
+body.mobile-share .message-list {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  gap: 10px !important;
+  box-sizing: border-box !important;
+}
+
+body.mobile-share .venue-shop-layout {
+  padding: 0 !important;
+}
+
+body.mobile-share .venue-shop-layout > .panel-title:not(.mini):not(.modal-title) {
+  padding: 0 0 8px !important;
+}
+
+body.mobile-share .venue-shop-layout > .venue-filter-panel {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 10px !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 12px !important;
+  box-sizing: border-box !important;
+}
+
+body.mobile-share .venue-shop-layout .filter-group {
+  display: grid !important;
+  grid-template-columns: 34px minmax(0, 1fr) !important;
+  gap: 8px !important;
+  align-items: start !important;
+}
+
+body.mobile-share .venue-shop-layout .filter-row,
+body.mobile-share .sort-strip {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+}
+
+body.mobile-share .venue-shop-layout .pill-button,
+body.mobile-share .venue-shop-layout > .sort-strip button,
+body.mobile-share .sort-strip button {
+  flex: 0 1 auto !important;
+  min-height: 34px !important;
+  max-width: 100% !important;
+  padding: 0 11px !important;
+  border-radius: 999px !important;
+  font-size: 11.5px !important;
+  white-space: nowrap !important;
+}
+
+body.mobile-share .venue-book-card,
+body.mobile-share .item-card.venue-book-card {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  border-radius: 14px !important;
+}
+
+body.mobile-share .venue-book-card .venue-cover-wrap,
+body.mobile-share .venue-cover-wrap {
+  width: 100% !important;
+  height: 116px !important;
+  max-height: 116px !important;
+}
+
+body.mobile-share .venue-book-card .venue-cover-wrap img,
+body.mobile-share .venue-cover-wrap img {
+  width: 100% !important;
+  height: 116px !important;
+  object-fit: cover !important;
+}
+
+body.mobile-share .venue-book-card .item-body {
+  display: grid !important;
+  gap: 8px !important;
+  padding: 11px 12px 14px !important;
+}
+
+body.mobile-share .game-card {
+  display: grid !important;
+  grid-template-columns: 52px minmax(0, 1fr) !important;
+  align-items: start !important;
+  gap: 10px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  padding: 12px !important;
+  box-sizing: border-box !important;
+  border-radius: 14px !important;
+}
+
+body.mobile-share .game-card .date-chip,
+body.mobile-share .game-card > .date-chip {
+  width: 52px !important;
+  min-width: 52px !important;
+  padding: 8px 4px !important;
+  box-sizing: border-box !important;
+}
+
+body.mobile-share .game-card .date-chip strong {
+  font-size: 20px !important;
+}
+
+body.mobile-share .game-card > div:nth-child(2) {
+  min-width: 0 !important;
+}
+
+body.mobile-share .game-card h4 {
+  max-width: 100% !important;
+  margin: 0 0 6px !important;
+  font-size: 16px !important;
+  line-height: 1.25 !important;
+  overflow-wrap: anywhere !important;
+}
+
+body.mobile-share .game-card p,
+body.mobile-share .game-card .item-meta,
+body.mobile-share .game-card .player-chips {
+  max-width: 100% !important;
+  overflow-wrap: anywhere !important;
+}
+
+body.mobile-share .game-card-actions,
+body.mobile-share .game-card > div:last-child {
+  grid-column: 1 / -1 !important;
+  display: grid !important;
+  grid-template-columns: 76px minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin-top: 2px !important;
+}
+
+body.mobile-share .game-card-actions .price,
+body.mobile-share .game-card .price {
+  min-width: 0 !important;
+  font-size: 16px !important;
+  line-height: 1.1 !important;
+  text-align: left !important;
+  white-space: normal !important;
+}
+
+body.mobile-share .game-card-actions .primary-btn,
+body.mobile-share .game-card-actions .secondary-btn,
+body.mobile-share .game-card .primary-btn,
+body.mobile-share .game-card .secondary-btn {
+  min-width: 0 !important;
+  min-height: 36px !important;
+  padding: 0 8px !important;
+  border-radius: 10px !important;
+  font-size: 12px !important;
+  white-space: nowrap !important;
+}

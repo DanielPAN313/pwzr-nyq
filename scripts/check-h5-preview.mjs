@@ -9,6 +9,19 @@ function read(file) {
   return fs.readFileSync(path.join(siteRoot, file), "utf8");
 }
 
+function readRoot(file) {
+  return fs.readFileSync(path.join(root, file), "utf8");
+}
+
+function parseJson(file) {
+  try {
+    return JSON.parse(readRoot(file));
+  } catch (error) {
+    errors.push(`${file} is not valid JSON: ${error.message}`);
+    return null;
+  }
+}
+
 function requireIncludes(file, snippets) {
   const source = read(file);
   for (const snippet of snippets) {
@@ -52,6 +65,31 @@ requireIncludes("miniapp-bridge.js", [
   "window.getCurrentPages",
   "getSystemInfoSync",
 ]);
+
+const appJson = parseJson("miniprogram/app.json");
+if (appJson) {
+  const miniPages = Array.isArray(appJson.pages) ? appJson.pages : [];
+  const tabPages = Array.isArray(appJson.tabBar?.list)
+    ? appJson.tabBar.list.map((item) => item.pagePath).filter(Boolean)
+    : [];
+  const bridgeSource = read("miniapp-bridge.js");
+  const sportsSource = read("sports-app.js");
+
+  for (const pagePath of miniPages) {
+    if (!bridgeSource.includes(`'${pagePath}'`) && !bridgeSource.includes(`"${pagePath}"`)) {
+      errors.push(`miniapp-bridge.js route map is missing miniprogram page: ${pagePath}`);
+    }
+    if (!sportsSource.includes(`'${pagePath}'`) && !sportsSource.includes(`"${pagePath}"`)) {
+      errors.push(`sports-app.js ROUTE_PATH_VIEWS is missing miniprogram page: ${pagePath}`);
+    }
+  }
+
+  for (const pagePath of tabPages) {
+    if (!bridgeSource.includes(`'${pagePath}'`) && !bridgeSource.includes(`"${pagePath}"`)) {
+      errors.push(`miniapp-bridge.js TAB_PAGES is missing tabBar page: ${pagePath}`);
+    }
+  }
+}
 
 if (errors.length > 0) {
   console.error("H5 Mini Program preview check failed:");

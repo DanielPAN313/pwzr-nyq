@@ -105,6 +105,22 @@ if (appJson) {
     errors.push("miniprogram/app.json must register at least one page.");
   }
 
+  if (!appJson.window || typeof appJson.window !== "object") {
+    errors.push("miniprogram/app.json window config is required.");
+  } else {
+    if (typeof appJson.window.navigationBarTitleText !== "string" || !appJson.window.navigationBarTitleText.trim()) {
+      errors.push("miniprogram/app.json window.navigationBarTitleText is required.");
+    }
+    if (!["black", "white"].includes(appJson.window.navigationBarTextStyle)) {
+      errors.push('miniprogram/app.json window.navigationBarTextStyle must be "black" or "white".');
+    }
+    for (const key of ["navigationBarBackgroundColor", "backgroundColor"]) {
+      if (typeof appJson.window[key] !== "string" || !/^#[0-9a-fA-F]{6}$/.test(appJson.window[key])) {
+        errors.push(`miniprogram/app.json window.${key} must be a 6-digit hex color.`);
+      }
+    }
+  }
+
   const registeredPages = new Set(appJson.pages || []);
 
   for (const page of registeredPages) {

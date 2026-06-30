@@ -53,6 +53,23 @@
     if (typeof callback === 'function') callback(payload);
   }
 
+  function callLifecycle(page, name, arg) {
+    if (page && typeof page[name] === 'function') page[name](arg);
+  }
+
+  function currentPageInstance() {
+    for (var index = pageStack.length - 1; index >= 0; index -= 1) {
+      if (pageStack[index] && pageStack[index].__previewType === 'page') return pageStack[index];
+    }
+    return null;
+  }
+
+  function unloadPageInstances(pages) {
+    (pages || []).forEach(function (page) {
+      callLifecycle(page, 'onUnload');
+    });
+  }
+
   function normalizePage(url) {
     var clean = String(url || '').split('?')[0].replace(/^\/+/, '');
     return ROUTE_PAGES[clean] || ROUTE_PAGES[clean.replace(/\.html$/, '')] || clean || 'home';
@@ -103,7 +120,12 @@
     }
   }
 
-  function routeTo(page, replace) {
+  function routeTo(page, replace, action) {
+    var previous = currentPageInstance();
+    if (action === 'navigateTo' || action === 'switchTab') callLifecycle(previous, 'onHide');
+    if (action === 'redirectTo') callLifecycle(previous, 'onUnload');
+    if (action === 'reLaunch') unloadPageInstances(pageStack);
+
     var target = normalizePage(page);
     var query = queryObject(page);
     var url = new URL(window.location.href);
@@ -330,6 +352,122 @@
     });
   }
 
+  function viewportRect() {
+    var width = window.innerWidth || 390;
+    var height = window.innerHeight || 844;
+    return {
+      id: '',
+      dataset: {},
+      left: 0,
+      right: width,
+      top: 0,
+      bottom: height,
+      width: width,
+      height: height,
+    };
+  }
+
+  function elementRect(selector) {
+    if (!selector || !document.querySelector) return viewportRect();
+    var element = document.querySelector(selector);
+    if (!element || !element.getBoundingClientRect) return viewportRect();
+    var rect = element.getBoundingClientRect();
+    return {
+      id: element.id || '',
+      dataset: Object.assign({}, element.dataset || {}),
+      left: rect.left,
+      right: rect.right,
+      top: rect.top,
+      bottom: rect.bottom,
+      width: rect.width,
+      height: rect.height,
+    };
+  }
+
+  function selectorResult(selector, all, viewport) {
+    if (viewport) return viewportRect();
+    if (!all) return elementRect(selector);
+    if (!document.querySelectorAll) return [];
+    return Array.prototype.slice.call(document.querySelectorAll(selector)).map(function (element) {
+      if (!element || !element.getBoundingClientRect) return viewportRect();
+      var rect = element.getBoundingClientRect();
+      return {
+        id: element.id || '',
+        dataset: Object.assign({}, element.dataset || {}),
+        left: rect.left,
+        right: rect.right,
+        top: rect.top,
+        bottom: rect.bottom,
+        width: rect.width,
+        height: rect.height,
+      };
+    });
+  }
+
+  function makeSelectorQuery() {
+    var tasks = [];
+    var api = {
+      in: function () {
+        return api;
+      },
+      select: function (selector) {
+        return makeSelectorNode(selector, false, false);
+      },
+      selectAll: function (selector) {
+        return makeSelectorNode(selector, true, false);
+      },
+      selectViewport: function () {
+        return makeSelectorNode('', false, true);
+      },
+      exec: function (callback) {
+        var results = tasks.map(function (task) {
+          return task();
+        });
+        if (typeof callback === 'function') callback(results);
+      },
+    };
+
+    function makeSelectorNode(selector, all, viewport) {
+      return {
+        boundingClientRect: function (callback) {
+          tasks.push(function () {
+            var result = selectorResult(selector, all, viewport);
+            if (typeof callback === 'function') callback(result);
+            return result;
+          });
+          return api;
+        },
+        scrollOffset: function (callback) {
+          tasks.push(function () {
+            var result = {
+              id: '',
+              dataset: {},
+              scrollLeft: window.pageXOffset || 0,
+              scrollTop: window.pageYOffset || 0,
+            };
+            if (typeof callback === 'function') callback(result);
+            return result;
+          });
+          return api;
+        },
+        fields: function (fields, callback) {
+          tasks.push(function () {
+            var rect = selectorResult(selector, all, viewport);
+            var result = Object.assign({}, Array.isArray(rect) ? { nodes: rect } : rect, {
+              scrollLeft: window.pageXOffset || 0,
+              scrollTop: window.pageYOffset || 0,
+            });
+            if (typeof callback === 'function') callback(result);
+            return result;
+          });
+          return api;
+        },
+      };
+    }
+
+    return api;
+  }
+
   if (window.addEventListener) {
     window.addEventListener('online', notifyNetworkStatusChange);
     window.addEventListener('offline', notifyNetworkStatusChange);
@@ -516,33 +654,39 @@
     },
 
     navigateTo: function (options) {
-      routeTo(options && options.url, false);
+      routeTo(options && options.url, false, 'navigateTo');
       ok(options && options.success, { errMsg: 'navigateTo:ok' });
       complete(options && options.complete, { errMsg: 'navigateTo:ok' });
     },
 
     redirectTo: function (options) {
-      routeTo(options && options.url, true);
+      routeTo(options && options.url, true, 'redirectTo');
       ok(options && options.success, { errMsg: 'redirectTo:ok' });
       complete(options && options.complete, { errMsg: 'redirectTo:ok' });
     },
 
     switchTab: function (options) {
-      routeTo(options && options.url, true);
+      routeTo(options && options.url, true, 'switchTab');
       ok(options && options.success, { errMsg: 'switchTab:ok' });
       complete(options && options.complete, { errMsg: 'switchTab:ok' });
     },
 
     reLaunch: function (options) {
-      pageStack = [];
-      routeTo(options && options.url, true);
+      routeTo(options && options.url, true, 'reLaunch');
+      pageStack = pageStack.slice(-1);
       ok(options && options.success, { errMsg: 'reLaunch:ok' });
       complete(options && options.complete, { errMsg: 'reLaunch:ok' });
     },
 
-    navigateBack: function () {
-      if (pageStack.length > 1) pageStack.pop();
+    navigateBack: function (options) {
+      var opts = options || {};
+      var delta = Math.max(1, Number(opts.delta || 1));
+      var removed = pageStack.splice(Math.max(0, pageStack.length - delta), delta);
+      unloadPageInstances(removed);
+      callLifecycle(currentPageInstance(), 'onShow');
       window.history.back();
+      ok(opts.success, { errMsg: 'navigateBack:ok' });
+      complete(opts.complete, { errMsg: 'navigateBack:ok' });
     },
 
     showTabBar: function (options) {
@@ -753,6 +897,39 @@
       window.setTimeout(function () {
         if (typeof callback === 'function') callback();
       }, 0);
+    },
+
+    startPullDownRefresh: function (options) {
+      var opts = options || {};
+      callLifecycle(currentPageInstance(), 'onPullDownRefresh');
+      var result = bridgeResult('startPullDownRefresh');
+      ok(opts.success, result);
+      complete(opts.complete, result);
+    },
+
+    stopPullDownRefresh: function (options) {
+      var opts = options || {};
+      var result = bridgeResult('stopPullDownRefresh');
+      ok(opts.success, result);
+      complete(opts.complete, result);
+    },
+
+    pageScrollTo: function (options) {
+      var opts = options || {};
+      if (window.scrollTo) {
+        window.scrollTo({
+          top: Number(opts.scrollTop || 0),
+          left: 0,
+          behavior: opts.duration === 0 ? 'auto' : 'smooth',
+        });
+      }
+      var result = bridgeResult('pageScrollTo');
+      ok(opts.success, result);
+      complete(opts.complete, result);
+    },
+
+    createSelectorQuery: function () {
+      return makeSelectorQuery();
     },
 
     getAccountInfoSync: function () {
@@ -985,7 +1162,11 @@
     var page = makeMiniProgramInstance(definition, 'page');
     page.route = currentPath();
     page.options = launchOptions().query;
-    pageStack.push(page);
+    if (pageStack.length && pageStack[pageStack.length - 1].__previewType !== 'page') {
+      pageStack[pageStack.length - 1] = page;
+    } else {
+      pageStack.push(page);
+    }
     if (pageStack.length > 10) pageStack.shift();
     if (typeof page.onLoad === 'function') page.onLoad(page.options);
     if (typeof page.onShow === 'function') page.onShow();

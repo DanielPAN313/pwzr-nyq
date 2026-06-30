@@ -50,6 +50,10 @@ function makeContext(url = "http://localhost:4174/pages/games/games?scene=1001&f
     location,
     history,
     document,
+    innerWidth: 390,
+    innerHeight: 844,
+    pageXOffset: 0,
+    pageYOffset: 0,
     localStorage: {
       get length() {
         return storage.size;
@@ -104,6 +108,11 @@ function makeContext(url = "http://localhost:4174/pages/games/games?scene=1001&f
       this.lastEvent = event;
       for (const callback of eventListeners.get(event.type) || []) callback(event);
     },
+    scrollTo(options) {
+      this.pageXOffset = Number(options?.left || 0);
+      this.pageYOffset = Number(options?.top || 0);
+      this.lastScrollTo = options;
+    },
     PopStateEvent: class PopStateEvent {
       constructor(type, init) {
         this.type = type;
@@ -135,6 +144,8 @@ assert(typeof context.Component === "function", "Component shim missing");
 assert(typeof context.getApp === "function", "getApp shim missing");
 
 let launched = false;
+let pageHidden = false;
+let pagePulled = false;
 const app = context.App({
   globalData: { apiBaseUrl: "http://localhost:4174" },
   onLaunch(options) {
@@ -149,10 +160,30 @@ const page = context.Page({
   onLoad(query) {
     this.loadedFrom = query.from;
   },
+  onHide() {
+    pageHidden = true;
+  },
+  onPullDownRefresh() {
+    pagePulled = true;
+  },
 });
 page.setData({ count: 2 });
 assert(page.loadedFrom === "smoke", "Page onLoad did not receive query");
 assert(page.data.count === 2, "Page setData did not merge data");
+let pullDownOk = false;
+context.wx.startPullDownRefresh({
+  success(result) {
+    pullDownOk = result.errMsg === "startPullDownRefresh:ok";
+  },
+});
+assert(pullDownOk && pagePulled, "wx.startPullDownRefresh did not trigger Page onPullDownRefresh");
+let stopPullOk = false;
+context.wx.stopPullDownRefresh({
+  success(result) {
+    stopPullOk = result.errMsg === "stopPullDownRefresh:ok";
+  },
+});
+assert(stopPullOk, "wx.stopPullDownRefresh mock did not succeed");
 
 let switched = false;
 context.wx.switchTab({
@@ -163,6 +194,7 @@ context.wx.switchTab({
 });
 assert(switched, "wx.switchTab success was not called");
 assert(context.window.location.search.includes("page=me"), "wx.switchTab did not update preview route");
+assert(pageHidden, "wx.switchTab did not trigger Page onHide");
 
 let tabBarHidden = false;
 context.wx.hideTabBar({
@@ -247,6 +279,22 @@ context.wx.reLaunch({
 });
 assert(relaunched, "wx.reLaunch success was not called");
 assert(context.window.location.search.includes("from=relaunch"), "wx.reLaunch did not update preview route");
+
+let redirectedPageUnloaded = false;
+context.Page({
+  onUnload() {
+    redirectedPageUnloaded = true;
+  },
+});
+let redirected = false;
+context.wx.redirectTo({
+  url: "pages/orders/orders?from=redirect",
+  success(result) {
+    redirected = result.errMsg === "redirectTo:ok";
+  },
+});
+assert(redirected, "wx.redirectTo success was not called");
+assert(redirectedPageUnloaded, "wx.redirectTo did not trigger Page onUnload");
 
 let paid = false;
 context.wx.requestPayment({
@@ -473,6 +521,27 @@ assert(context.wx.getMenuButtonBoundingClientRect().width > 0, "wx.getMenuButton
 assert(context.wx.canIUse("button.open-type.getUserInfo") === true, "wx.canIUse should return true in preview");
 assert(context.wx.env.USER_DATA_PATH === "h5-preview://user-data", "wx.env.USER_DATA_PATH mismatch");
 assert(context.getCurrentPages().length > 0, "getCurrentPages should expose preview page stack");
+
+let scrollOk = false;
+context.wx.pageScrollTo({
+  scrollTop: 120,
+  duration: 0,
+  success(result) {
+    scrollOk = result.errMsg === "pageScrollTo:ok";
+  },
+});
+assert(scrollOk && context.pageYOffset === 120, "wx.pageScrollTo did not update preview scroll position");
+let selectorWidth = 0;
+let selectorExecLength = 0;
+context.wx.createSelectorQuery()
+  .selectViewport()
+  .boundingClientRect((result) => {
+    selectorWidth = result.width;
+  })
+  .exec((results) => {
+    selectorExecLength = results.length;
+  });
+assert(selectorWidth === 390 && selectorExecLength === 1, "wx.createSelectorQuery viewport result mismatch");
 
 let nextTickCalled = false;
 context.wx.nextTick(() => {

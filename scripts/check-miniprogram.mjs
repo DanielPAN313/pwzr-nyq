@@ -67,7 +67,7 @@ function pageMethodNames(source) {
 const appJson = parseJson(path.join(miniRoot, "app.json"));
 const rootProjectConfig = parseJson(path.join(root, "project.config.json"));
 const miniProjectConfig = parseJson(path.join(miniRoot, "project.config.json"));
-parseJson(path.join(miniRoot, "sitemap.json"));
+const sitemapJson = parseJson(path.join(miniRoot, "sitemap.json"));
 
 function validateProjectConfig(config, file, expectedRoots) {
   if (!config) return;
@@ -88,6 +88,17 @@ function validateProjectConfig(config, file, expectedRoots) {
 
 validateProjectConfig(rootProjectConfig, path.join(root, "project.config.json"), ["miniprogram/", "miniprogram"]);
 validateProjectConfig(miniProjectConfig, path.join(miniRoot, "project.config.json"), ["./", "."]);
+
+if (sitemapJson) {
+  if (!Array.isArray(sitemapJson.rules) || sitemapJson.rules.length === 0) {
+    errors.push("miniprogram/sitemap.json must define at least one rule.");
+  } else {
+    const allowsAllPages = sitemapJson.rules.some((rule) => rule?.action === "allow" && rule?.page === "*");
+    if (!allowsAllPages) {
+      errors.push('miniprogram/sitemap.json should keep an allow "*" rule during local Mini Program development.');
+    }
+  }
+}
 
 if (appJson) {
   if (!Array.isArray(appJson.pages) || appJson.pages.length === 0) {

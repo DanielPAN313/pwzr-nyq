@@ -126,9 +126,28 @@ if (appJson) {
     }
   }
 
-  for (const tab of appJson.tabBar?.list || []) {
-    if (!registeredPages.has(tab.pagePath)) {
-      errors.push(`tabBar pagePath is not registered in pages: ${tab.pagePath}`);
+  if (appJson.tabBar) {
+    const tabList = Array.isArray(appJson.tabBar.list) ? appJson.tabBar.list : [];
+    if (tabList.length < 2 || tabList.length > 5) {
+      errors.push("miniprogram/app.json tabBar.list must contain 2 to 5 items.");
+    }
+    for (const key of ["color", "selectedColor", "backgroundColor"]) {
+      if (typeof appJson.tabBar[key] !== "string" || !/^#[0-9a-fA-F]{6}$/.test(appJson.tabBar[key])) {
+        errors.push(`miniprogram/app.json tabBar.${key} must be a 6-digit hex color.`);
+      }
+    }
+    if (appJson.tabBar.borderStyle && !["black", "white"].includes(appJson.tabBar.borderStyle)) {
+      errors.push('miniprogram/app.json tabBar.borderStyle must be "black" or "white".');
+    }
+    for (const [index, tab] of tabList.entries()) {
+      if (!tab.pagePath) {
+        errors.push(`miniprogram/app.json tabBar.list[${index}].pagePath is required.`);
+      } else if (!registeredPages.has(tab.pagePath)) {
+        errors.push(`tabBar pagePath is not registered in pages: ${tab.pagePath}`);
+      }
+      if (!tab.text) {
+        errors.push(`miniprogram/app.json tabBar.list[${index}].text is required.`);
+      }
     }
   }
 }

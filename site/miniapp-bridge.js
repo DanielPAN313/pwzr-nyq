@@ -140,6 +140,10 @@
     }, 1600);
   }
 
+  function setPreviewTitle(title) {
+    if (window.document) window.document.title = title || 'NYQ Mini Program Preview';
+  }
+
   function bridgeResult(name, extra) {
     return Object.assign({ errMsg: name + ':ok' }, extra || {});
   }
@@ -277,12 +281,67 @@
       complete(opts.complete, { errMsg: 'showToast:ok' });
     },
 
+    hideToast: function (options) {
+      var result = bridgeResult('hideToast');
+      ok(options && options.success, result);
+      complete(options && options.complete, result);
+    },
+
+    showLoading: function (options) {
+      var opts = options || {};
+      toast(opts.title || '加载中');
+      ok(opts.success, bridgeResult('showLoading'));
+      complete(opts.complete, bridgeResult('showLoading'));
+    },
+
+    hideLoading: function (options) {
+      var result = bridgeResult('hideLoading');
+      ok(options && options.success, result);
+      complete(options && options.complete, result);
+    },
+
     showModal: function (options) {
       var opts = options || {};
       var confirmed = window.confirm((opts.title ? opts.title + '\n' : '') + (opts.content || ''));
       var result = { confirm: confirmed, cancel: !confirmed, errMsg: 'showModal:ok' };
       ok(opts.success, result);
       complete(opts.complete, result);
+    },
+
+    showActionSheet: function (options) {
+      var opts = options || {};
+      var list = Array.isArray(opts.itemList) ? opts.itemList : [];
+      var result = { tapIndex: list.length ? 0 : -1, errMsg: 'showActionSheet:ok' };
+      ok(opts.success, result);
+      complete(opts.complete, result);
+    },
+
+    requestSubscribeMessage: function (options) {
+      var opts = options || {};
+      var tmplIds = Array.isArray(opts.tmplIds) ? opts.tmplIds : [];
+      var result = tmplIds.reduce(function (acc, id) {
+        acc[id] = 'accept';
+        return acc;
+      }, { errMsg: 'requestSubscribeMessage:ok' });
+      ok(opts.success, result);
+      complete(opts.complete, result);
+    },
+
+    setNavigationBarTitle: function (options) {
+      var opts = options || {};
+      setPreviewTitle(opts.title);
+      var result = bridgeResult('setNavigationBarTitle');
+      ok(opts.success, result);
+      complete(opts.complete, result);
+    },
+
+    setNavigationBarColor: function (options) {
+      var result = bridgeResult('setNavigationBarColor', {
+        frontColor: options && options.frontColor,
+        backgroundColor: options && options.backgroundColor,
+      });
+      ok(options && options.success, result);
+      complete(options && options.complete, result);
     },
 
     requestPayment: function (options) {

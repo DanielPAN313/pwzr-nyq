@@ -163,6 +163,39 @@ context.wx.requestPayment({
 });
 assert(paid, "wx.requestPayment mock did not resolve");
 
+let loadingOk = false;
+context.wx.showLoading({
+  title: "smoke",
+  success(result) {
+    loadingOk = result.errMsg === "showLoading:ok";
+  },
+});
+assert(loadingOk, "wx.showLoading mock did not succeed");
+let sheetIndex = null;
+context.wx.showActionSheet({
+  itemList: ["A", "B"],
+  success(result) {
+    sheetIndex = result.tapIndex;
+  },
+});
+assert(sheetIndex === 0, "wx.showActionSheet should pick first item in preview");
+let subscribeAccepted = false;
+context.wx.requestSubscribeMessage({
+  tmplIds: ["tmpl-demo"],
+  success(result) {
+    subscribeAccepted = result["tmpl-demo"] === "accept";
+  },
+});
+assert(subscribeAccepted, "wx.requestSubscribeMessage did not accept template");
+let navTitleOk = false;
+context.wx.setNavigationBarTitle({
+  title: "Smoke",
+  success(result) {
+    navTitleOk = result.errMsg === "setNavigationBarTitle:ok";
+  },
+});
+assert(navTitleOk && context.document.title === "Smoke", "wx.setNavigationBarTitle did not update document title");
+
 assert(context.wx.getAccountInfoSync().miniProgram.appId === "touristappid", "wx.getAccountInfoSync appId mismatch");
 let loginCode = "";
 context.wx.login({

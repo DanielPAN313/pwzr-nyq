@@ -28,6 +28,18 @@
 
   var pageStack = [];
   var networkStatusCallbacks = [];
+  var tabBarState = {
+    visible: true,
+    style: {},
+    items: Object.keys(TAB_PAGES).map(function (pagePath) {
+      return {
+        pagePath: pagePath,
+        text: TAB_PAGES[pagePath],
+        badge: '',
+        redDot: false,
+      };
+    }),
+  };
 
   function ok(callback, payload) {
     if (typeof callback === 'function') callback(payload);
@@ -126,6 +138,46 @@
 
   function storageKey(key) {
     return 'wx_bridge_' + key;
+  }
+
+  function readStorageData(key) {
+    var raw = window.localStorage.getItem(storageKey(key));
+    if (raw == null) return '';
+    try {
+      return JSON.parse(raw);
+    } catch (error) {
+      return raw;
+    }
+  }
+
+  function hasStorageData(key) {
+    return window.localStorage.getItem(storageKey(key)) != null;
+  }
+
+  function storageInfo() {
+    var keys = [];
+    var currentSize = 0;
+    for (var index = 0; index < window.localStorage.length; index += 1) {
+      var key = window.localStorage.key(index);
+      if (!key || key.indexOf('wx_bridge_') !== 0) continue;
+      keys.push(key.replace(/^wx_bridge_/, ''));
+      currentSize += String(window.localStorage.getItem(key) || '').length;
+    }
+    return {
+      keys: keys,
+      currentSize: Math.ceil(currentSize / 1024),
+      limitSize: 10240,
+    };
+  }
+
+  function clearBridgeStorage() {
+    storageInfo().keys.forEach(function (key) {
+      window.localStorage.removeItem(storageKey(key));
+    });
+  }
+
+  function tabBarItem(index) {
+    return tabBarState.items[Math.max(0, Math.min(Number(index) || 0, tabBarState.items.length - 1))];
   }
 
   function toast(title) {
@@ -481,9 +533,87 @@
       complete(options && options.complete, { errMsg: 'switchTab:ok' });
     },
 
+    reLaunch: function (options) {
+      pageStack = [];
+      routeTo(options && options.url, true);
+      ok(options && options.success, { errMsg: 'reLaunch:ok' });
+      complete(options && options.complete, { errMsg: 'reLaunch:ok' });
+    },
+
     navigateBack: function () {
       if (pageStack.length > 1) pageStack.pop();
       window.history.back();
+    },
+
+    showTabBar: function (options) {
+      tabBarState.visible = true;
+      var result = bridgeResult('showTabBar', { animation: !!(options && options.animation) });
+      ok(options && options.success, result);
+      complete(options && options.complete, result);
+    },
+
+    hideTabBar: function (options) {
+      tabBarState.visible = false;
+      var result = bridgeResult('hideTabBar', { animation: !!(options && options.animation) });
+      ok(options && options.success, result);
+      complete(options && options.complete, result);
+    },
+
+    setTabBarBadge: function (options) {
+      var opts = options || {};
+      tabBarItem(opts.index).badge = String(opts.text == null ? '' : opts.text);
+      var result = bridgeResult('setTabBarBadge');
+      ok(opts.success, result);
+      complete(opts.complete, result);
+    },
+
+    removeTabBarBadge: function (options) {
+      var opts = options || {};
+      tabBarItem(opts.index).badge = '';
+      var result = bridgeResult('removeTabBarBadge');
+      ok(opts.success, result);
+      complete(opts.complete, result);
+    },
+
+    showTabBarRedDot: function (options) {
+      var opts = options || {};
+      tabBarItem(opts.index).redDot = true;
+      var result = bridgeResult('showTabBarRedDot');
+      ok(opts.success, result);
+      complete(opts.complete, result);
+    },
+
+    hideTabBarRedDot: function (options) {
+      var opts = options || {};
+      tabBarItem(opts.index).redDot = false;
+      var result = bridgeResult('hideTabBarRedDot');
+      ok(opts.success, result);
+      complete(opts.complete, result);
+    },
+
+    setTabBarItem: function (options) {
+      var opts = options || {};
+      Object.assign(tabBarItem(opts.index), {
+        text: opts.text,
+        iconPath: opts.iconPath,
+        selectedIconPath: opts.selectedIconPath,
+      });
+      var result = bridgeResult('setTabBarItem');
+      ok(opts.success, result);
+      complete(opts.complete, result);
+    },
+
+    setTabBarStyle: function (options) {
+      var opts = options || {};
+      tabBarState.style = Object.assign({}, tabBarState.style, {
+        color: opts.color,
+        selectedColor: opts.selectedColor,
+        backgroundColor: opts.backgroundColor,
+        borderStyle: opts.borderStyle,
+      });
+      var result = bridgeResult('setTabBarStyle');
+      ok(opts.success, result);
+      complete(opts.complete, result);
     },
 
     getLaunchOptionsSync: function () {
@@ -494,20 +624,69 @@
       return launchOptions();
     },
 
-    getStorageSync: function (key) {
-      try {
-        return JSON.parse(window.localStorage.getItem(storageKey(key)) || 'null');
-      } catch (error) {
-        return '';
-      }
-    },
-
     setStorageSync: function (key, data) {
       window.localStorage.setItem(storageKey(key), JSON.stringify(data));
     },
 
+    getStorageSync: function (key) {
+      return readStorageData(key);
+    },
+
     removeStorageSync: function (key) {
       window.localStorage.removeItem(storageKey(key));
+    },
+
+    clearStorageSync: function () {
+      clearBridgeStorage();
+    },
+
+    getStorageInfoSync: function () {
+      return storageInfo();
+    },
+
+    setStorage: function (options) {
+      var opts = options || {};
+      window.wx.setStorageSync(opts.key, opts.data);
+      var result = bridgeResult('setStorage');
+      ok(opts.success, result);
+      complete(opts.complete, result);
+    },
+
+    getStorage: function (options) {
+      var opts = options || {};
+      if (!hasStorageData(opts.key)) {
+        var error = { errMsg: 'getStorage:fail data not found' };
+        fail(opts.fail, error);
+        complete(opts.complete, error);
+        return;
+      }
+      var data = window.wx.getStorageSync(opts.key);
+      var result = bridgeResult('getStorage', { data: data });
+      ok(opts.success, result);
+      complete(opts.complete, result);
+    },
+
+    removeStorage: function (options) {
+      var opts = options || {};
+      window.wx.removeStorageSync(opts.key);
+      var result = bridgeResult('removeStorage');
+      ok(opts.success, result);
+      complete(opts.complete, result);
+    },
+
+    clearStorage: function (options) {
+      var opts = options || {};
+      window.wx.clearStorageSync();
+      var result = bridgeResult('clearStorage');
+      ok(opts.success, result);
+      complete(opts.complete, result);
+    },
+
+    getStorageInfo: function (options) {
+      var opts = options || {};
+      var result = bridgeResult('getStorageInfo', storageInfo());
+      ok(opts.success, result);
+      complete(opts.complete, result);
     },
 
     getSystemInfoSync: function () {

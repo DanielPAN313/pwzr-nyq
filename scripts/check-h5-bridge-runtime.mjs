@@ -51,6 +51,12 @@ function makeContext(url = "http://localhost:4174/pages/games/games?scene=1001&f
     history,
     document,
     localStorage: {
+      get length() {
+        return storage.size;
+      },
+      key(index) {
+        return Array.from(storage.keys())[index] || null;
+      },
       getItem(key) {
         return storage.has(key) ? storage.get(key) : null;
       },
@@ -158,6 +164,72 @@ context.wx.switchTab({
 assert(switched, "wx.switchTab success was not called");
 assert(context.window.location.search.includes("page=me"), "wx.switchTab did not update preview route");
 
+let tabBarHidden = false;
+context.wx.hideTabBar({
+  animation: true,
+  success(result) {
+    tabBarHidden = result.errMsg === "hideTabBar:ok" && result.animation === true;
+  },
+});
+assert(tabBarHidden, "wx.hideTabBar mock did not succeed");
+let tabBarShown = false;
+context.wx.showTabBar({
+  success(result) {
+    tabBarShown = result.errMsg === "showTabBar:ok";
+  },
+});
+assert(tabBarShown, "wx.showTabBar mock did not succeed");
+let tabBadgeOk = false;
+context.wx.setTabBarBadge({
+  index: 3,
+  text: "2",
+  success(result) {
+    tabBadgeOk = result.errMsg === "setTabBarBadge:ok";
+  },
+});
+assert(tabBadgeOk, "wx.setTabBarBadge mock did not succeed");
+let tabDotOk = false;
+context.wx.showTabBarRedDot({
+  index: 3,
+  success(result) {
+    tabDotOk = result.errMsg === "showTabBarRedDot:ok";
+  },
+});
+assert(tabDotOk, "wx.showTabBarRedDot mock did not succeed");
+let removeBadgeOk = false;
+context.wx.removeTabBarBadge({
+  index: 3,
+  success(result) {
+    removeBadgeOk = result.errMsg === "removeTabBarBadge:ok";
+  },
+});
+assert(removeBadgeOk, "wx.removeTabBarBadge mock did not succeed");
+let hideDotOk = false;
+context.wx.hideTabBarRedDot({
+  index: 3,
+  success(result) {
+    hideDotOk = result.errMsg === "hideTabBarRedDot:ok";
+  },
+});
+assert(hideDotOk, "wx.hideTabBarRedDot mock did not succeed");
+let tabItemOk = false;
+context.wx.setTabBarItem({
+  index: 2,
+  text: "Games",
+  success(result) {
+    tabItemOk = result.errMsg === "setTabBarItem:ok";
+  },
+});
+assert(tabItemOk, "wx.setTabBarItem mock did not succeed");
+let tabStyleOk = false;
+context.wx.setTabBarStyle({
+  backgroundColor: "#ffffff",
+  success(result) {
+    tabStyleOk = result.errMsg === "setTabBarStyle:ok";
+  },
+});
+assert(tabStyleOk, "wx.setTabBarStyle mock did not succeed");
+
 let scanned = "";
 context.wx.scanCode({
   success(result) {
@@ -165,6 +237,16 @@ context.wx.scanCode({
   },
 });
 assert(scanned === "NYQ-SMOKE", "wx.scanCode did not read mock scan result");
+
+let relaunched = false;
+context.wx.reLaunch({
+  url: "pages/games/games?from=relaunch",
+  success(result) {
+    relaunched = result.errMsg === "reLaunch:ok";
+  },
+});
+assert(relaunched, "wx.reLaunch success was not called");
+assert(context.window.location.search.includes("from=relaunch"), "wx.reLaunch did not update preview route");
 
 let paid = false;
 context.wx.requestPayment({
@@ -238,6 +320,43 @@ context.wx.setNavigationBarTitle({
   },
 });
 assert(navTitleOk && context.document.title === "Smoke", "wx.setNavigationBarTitle did not update document title");
+
+context.wx.setStorageSync("sync-demo", { ok: true });
+assert(context.wx.getStorageSync("sync-demo").ok === true, "wx.getStorageSync did not read sync value");
+let asyncStorageOk = false;
+context.wx.setStorage({
+  key: "async-demo",
+  data: { count: 3 },
+  success(result) {
+    asyncStorageOk = result.errMsg === "setStorage:ok";
+  },
+});
+assert(asyncStorageOk, "wx.setStorage mock did not succeed");
+let asyncStorageValue = 0;
+context.wx.getStorage({
+  key: "async-demo",
+  success(result) {
+    asyncStorageValue = result.data.count;
+  },
+});
+assert(asyncStorageValue === 3, "wx.getStorage did not read async value");
+let storageKeys = [];
+context.wx.getStorageInfo({
+  success(result) {
+    storageKeys = result.keys;
+  },
+});
+assert(storageKeys.includes("sync-demo") && storageKeys.includes("async-demo"), "wx.getStorageInfo keys mismatch");
+let removedStorage = false;
+context.wx.removeStorage({
+  key: "async-demo",
+  success(result) {
+    removedStorage = result.errMsg === "removeStorage:ok";
+  },
+});
+assert(removedStorage && context.wx.getStorageSync("async-demo") === "", "wx.removeStorage did not remove value");
+context.wx.clearStorage();
+assert(context.wx.getStorageInfoSync().keys.length === 0, "wx.clearStorage did not clear bridge storage");
 
 assert(context.wx.getAccountInfoSync().miniProgram.appId === "touristappid", "wx.getAccountInfoSync appId mismatch");
 let loginCode = "";

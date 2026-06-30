@@ -20,6 +20,7 @@ function requireIncludes(file, snippets) {
 
 requireIncludes("index.html", [
   '<body class="mobile-share">',
+  "/miniapp-bridge.js",
   "/mobile-preview-lock.css",
   "/sports-app.js",
 ]);
@@ -30,6 +31,7 @@ requireIncludes("mobile-preview-lock.css", [
   "min-width: 390px !important",
   "width: 370px !important",
   "grid-template-columns: 52px minmax(0, 1fr) !important",
+  ".wx-bridge-toast",
 ]);
 
 requireIncludes("sports-app.js", [
@@ -37,6 +39,14 @@ requireIncludes("sports-app.js", [
   "readPreviewRoute",
   "syncPreviewRoute",
   "window.addEventListener('popstate'",
+]);
+
+requireIncludes("miniapp-bridge.js", [
+  "window.wx",
+  "__isH5MiniProgramBridge",
+  "request: function",
+  "switchTab: function",
+  "getSystemInfoSync",
 ]);
 
 if (errors.length > 0) {

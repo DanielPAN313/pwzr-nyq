@@ -600,3 +600,27 @@ body.mobile-share .game-card .secondary-btn {
   font-size: 12px !important;
   white-space: nowrap !important;
 }
+
+.wx-bridge-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 112px;
+  z-index: 999;
+  max-width: 320px;
+  transform: translateX(-50%);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: #fff;
+  background: rgba(8, 18, 12, 0.86);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.35;
+  text-align: center;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.wx-bridge-toast.is-leaving {
+  opacity: 0;
+  transform: translateX(-50%) translateY(6px);
+}

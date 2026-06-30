@@ -22,6 +22,12 @@ function parseJson(file) {
   }
 }
 
+function mustExistRoot(file) {
+  if (!fs.existsSync(path.join(root, file))) {
+    errors.push(`Missing required file: ${file}`);
+  }
+}
+
 function requireIncludes(file, snippets) {
   const source = read(file);
   for (const snippet of snippets) {
@@ -30,6 +36,8 @@ function requireIncludes(file, snippets) {
     }
   }
 }
+
+mustExistRoot("scripts/check-h5-bridge-runtime.mjs");
 
 requireIncludes("index.html", [
   '<body class="mobile-share">',

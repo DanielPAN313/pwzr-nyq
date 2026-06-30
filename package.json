@@ -12,7 +12,8 @@
     "start": "node scripts/serve-local-mirror.mjs",
     "check:miniprogram": "node scripts/check-miniprogram.mjs",
     "check:h5-preview": "node scripts/check-h5-preview.mjs",
-    "check": "npm run check:miniprogram && npm run check:h5-preview"
+    "check:h5-bridge": "node scripts/check-h5-bridge-runtime.mjs",
+    "check": "npm run check:miniprogram && npm run check:h5-preview && npm run check:h5-bridge"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",

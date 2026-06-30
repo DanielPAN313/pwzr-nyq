@@ -140,6 +140,17 @@
     }, 1600);
   }
 
+  function bridgeResult(name, extra) {
+    return Object.assign({ errMsg: name + ':ok' }, extra || {});
+  }
+
+  function readMockScanResult() {
+    var url = new URL(window.location.href);
+    return url.searchParams.get('scan')
+      || window.localStorage.getItem(storageKey('mock_scan_result'))
+      || window.prompt('H5 预览扫码模拟，请输入扫码结果', 'NYQ-CHECKIN-DEMO');
+  }
+
   window.wx = {
     __isH5MiniProgramBridge: true,
 
@@ -190,6 +201,38 @@
       var opts = options || {};
       var confirmed = window.confirm((opts.title ? opts.title + '\n' : '') + (opts.content || ''));
       var result = { confirm: confirmed, cancel: !confirmed, errMsg: 'showModal:ok' };
+      ok(opts.success, result);
+      complete(opts.complete, result);
+    },
+
+    requestPayment: function (options) {
+      var opts = options || {};
+      var result = bridgeResult('requestPayment', {
+        provider: 'wxpay',
+        preview: true,
+        timeStamp: opts.timeStamp || String(Date.now()),
+        nonceStr: opts.nonceStr || 'h5-preview-nonce',
+      });
+      toast('H5 预览支付成功');
+      ok(opts.success, result);
+      complete(opts.complete, result);
+    },
+
+    scanCode: function (options) {
+      var opts = options || {};
+      var scanResult = readMockScanResult();
+      if (!scanResult) {
+        var cancelResult = { errMsg: 'scanCode:fail cancel' };
+        fail(opts.fail, cancelResult);
+        complete(opts.complete, cancelResult);
+        return;
+      }
+      var result = bridgeResult('scanCode', {
+        result: scanResult,
+        scanType: 'QR_CODE',
+        charSet: 'utf-8',
+        path: String(scanResult).startsWith('pages/') ? scanResult : '',
+      });
       ok(opts.success, result);
       complete(opts.complete, result);
     },
@@ -252,6 +295,65 @@
         screenHeight: window.screen && window.screen.height || window.innerHeight,
         safeArea: { top: 0, left: 0, right: 390, bottom: window.innerHeight, width: 390, height: window.innerHeight },
       };
+    },
+
+    getAccountInfoSync: function () {
+      return {
+        miniProgram: {
+          appId: 'touristappid',
+          envVersion: 'develop',
+          version: '0.0.0-h5-preview',
+        },
+        plugin: {},
+      };
+    },
+
+    setClipboardData: function (options) {
+      var opts = options || {};
+      var text = String(opts.data == null ? '' : opts.data);
+      var done = function () {
+        var result = bridgeResult('setClipboardData');
+        ok(opts.success, result);
+        complete(opts.complete, result);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(function (error) {
+          var result = { errMsg: error && error.message ? error.message : 'setClipboardData:fail' };
+          fail(opts.fail, result);
+          complete(opts.complete, result);
+        });
+        return;
+      }
+      window.localStorage.setItem(storageKey('clipboard'), text);
+      done();
+    },
+
+    getClipboardData: function (options) {
+      var opts = options || {};
+      var done = function (text) {
+        var result = bridgeResult('getClipboardData', { data: text || '' });
+        ok(opts.success, result);
+        complete(opts.complete, result);
+      };
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        navigator.clipboard.readText().then(done).catch(function () {
+          done(window.localStorage.getItem(storageKey('clipboard')) || '');
+        });
+        return;
+      }
+      done(window.localStorage.getItem(storageKey('clipboard')) || '');
+    },
+
+    vibrateShort: function (options) {
+      if (navigator.vibrate) navigator.vibrate(15);
+      ok(options && options.success, bridgeResult('vibrateShort'));
+      complete(options && options.complete, bridgeResult('vibrateShort'));
+    },
+
+    vibrateLong: function (options) {
+      if (navigator.vibrate) navigator.vibrate(400);
+      ok(options && options.success, bridgeResult('vibrateLong'));
+      complete(options && options.complete, bridgeResult('vibrateLong'));
     },
 
     login: function (options) {

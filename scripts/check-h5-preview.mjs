@@ -66,6 +66,10 @@ requireIncludes("miniapp-bridge.js", [
   "ROUTE_PAGES[pathname]",
   "window.getCurrentPages",
   "getSystemInfoSync",
+  "requestPayment: function",
+  "scanCode: function",
+  "getAccountInfoSync",
+  "setClipboardData",
 ]);
 
 const appJson = parseJson("miniprogram/app.json");

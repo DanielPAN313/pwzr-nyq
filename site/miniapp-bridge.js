@@ -207,6 +207,30 @@
     };
   }
 
+  function previewUserInfo() {
+    return {
+      nickName: 'NYQ Preview User',
+      avatarUrl: 'https://dummyimage.com/128x128/0b6b3e/ffffff&text=NYQ',
+      gender: 0,
+      country: 'China',
+      province: 'Jiangsu',
+      city: 'Nanjing',
+      language: 'zh_CN',
+    };
+  }
+
+  function userProfileResult(apiName) {
+    var userInfo = previewUserInfo();
+    return {
+      errMsg: apiName + ':ok',
+      userInfo: userInfo,
+      rawData: JSON.stringify(userInfo),
+      signature: 'h5-preview-signature',
+      encryptedData: 'h5-preview-encrypted-data',
+      iv: 'h5-preview-iv',
+    };
+  }
+
   window.wx = {
     __isH5MiniProgramBridge: true,
 
@@ -442,6 +466,54 @@
 
     login: function (options) {
       var result = { code: 'h5-preview-login-code', errMsg: 'login:ok' };
+      ok(options && options.success, result);
+      complete(options && options.complete, result);
+    },
+
+    checkSession: function (options) {
+      var result = bridgeResult('checkSession');
+      ok(options && options.success, result);
+      complete(options && options.complete, result);
+    },
+
+    getUserProfile: function (options) {
+      var result = userProfileResult('getUserProfile');
+      ok(options && options.success, result);
+      complete(options && options.complete, result);
+    },
+
+    getUserInfo: function (options) {
+      var result = userProfileResult('getUserInfo');
+      ok(options && options.success, result);
+      complete(options && options.complete, result);
+    },
+
+    authorize: function (options) {
+      var result = bridgeResult('authorize', { scope: options && options.scope || '' });
+      ok(options && options.success, result);
+      complete(options && options.complete, result);
+    },
+
+    getSetting: function (options) {
+      var result = bridgeResult('getSetting', {
+        authSetting: {
+          'scope.userInfo': true,
+          'scope.userLocation': true,
+          'scope.writePhotosAlbum': true,
+        },
+      });
+      ok(options && options.success, result);
+      complete(options && options.complete, result);
+    },
+
+    openSetting: function (options) {
+      var result = bridgeResult('openSetting', {
+        authSetting: {
+          'scope.userInfo': true,
+          'scope.userLocation': true,
+          'scope.writePhotosAlbum': true,
+        },
+      });
       ok(options && options.success, result);
       complete(options && options.complete, result);
     },

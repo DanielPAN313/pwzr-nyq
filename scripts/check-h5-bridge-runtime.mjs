@@ -164,6 +164,35 @@ context.wx.requestPayment({
 assert(paid, "wx.requestPayment mock did not resolve");
 
 assert(context.wx.getAccountInfoSync().miniProgram.appId === "touristappid", "wx.getAccountInfoSync appId mismatch");
+let loginCode = "";
+context.wx.login({
+  success(result) {
+    loginCode = result.code;
+  },
+});
+assert(loginCode === "h5-preview-login-code", "wx.login did not return preview code");
+let sessionOk = false;
+context.wx.checkSession({
+  success(result) {
+    sessionOk = result.errMsg === "checkSession:ok";
+  },
+});
+assert(sessionOk, "wx.checkSession mock did not succeed");
+let nickName = "";
+context.wx.getUserProfile({
+  desc: "smoke",
+  success(result) {
+    nickName = result.userInfo.nickName;
+  },
+});
+assert(nickName === "NYQ Preview User", "wx.getUserProfile userInfo mismatch");
+let settingOk = false;
+context.wx.getSetting({
+  success(result) {
+    settingOk = result.authSetting["scope.userInfo"] === true;
+  },
+});
+assert(settingOk, "wx.getSetting authSetting mismatch");
 assert(context.wx.getSystemInfoSync().windowWidth === 390, "wx.getSystemInfoSync should report preview width");
 assert(context.wx.getWindowInfo().windowWidth === 390, "wx.getWindowInfo should report preview width");
 assert(context.wx.getDeviceInfo().platform === "h5-preview", "wx.getDeviceInfo platform mismatch");

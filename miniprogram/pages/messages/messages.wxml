@@ -1,11 +1,21 @@
 <view class="page">
   <view class="section">
     <view class="page-title">消息中心</view>
-    <text class="muted">后续接入订阅消息、订单提醒、核销提醒和客服通知。</text>
+    <text wx:if="{{loading}}" class="muted">正在加载消息...</text>
+    <text wx:elif="{{error}}" class="muted">{{error}}，已显示本地兜底消息。</text>
+    <text wx:elif="{{empty}}" class="muted">暂时没有新消息。</text>
+    <text wx:else class="muted">已接入订单提醒、核销提醒和系统通知。</text>
   </view>
 
-  <view wx:for="{{messages}}" wx:key="title" class="section">
+  <view
+    wx:for="{{messages}}"
+    wx:key="title"
+    class="section"
+    bindtap="markRead"
+    data-id="{{item.id}}"
+  >
     <text class="card-title">{{item.title}}</text>
     <text class="muted">{{item.body}}</text>
+    <text class="muted">{{item.statusText}} {{item.timeText}}</text>
   </view>
 </view>

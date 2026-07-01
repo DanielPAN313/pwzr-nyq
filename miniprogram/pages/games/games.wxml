@@ -12,7 +12,14 @@
     <text class="muted">{{item.time}} · {{item.venueName}} · {{item.fee}}</text>
     <view class="card-row">
       <text class="status">{{item.status}}</text>
-      <button class="primary small">报名</button>
+      <button
+        class="primary small"
+        disabled="{{!item.canJoin || joiningId === item.id}}"
+        bindtap="joinGame"
+        data-id="{{item.id}}"
+      >
+        {{joiningId === item.id ? "报名中" : item.actionText}}
+      </button>
     </view>
   </view>
 </view>

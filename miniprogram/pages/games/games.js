@@ -1,8 +1,8 @@
-const { get } = require("../../utils/api");
+const { get, post } = require("../../utils/api");
 
 const fallbackGames = [
-  { title: "今晚江宁五人制足球", time: "今天 19:30", status: "缺 2 人", venueName: "未来科技城五人制足球馆", fee: "AA" },
-  { title: "大学城 3v3 篮球局", time: "明天 20:00", status: "缺 1 人", venueName: "江宁大学城篮球馆", fee: "AA" }
+  { title: "今晚江宁五人制足球", time: "今天 19:30", status: "缺 2 人", venueName: "未来科技城五人制足球馆", fee: "AA", canJoin: false, actionText: "待同步" },
+  { title: "大学城 3v3 篮球局", time: "明天 20:00", status: "缺 1 人", venueName: "江宁大学城篮球馆", fee: "AA", canJoin: false, actionText: "待同步" }
 ];
 
 const statusText = {
@@ -35,6 +35,7 @@ function mapGame(game) {
   const capacity = Number(game.capacity || 0);
   const missing = capacity > joined ? `缺 ${capacity - joined} 人` : "已满员";
   const fee = Number(game.fee_per_person || 0);
+  const canJoin = Boolean(game.id) && !game.is_joined && ["forming", "open"].includes(game.status);
 
   return {
     id: game.id,
@@ -42,13 +43,16 @@ function mapGame(game) {
     time: formatGameTime(game.start_time),
     status: statusText[game.status] || missing,
     venueName: game.venue_name || game.area || "场地待定",
-    fee: fee ? `¥${fee}/人` : "免费/AA"
+    fee: fee ? `¥${fee}/人` : "免费/AA",
+    canJoin,
+    actionText: game.is_joined ? "已报名" : canJoin ? "报名" : "不可报名"
   };
 }
 
 Page({
   data: {
     loading: false,
+    joiningId: "",
     error: "",
     empty: false,
     games: fallbackGames
@@ -82,6 +86,32 @@ Page({
           empty: false,
           games: fallbackGames
         });
+      });
+  },
+
+  joinGame(event) {
+    const id = event.currentTarget.dataset.id;
+    if (!id || this.data.joiningId) return;
+
+    this.setData({ joiningId: id });
+
+    post(`/api/sports-app/games/${id}/join`, {}, { loadingTitle: "报名中" })
+      .then((result) => {
+        wx.showToast({
+          title: result.order_id ? "已生成待支付订单" : "报名成功",
+          icon: "success"
+        });
+
+        return this.loadGames();
+      })
+      .catch((error) => {
+        wx.showToast({
+          title: error.message || "报名失败",
+          icon: "none"
+        });
+      })
+      .finally(() => {
+        this.setData({ joiningId: "" });
       });
   }
 });

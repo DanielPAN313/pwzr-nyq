@@ -1,8 +1,87 @@
+const { get } = require("../../utils/api");
+
+const fallbackGames = [
+  { title: "今晚江宁五人制足球", time: "今天 19:30", status: "缺 2 人", venueName: "未来科技城五人制足球馆", fee: "AA" },
+  { title: "大学城 3v3 篮球局", time: "明天 20:00", status: "缺 1 人", venueName: "江宁大学城篮球馆", fee: "AA" }
+];
+
+const statusText = {
+  forming: "待成局",
+  open: "可报名",
+  locked: "已满员",
+  pending_checkin: "待核销",
+  checked_in: "已核销",
+  review_open: "待评价",
+  completed: "已完成",
+  cancelled: "已取消"
+};
+
+function formatGameTime(value) {
+  if (!value) return "时间待定";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const hour = String(date.getHours()).padStart(2, "0");
+  const minute = String(date.getMinutes()).padStart(2, "0");
+
+  return `${month}/${day} ${hour}:${minute}`;
+}
+
+function mapGame(game) {
+  const joined = Number(game.joined_count || 0);
+  const capacity = Number(game.capacity || 0);
+  const missing = capacity > joined ? `缺 ${capacity - joined} 人` : "已满员";
+  const fee = Number(game.fee_per_person || 0);
+
+  return {
+    id: game.id,
+    title: game.title || "未命名球局",
+    time: formatGameTime(game.start_time),
+    status: statusText[game.status] || missing,
+    venueName: game.venue_name || game.area || "场地待定",
+    fee: fee ? `¥${fee}/人` : "免费/AA"
+  };
+}
+
 Page({
   data: {
-    games: [
-      { title: "今晚江宁五人制足球", time: "今天 19:30", status: "缺 2 人" },
-      { title: "大学城 3v3 篮球局", time: "明天 20:00", status: "缺 1 人" }
-    ]
+    loading: false,
+    error: "",
+    empty: false,
+    games: fallbackGames
+  },
+
+  onLoad() {
+    this.loadGames();
+  },
+
+  onPullDownRefresh() {
+    this.loadGames().finally(() => wx.stopPullDownRefresh());
+  },
+
+  loadGames() {
+    this.setData({ loading: true, error: "", empty: false });
+
+    return get("/api/sports-app/games", { showLoading: false })
+      .then((games) => {
+        const list = Array.isArray(games) ? games.map(mapGame) : [];
+
+        this.setData({
+          loading: false,
+          games: list.length ? list : [],
+          empty: list.length === 0
+        });
+      })
+      .catch((error) => {
+        this.setData({
+          loading: false,
+          error: error.message || "球局数据加载失败",
+          empty: false,
+          games: fallbackGames
+        });
+      });
   }
 });

@@ -1,0 +1,23 @@
+<view class="page">
+  <view class="section">
+    <view class="page-title">我的订单</view>
+    <text wx:if="{{loading}}" class="muted">正在加载订单...</text>
+    <text wx:elif="{{error}}" class="muted">{{error}}，已显示本地兜底订单。</text>
+    <text wx:elif="{{empty}}" class="muted">暂时没有订单。去球局页报名后会生成待支付订单。</text>
+    <text wx:else class="muted">这里展示报名、订场和到场核销相关订单。</text>
+  </view>
+
+  <view wx:for="{{orders}}" wx:key="title" class="section order-card">
+    <text class="card-title">{{item.title}}</text>
+    <text class="muted">{{item.venueName}} · {{item.timeText}}</text>
+    <view class="card-row">
+      <text class="price">{{item.amountText}}</text>
+      <text class="status">{{item.statusText}}</text>
+    </view>
+    <view class="checkin-box">
+      <text class="muted">核销码</text>
+      <text class="checkin-code">{{item.checkinCode}}</text>
+    </view>
+    <text class="muted">{{item.hint}}</text>
+  </view>
+</view>

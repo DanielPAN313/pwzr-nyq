@@ -8,7 +8,7 @@
   </view>
 
   <view class="section">
-    <view wx:for="{{items}}" wx:key="label" class="menu-row">
+    <view wx:for="{{items}}" wx:key="label" class="menu-row" bindtap="openMenu" data-target="{{item.target}}">
       <text>{{item.label}}</text>
       <text class="muted">{{item.value}} ›</text>
     </view>

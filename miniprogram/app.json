@@ -4,7 +4,8 @@
     "pages/venues/venues",
     "pages/games/games",
     "pages/messages/messages",
-    "pages/me/me"
+    "pages/me/me",
+    "pages/orders/orders"
   ],
   "window": {
     "navigationBarTitleText": "宁约球",

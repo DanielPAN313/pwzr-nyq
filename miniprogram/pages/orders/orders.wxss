@@ -1,0 +1,47 @@
+.page-title,
+.card-title {
+  display: block;
+  margin-bottom: 10rpx;
+  font-size: 34rpx;
+  font-weight: 850;
+}
+
+.order-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+}
+
+.card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.price {
+  color: #12824f;
+  font-size: 34rpx;
+  font-weight: 900;
+}
+
+.status {
+  color: #102016;
+  font-size: 26rpx;
+  font-weight: 800;
+}
+
+.checkin-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18rpx;
+  border-radius: 16rpx;
+  background: #eef6ed;
+}
+
+.checkin-code {
+  color: #102016;
+  font-size: 34rpx;
+  font-weight: 900;
+  letter-spacing: 2rpx;
+}

@@ -72,11 +72,12 @@ const sitemapJson = parseJson(path.join(miniRoot, "sitemap.json"));
 function validateProjectConfig(config, file, expectedRoots) {
   if (!config) return;
   const label = rel(file);
+  const appid = String(config.appid || "");
   if (config.compileType !== "miniprogram") {
     errors.push(`${label} compileType must be "miniprogram".`);
   }
-  if (config.appid !== "touristappid") {
-    errors.push(`${label} appid should stay "touristappid" until a real Mini Program AppID is registered.`);
+  if (appid !== "touristappid" && !/^wx[a-f0-9]{16}$/i.test(appid)) {
+    errors.push(`${label} appid must be "touristappid" or a valid wx Mini Program test/real AppID.`);
   }
   if (!expectedRoots.includes(config.miniprogramRoot)) {
     errors.push(`${label} miniprogramRoot must be one of: ${expectedRoots.join(", ")}.`);

@@ -1,6 +1,10 @@
+const { DEFAULT_CONFIG } = require("./utils/config");
+
 App({
   globalData: {
-    apiBaseUrl: "http://localhost:4174",
-    user: null
+    config: DEFAULT_CONFIG,
+    apiBaseUrl: DEFAULT_CONFIG.apiBaseUrl,
+    user: null,
+    token: ""
   }
 });

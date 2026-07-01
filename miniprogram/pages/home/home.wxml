@@ -22,6 +22,8 @@
 
   <view class="section">
     <view class="section-title">下一步开发</view>
-    <text class="muted">这里会从旧 H5 原型迁移真实首页数据、推荐场馆、今日球局和订单提醒。</text>
+    <text wx:if="{{loading}}" class="muted">正在加载首页数据...</text>
+    <text wx:elif="{{error}}" class="muted">{{error}}，已显示本地兜底内容。</text>
+    <text wx:else class="muted">{{summary}}</text>
   </view>
 </view>

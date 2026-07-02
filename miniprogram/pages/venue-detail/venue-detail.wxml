@@ -17,6 +17,7 @@
       <view class="section-title">场馆信息</view>
       <text class="muted">{{venue.address}}</text>
       <text class="muted">联系方式：{{venue.contact}}</text>
+      <text class="slot-summary">开放时段：{{venue.openSlotsText}}</text>
     </view>
 
     <view class="section">

@@ -17,15 +17,18 @@ function tomorrowDateText() {
 
 function mapVenue(venue) {
   const sports = Array.isArray(venue.sports) ? venue.sports.join(" / ") : venue.sports;
+  const openSlots = Array.isArray(venue.open_slots) ? venue.open_slots : [];
+
   return {
     id: venue.id,
     name: venue.name || "未命名场馆",
     area: venue.area || "附近",
     address: venue.address || "暂无详细地址",
-    priceText: `¥${Number(venue.price_per_hour || 0)}/小时`,
+    priceText: `¥${Number(venue.price_per_hour || 0).toFixed(0)}/小时`,
     sportsText: sports || "综合运动",
     indoorText: venue.indoor ? "室内" : "室外",
-    contact: venue.contact || "到店咨询"
+    contact: venue.contact || "到店咨询",
+    openSlotsText: openSlots.length ? openSlots.join("、") : "场馆暂未配置固定开放时段"
   };
 }
 
@@ -36,7 +39,7 @@ function mapSlot(slot) {
     start: slot.start,
     end: slot.end,
     occupied: Boolean(slot.occupied),
-    statusText: slot.occupied ? "已占用" : "可预订"
+    statusText: slot.occupied ? "已占用" : "可预约"
   };
 }
 
@@ -82,7 +85,7 @@ Page({
           venue: mapVenue(data.venue || {}),
           slots,
           selectedSlotIndex: firstAvailable >= 0 ? firstAvailable : 0,
-          error: slots.length ? "" : "该场馆暂无开放时段。"
+          error: slots.length ? "" : "该场馆暂未开放可预约时段。"
         });
       })
       .catch((error) => {
@@ -123,7 +126,7 @@ Page({
         });
 
         setTimeout(() => {
-          wx.navigateTo({ url: "/pages/orders/orders" });
+          wx.navigateTo({ url: result.order_id ? `/pages/orders/orders?orderId=${result.order_id}` : "/pages/orders/orders" });
         }, 600);
       })
       .catch((error) => {

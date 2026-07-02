@@ -37,6 +37,20 @@ requireIncludes("miniprogram/pages/orders/orders.wxml", [
   "data-game-id",
 ]);
 
+requireIncludes("miniprogram/pages/venue-detail/venue-detail.js", [
+  "/api/sports-app/venues/",
+  "/availability?date=",
+  "/book",
+  "/pages/orders/orders?orderId=",
+  "openSlotsText",
+]);
+
+requireIncludes("miniprogram/pages/venue-detail/venue-detail.wxml", [
+  "开放时段：{{venue.openSlotsText}}",
+  "bindtap=\"bookSelectedSlot\"",
+  "生成待支付订单",
+]);
+
 requireIncludes("miniprogram/pages/venue-admin/venue-admin.js", [
   "/api/sports-app/venue-admin/checkin-code",
   "/api/sports-app/venue-admin/orders/",

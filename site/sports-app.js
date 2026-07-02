@@ -38,6 +38,7 @@
     friendAddOpen: false,
     mobileMoreOpen: false,
     addedFriends: loadAddedFriends(),
+    splashTimer: null,
     highlightOrderId: null,
     aiDemoAnalyzed: false,
     toast: '',
@@ -48,6 +49,7 @@
 
   var app = document.getElementById('app');
   var ROUTABLE_USER_VIEWS = [
+    'splash',
     'home',
     'venues',
     'games',
@@ -66,7 +68,7 @@
     'demo',
   ];
   var ROUTE_PATH_VIEWS = {
-    'pages/splash/splash': 'home',
+    'pages/splash/splash': 'splash',
     'pages/home/home': 'home',
     'pages/venues/venues': 'venues',
     'pages/games/games': 'games',
@@ -109,6 +111,7 @@
   function routeLabel(view) {
     return {
       home: 'Home',
+      splash: 'Splash',
       venues: 'Venues',
       games: 'Games',
       messages: 'Messages',
@@ -737,8 +740,24 @@
     return true;
   }
 
+  function clearSplashTimer() {
+    if (!state.splashTimer) return;
+    clearTimeout(state.splashTimer);
+    state.splashTimer = null;
+  }
+
+  function scheduleSplashEnter() {
+    clearSplashTimer();
+    state.splashTimer = setTimeout(function () {
+      state.splashTimer = null;
+      goToUserView('home', { replace: true, replaceUrl: true });
+      render();
+    }, 1500);
+  }
+
   function goToUserView(view, options) {
     var nextView = normalizeRouteView(view || 'home');
+    if (nextView !== 'splash') clearSplashTimer();
     var shouldRemember = !(options && options.replace);
     var before = currentNavSnapshot();
     if (shouldRemember && before.userView !== nextView) pushNavSnapshot(before);
@@ -2409,6 +2428,32 @@
     return (isHome ? hero() : body) + mobileTabbar();
   }
 
+  function splashView() {
+    return [
+      '<main class="preview-splash-page" aria-label="宁约球启动页">',
+      '  <div class="preview-light-spot preview-light-spot-top" aria-hidden="true"></div>',
+      '  <div class="preview-light-spot preview-light-spot-bottom" aria-hidden="true"></div>',
+      '  <section class="preview-splash-stage">',
+      '    <div class="preview-court-card" aria-hidden="true">',
+      '      <span class="preview-court-line line-top"></span>',
+      '      <span class="preview-court-line line-mid"></span>',
+      '      <span class="preview-court-line line-bottom"></span>',
+      '      <span class="preview-court-axis axis-left"></span>',
+      '      <span class="preview-court-axis axis-right"></span>',
+      '      <span class="preview-motion-ball"></span>',
+      '    </div>',
+      '    <div class="preview-splash-mark">宁</div>',
+      '  </section>',
+      '  <section class="preview-brand-copy">',
+      '    <h1>宁约球</h1>',
+      '    <p>开球，去宁约球</p>',
+      '    <button class="preview-enter-button" type="button" data-enter-splash>立即进入</button>',
+      '  </section>',
+      '  <div class="preview-splash-progress" aria-hidden="true"><span></span></div>',
+      '</main>',
+    ].join('');
+  }
+
   function mobileTabbar() {
     var tabs = [
       ['home', '首页'],
@@ -2635,6 +2680,13 @@
   function render() {
     state.mode = 'user';
     syncPreviewRoute({ replace: true });
+    if (state.userView === 'splash') {
+      app.innerHTML = splashView() + (state.toast ? '<div class="toast">' + h(state.toast) + '</div>' : '');
+      bindEvents();
+      scheduleSplashEnter();
+      return;
+    }
+    clearSplashTimer();
     var content = userMode();
     app.innerHTML = topbar() + returnHomeFab() + '<main class="page">' + content + '</main>' + searchOverlay() + mobileMoreSheet() + (state.friendAddOpen ? friendAddSheet() : '') + (state.toast ? '<div class="toast">' + h(state.toast) + '</div>' : '');
     bindEvents();
@@ -2667,6 +2719,13 @@
   }
 
   function bindEvents() {
+    app.querySelectorAll('[data-enter-splash]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        goToUserView('home', { replace: true, replaceUrl: true });
+        render();
+      });
+    });
+
     bindRadarSlider();
     app.querySelectorAll('[data-mode]').forEach(function (button) {
       button.addEventListener('click', async function () {

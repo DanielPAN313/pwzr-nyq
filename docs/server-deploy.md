@@ -203,6 +203,22 @@ git checkout -b release-wechat-config
 
 在 `release-wechat-config` 上完成 AppID、HTTPS API 地址、真实登录和支付配置验证，通过后再用于体验版/审核准备。
 
+完成生产配置后额外运行：
+
+```bash
+npm run check:release-config
+```
+
+这个命令会检查：
+
+- 根目录和 `miniprogram/` 下的 `project.config.json` 都不能继续使用 `touristappid`。
+- `setting.urlCheck` 不能继续保持 `false`。
+- 小程序配置必须切到 `env: "production"`。
+- `apiBaseUrl` 必须是真实 HTTPS 域名，不能是 `localhost` 或 `api.your-domain.com`。
+- `useMockAuth` 必须是 `false`，确保走真实 `wx.login`。
+
+注意：在当前本地开发分支运行 `npm run check:release-config` 会失败，这是正常的；它只用于 `release-wechat-config` 这类体验版/审核前配置分支。
+
 ## 上线前必须补齐
 
 当前项目已经有开发版模拟登录和模拟支付。真正上线前还需要：
@@ -226,6 +242,7 @@ git checkout -b release-wechat-config
 npm ci
 npm run check
 npm run check:deploy
+npm run check:release-config
 ```
 
 服务器检查：

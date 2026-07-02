@@ -91,10 +91,16 @@ requireIncludes("Dockerfile", [
   "CMD [\"npm\", \"run\", \"mirror\"]",
 ]);
 
+requireIncludes("package.json", [
+  "\"check:release-config\": \"node scripts/check-wechat-release-config.mjs\"",
+]);
+
 requireIncludes("docs/server-deploy.md", [
   "cp .env.server.example .env.server",
   "docker compose --env-file .env.server up -d --build",
   "https://api.your-domain.com/api/sports-app/bootstrap",
+  "npm run check:release-config",
+  "当前本地开发分支运行 `npm run check:release-config` 会失败，这是正常的",
   "开发管理 -> 开发设置 -> 服务器域名 -> request 合法域名",
   "useMockAuth: false",
   "release-wechat-config",

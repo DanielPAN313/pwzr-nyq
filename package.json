@@ -29,6 +29,7 @@
     "check:repository-hygiene": "node scripts/check-repository-hygiene.mjs",
     "check:ui-branch-scope": "node scripts/check-ui-branch-scope.mjs",
     "check:deploy": "node scripts/check-deploy-readiness.mjs",
+    "check:release-config": "node scripts/check-wechat-release-config.mjs",
     "check": "npm run check:miniprogram && npm run check:miniprogram-flows && npm run check:miniprogram-runtime && npm run check:miniprogram-routes && npm run check:wxml-events && npm run check:ui-structure && npm run check:api-contracts && npm run check:db-contracts && npm run check:seed-data && npm run check:h5-preview && npm run check:h5-http-preview && npm run check:h5-bridge && npm run check:h5-bridge-coverage && npm run check:collaboration-docs && npm run check:self-test-coverage && npm run check:demo-readiness && npm run check:repository-hygiene && npm run check:deploy"
   },
   "dependencies": {

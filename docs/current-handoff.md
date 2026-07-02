@@ -69,6 +69,7 @@ AppID：touristappid
 - 仓库卫生检查。
 - 部署准备检查。
 - 服务器密钥检查：`.env.server`、`secrets/`、`.pem`、证书和本机产物不会被提交，微信支付私钥通过 `/run/secrets` 只读挂载。
+- 生产配置检查：`npm run check:release-config` 已预留给 `release-wechat-config` 分支，当前本地开发分支失败是正常的。
 
 ## UI 同伴注意
 

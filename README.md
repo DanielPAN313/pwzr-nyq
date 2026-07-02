@@ -146,9 +146,12 @@ npm run check
 
 ```bash
 npm run check:deploy
+npm run check:release-config
 ```
 
 `check:deploy` 会检查服务器环境模板、微信登录配置、微信支付证书/API v3 key/通知地址、商户私钥 `secrets/` 只读挂载、HTTPS 合法域名和合规文档入口。
+
+`check:release-config` 只在体验版/审核前的 `release-wechat-config` 分支运行，用来确认正式 AppID、HTTPS API、`useMockAuth: false` 和 `urlCheck` 已经切好；当前本地开发分支运行失败是正常的。
 
 小程序页面放在：
 

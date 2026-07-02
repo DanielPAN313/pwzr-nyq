@@ -54,6 +54,7 @@ function requirePath(file) {
   "scripts/check-seed-data-contracts.mjs",
   "scripts/check-miniprogram-routes.mjs",
   "scripts/check-wxml-event-bindings.mjs",
+  "scripts/check-self-test-coverage.mjs",
 ].forEach(requirePath);
 
 requireIncludes("README.md", [
@@ -87,6 +88,7 @@ requireIncludes("package.json", [
   "\"check:seed-data\"",
   "\"check:miniprogram-routes\"",
   "\"check:wxml-events\"",
+  "\"check:self-test-coverage\"",
   "\"check\"",
   "check:demo-readiness",
   "check:repository-hygiene",
@@ -95,6 +97,7 @@ requireIncludes("package.json", [
   "check:seed-data",
   "check:miniprogram-routes",
   "check:wxml-events",
+  "check:self-test-coverage",
 ]);
 
 requireIncludes(".github/workflows/check.yml", [

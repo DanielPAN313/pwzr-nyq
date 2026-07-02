@@ -25,11 +25,31 @@
 .detail-status {
   align-self: flex-start;
   padding: 8rpx 16rpx;
-  border-radius: 999rpx;
+  border-radius: 8rpx;
   color: #083923;
   background: #d7f36a;
   font-size: 24rpx;
   font-weight: 850;
+}
+
+.status-warning {
+  background: #fed7aa;
+  color: #9a3412;
+}
+
+.status-info {
+  background: #bfdbfe;
+  color: #1d4ed8;
+}
+
+.status-success {
+  background: #bbf7d0;
+  color: #067647;
+}
+
+.status-muted {
+  background: #e2e8f0;
+  color: #475569;
 }
 
 .detail-muted {
@@ -37,9 +57,49 @@
   font-size: 26rpx;
 }
 
+.step-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+  border-left: 6rpx solid #94a3b8;
+  background: #f8fafc;
+}
+
+.step-warning {
+  border-left-color: #f97316;
+  background: #fff7ed;
+}
+
+.step-info {
+  border-left-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.step-success {
+  border-left-color: #12b76a;
+  background: #ecfdf3;
+}
+
+.step-muted {
+  border-left-color: #94a3b8;
+  background: #f1f5f9;
+}
+
+.step-title {
+  color: #102016;
+  font-size: 30rpx;
+  font-weight: 900;
+}
+
+.step-text {
+  color: #475569;
+  font-size: 24rpx;
+  line-height: 1.5;
+}
+
 .info-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18rpx;
 }
 
@@ -47,12 +107,48 @@
   display: flex;
   flex-direction: column;
   gap: 8rpx;
+  padding: 16rpx;
+  border: 1rpx solid rgba(20, 32, 50, 0.08);
+  border-radius: 8rpx;
+  background: #f8fafc;
 }
 
 .info-value {
   color: #102016;
   font-size: 30rpx;
   font-weight: 900;
+}
+
+.progress-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14rpx;
+}
+
+.progress-value {
+  color: #102016;
+  font-size: 34rpx;
+  font-weight: 900;
+}
+
+.progress-missing {
+  color: #0b6b3e;
+  font-size: 26rpx;
+  font-weight: 850;
+}
+
+.progress-track {
+  overflow: hidden;
+  height: 18rpx;
+  border-radius: 999rpx;
+  background: #e2e8f0;
+}
+
+.progress-bar {
+  height: 100%;
+  border-radius: 999rpx;
+  background: #12b76a;
 }
 
 .player-row {

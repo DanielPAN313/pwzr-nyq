@@ -9,26 +9,30 @@
   <block wx:if="{{detail}}">
     <view class="detail-hero">
       <text class="detail-title">{{detail.title}}</text>
-      <text class="detail-status">{{detail.statusText}}</text>
+      <text class="detail-status status-{{detail.statusTone}}">{{detail.statusText}}</text>
       <text class="detail-muted">{{detail.venueName}} · {{detail.area}}</text>
     </view>
 
+    <view class="section step-panel step-{{detail.stepTone}}">
+      <text class="step-title">{{detail.stepTitle}}</text>
+      <text class="step-text">{{detail.stepText}}</text>
+    </view>
+
     <view class="section info-grid">
-      <view class="info-item">
-        <text class="info-value">{{detail.startText}}</text>
-        <text class="muted">开始时间</text>
+      <view wx:for="{{detail.infoCards}}" wx:key="label" class="info-item">
+        <text class="info-value">{{item.value}}</text>
+        <text class="muted">{{item.label}}</text>
       </view>
-      <view class="info-item">
-        <text class="info-value">{{detail.endText}}</text>
-        <text class="muted">结束时间</text>
+    </view>
+
+    <view class="section">
+      <view class="section-title">报名进度</view>
+      <view class="progress-head">
+        <text class="progress-value">{{detail.playerCount}}/{{detail.capacity}}</text>
+        <text class="progress-missing">{{detail.missingText}}</text>
       </view>
-      <view class="info-item">
-        <text class="info-value">{{detail.playerCount}}/{{detail.capacity}}</text>
-        <text class="muted">报名人数</text>
-      </view>
-      <view class="info-item">
-        <text class="info-value">{{detail.feeText}}</text>
-        <text class="muted">费用</text>
+      <view class="progress-track">
+        <view class="progress-bar" style="width: {{detail.progressPercent}}%;"></view>
       </view>
     </view>
 

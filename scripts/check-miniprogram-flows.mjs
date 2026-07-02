@@ -144,12 +144,18 @@ requireIncludes("miniprogram/pages/game-detail/game-detail.js", [
   "/api/sports-app/games/",
   "/reviews",
   "reviewablePlayers",
+  "gameStep",
+  "progressPercent",
+  "missingText",
 ]);
 
 requireIncludes("miniprogram/pages/game-detail/game-detail.wxml", [
   "赛后互评",
   "bindtap=\"submitPraiseReviews\"",
   "detail.reviewOpen",
+  "step-panel",
+  "progress-track",
+  "detail.missingText",
 ]);
 
 requireIncludes("miniprogram/utils/auth.js", [

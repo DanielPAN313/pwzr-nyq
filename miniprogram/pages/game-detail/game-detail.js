@@ -46,6 +46,60 @@ function mapPlayer(player, reviewedIds, currentUserId) {
   };
 }
 
+function gameStep(game, players, currentUserId, reviewOpen, reviewablePlayers) {
+  const status = game.status || "";
+  const isJoined = players.some((player) => player.isSelf);
+  const checkedInSelf = players.some((player) => player.isSelf && player.checkedIn);
+  const capacity = Number(game.capacity || 0);
+  const missing = Math.max(capacity - players.length, 0);
+
+  if (reviewOpen && reviewablePlayers.length > 0) {
+    return {
+      tone: "success",
+      title: "下一步：赛后互评",
+      text: `还有 ${reviewablePlayers.length} 位已到场队友可评价，提交后会更新队友实力分。`
+    };
+  }
+
+  if (checkedInSelf) {
+    return {
+      tone: "success",
+      title: "你已完成到场核销",
+      text: "等待互评开放或查看本场球友到场状态。"
+    };
+  }
+
+  if (isJoined) {
+    return {
+      tone: "info",
+      title: "你已报名占位",
+      text: "请按时到场，支付订单里会显示核销码。"
+    };
+  }
+
+  if (["forming", "open"].includes(status) && missing > 0) {
+    return {
+      tone: "warning",
+      title: "可报名参加",
+      text: `当前还缺 ${missing} 人，报名后会生成待支付订单，支付后正式占位。`
+    };
+  }
+
+  if (status === "locked") {
+    return {
+      tone: "muted",
+      title: "球局已满员",
+      text: "可以返回球局列表看看其他可报名场次。"
+    };
+  }
+
+  return {
+    tone: "neutral",
+    title: statusText[status] || "查看球局状态",
+    text: "请关注订单、核销和消息提醒里的后续动作。"
+  };
+}
+
 function mapDetail(detail) {
   const game = detail.game || {};
   const reviewedIds = Array.isArray(detail.reviewed_target_ids) ? detail.reviewed_target_ids.map(Number) : [];
@@ -55,21 +109,37 @@ function mapDetail(detail) {
     : [];
   const fee = Number(game.fee_per_person || 0);
   const reviewablePlayers = players.filter((player) => player.reviewable);
+  const capacity = Number(game.capacity || 0);
+  const playerCount = players.length;
+  const missingCount = Math.max(capacity - playerCount, 0);
+  const progressPercent = capacity ? Math.min(Math.round((playerCount / capacity) * 100), 100) : 0;
+  const step = gameStep(game, players, currentUser.id, Boolean(detail.review_open), reviewablePlayers);
 
   return {
     title: game.title || "未命名球局",
     statusText: statusText[game.status] || game.status || "未知状态",
+    statusTone: step.tone,
     venueName: game.venue_name || "场馆待定",
     area: game.area || "",
     address: game.address || "",
     startText: formatTime(game.start_time),
     endText: formatTime(game.end_time),
-    capacity: Number(game.capacity || 0),
+    capacity,
     feeText: fee ? `¥${fee}/人` : "免费/AA",
     notes: game.notes || "暂无备注",
+    infoCards: [
+      { label: "开始", value: formatTime(game.start_time) },
+      { label: "人数", value: `${playerCount}/${capacity || "?"}` },
+      { label: "费用", value: fee ? `¥${fee}/人` : "免费/AA" }
+    ],
+    stepTitle: step.title,
+    stepText: step.text,
+    stepTone: step.tone,
+    missingText: missingCount > 0 ? `还缺 ${missingCount} 人` : "人数已满",
+    progressPercent,
     players,
     reviewablePlayers,
-    playerCount: players.length,
+    playerCount,
     reviewOpen: Boolean(detail.review_open),
     reviewedCount: reviewedIds.length
   };

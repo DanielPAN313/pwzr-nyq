@@ -116,7 +116,9 @@ requireIncludes(".github/pull_request_template.md", [
   "docs/ui-design-system.md",
   "docs/miniprogram-self-test.md",
   "微信开发者工具",
+  "启动页",
   "场馆管理页",
+  "合规说明页",
 ]);
 
 requireIncludes("docs/project-roadmap.md", [

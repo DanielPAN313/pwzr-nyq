@@ -28,6 +28,29 @@ page {
   background: #12824f;
 }
 
+.primary,
+.secondary {
+  border-radius: 18rpx;
+  font-weight: 850;
+}
+
+button::after {
+  border: 0;
+}
+
+button[disabled] {
+  opacity: 0.56;
+}
+
+.small {
+  min-width: 150rpx;
+  min-height: 58rpx;
+  padding: 0 22rpx;
+  border-radius: 999rpx;
+  font-size: 26rpx;
+  line-height: 58rpx;
+}
+
 .state-panel {
   display: flex;
   flex-direction: column;

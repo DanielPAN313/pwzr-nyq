@@ -190,6 +190,9 @@ requireIncludes("miniprogram/app.wxss", [
   ".state-actions",
   ".state-title",
   ".state-text",
+  ".small",
+  "button[disabled]",
+  "button::after",
 ]);
 
 requireIncludes("miniprogram/pages/venue-detail/venue-detail.js", [

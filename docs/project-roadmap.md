@@ -34,6 +34,7 @@
 - `utils/api.js` 统一请求、loading、错误、token 和用户 header。
 - `utils/api.js` 支持请求超时、弱网错误文案、HTTP 状态文案和 GET/HEAD 轻量重试。
 - `utils/auth.js` 支持本地模拟登录，也预留 `wx.login` 真实登录。
+- `app.wxss` 已统一主按钮、次按钮、小按钮、禁用态和状态面板基础样式。
 
 ### 用户端主流程
 

@@ -27,12 +27,22 @@ services:
       mysql:
         condition: service_healthy
     environment:
+      NODE_ENV: ${NODE_ENV:-production}
       PORT: ${PORT:-4174}
       MYSQL_HOST: mysql
       MYSQL_PORT: 3306
       MYSQL_USER: ${MYSQL_USER:-nyq}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-change_app_password}
       MYSQL_DATABASE: ${MYSQL_DATABASE:-nyq}
+      WECHAT_APP_ID: ${WECHAT_APP_ID:-}
+      WECHAT_APP_SECRET: ${WECHAT_APP_SECRET:-}
+      WECHAT_PAY_MCH_ID: ${WECHAT_PAY_MCH_ID:-}
+      WECHAT_PAY_SERIAL_NO: ${WECHAT_PAY_SERIAL_NO:-}
+      WECHAT_PAY_API_V3_KEY: ${WECHAT_PAY_API_V3_KEY:-}
+      WECHAT_PAY_PRIVATE_KEY_PATH: ${WECHAT_PAY_PRIVATE_KEY_PATH:-}
+      WECHAT_PAY_NOTIFY_URL: ${WECHAT_PAY_NOTIFY_URL:-}
+      WECHAT_PAY_REFUND_NOTIFY_URL: ${WECHAT_PAY_REFUND_NOTIFY_URL:-}
+      PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-}
     ports:
       - "${PORT:-4174}:${PORT:-4174}"
 

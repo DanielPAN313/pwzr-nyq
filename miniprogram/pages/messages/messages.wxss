@@ -5,3 +5,22 @@
   font-size: 34rpx;
   font-weight: 850;
 }
+
+.message-card {
+  cursor: pointer;
+}
+
+.message-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+  margin-top: 12rpx;
+}
+
+.action-text {
+  flex-shrink: 0;
+  color: #0b6b3e;
+  font-size: 26rpx;
+  font-weight: 750;
+}

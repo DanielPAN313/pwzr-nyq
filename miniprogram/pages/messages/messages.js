@@ -1,8 +1,20 @@
 const { get, post } = require("../../utils/api");
 
 const fallbackMessages = [
-  { title: "报名提醒", body: "你的球局名额已保留，等待支付确认。", statusText: "未读", timeText: "刚刚" },
-  { title: "场馆动态", body: "江宁大学城篮球馆新增黄金时段。", statusText: "未读", timeText: "今天" }
+  {
+    title: "报名提醒",
+    body: "你的球局名额已保留，等待支付确认。",
+    statusText: "未读",
+    timeText: "刚刚",
+    targetText: "查看订单"
+  },
+  {
+    title: "场馆动态",
+    body: "宁约球新增黄金时段，快去看看可订场地。",
+    statusText: "未读",
+    timeText: "今天",
+    targetText: ""
+  }
 ];
 
 function formatTime(value) {
@@ -20,13 +32,19 @@ function formatTime(value) {
 }
 
 function mapMessage(message) {
+  const relatedOrderId = message.related_order_id || "";
+  const relatedGameId = message.related_game_id || "";
+
   return {
     id: message.id,
     title: message.title || "系统通知",
     body: message.body || "",
     status: message.status || "unread",
     statusText: message.status === "read" ? "已读" : "未读",
-    timeText: formatTime(message.create_time)
+    timeText: formatTime(message.create_time),
+    relatedOrderId,
+    relatedGameId,
+    targetText: relatedOrderId ? "查看订单" : relatedGameId ? "查看球局" : ""
   };
 }
 
@@ -69,11 +87,27 @@ Page({
       });
   },
 
-  markRead(event) {
+  openMessage(event) {
     const id = event.currentTarget.dataset.id;
     if (!id) return;
 
-    post(`/api/sports-app/notifications/${id}/read`, {}, { showLoading: false })
+    const message = this.data.messages.find((item) => String(item.id) === String(id));
+    if (!message) return;
+
+    this.markMessageRead(id)
+      .then(() => {
+        this.navigateByMessage(message);
+      })
+      .catch((error) => {
+        wx.showToast({
+          title: error.message || "操作失败",
+          icon: "none"
+        });
+      });
+  },
+
+  markMessageRead(id) {
+    return post(`/api/sports-app/notifications/${id}/read`, {}, { showLoading: false })
       .then(() => {
         const messages = this.data.messages.map((message) => {
           if (String(message.id) !== String(id)) return message;
@@ -85,12 +119,17 @@ Page({
         });
 
         this.setData({ messages });
-      })
-      .catch((error) => {
-        wx.showToast({
-          title: error.message || "操作失败",
-          icon: "none"
-        });
       });
+  },
+
+  navigateByMessage(message) {
+    if (message.relatedOrderId) {
+      wx.navigateTo({ url: "/pages/orders/orders" });
+      return;
+    }
+
+    if (message.relatedGameId) {
+      wx.navigateTo({ url: `/pages/game-detail/game-detail?id=${message.relatedGameId}` });
+    }
   }
 });

@@ -9,13 +9,16 @@
 
   <view
     wx:for="{{messages}}"
-    wx:key="title"
-    class="section"
-    bindtap="markRead"
+    wx:key="id"
+    class="section message-card"
+    bindtap="openMessage"
     data-id="{{item.id}}"
   >
     <text class="card-title">{{item.title}}</text>
     <text class="muted">{{item.body}}</text>
-    <text class="muted">{{item.statusText}} {{item.timeText}}</text>
+    <view class="message-footer">
+      <text class="muted">{{item.statusText}} {{item.timeText}}</text>
+      <text wx:if="{{item.targetText}}" class="action-text">{{item.targetText}}</text>
+    </view>
   </view>
 </view>

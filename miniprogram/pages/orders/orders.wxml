@@ -14,10 +14,30 @@
       <text class="price">{{item.amountText}}</text>
       <text class="status">{{item.statusText}}</text>
     </view>
-    <view class="checkin-box">
+    <view wx:if="{{item.showCheckin}}" class="checkin-box">
       <text class="muted">核销码</text>
       <text class="checkin-code">{{item.checkinCode}}</text>
     </view>
     <text class="muted">{{item.hint}}</text>
+    <view wx:if="{{item.canPay || item.canCancel}}" class="order-actions">
+      <button
+        wx:if="{{item.canPay}}"
+        class="primary small"
+        disabled="{{actionOrderId === item.id}}"
+        bindtap="payOrder"
+        data-id="{{item.id}}"
+      >
+        {{actionOrderId === item.id ? "处理中" : "模拟支付"}}
+      </button>
+      <button
+        wx:if="{{item.canCancel}}"
+        class="secondary small"
+        disabled="{{actionOrderId === item.id}}"
+        bindtap="cancelOrder"
+        data-id="{{item.id}}"
+      >
+        {{actionOrderId === item.id ? "处理中" : "取消订单"}}
+      </button>
+    </view>
   </view>
 </view>

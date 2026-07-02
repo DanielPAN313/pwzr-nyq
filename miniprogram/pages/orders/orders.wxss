@@ -45,3 +45,17 @@
   font-weight: 900;
   letter-spacing: 2rpx;
 }
+
+.order-actions {
+  display: flex;
+  gap: 16rpx;
+}
+
+.order-actions button {
+  flex: 1;
+}
+
+.secondary {
+  color: #12824f;
+  background: #eef6ed;
+}

@@ -76,6 +76,11 @@ MYSQL_PUBLIC_PORT=3306
 WECHAT_APP_ID=replace_with_wechat_mini_program_appid
 WECHAT_APP_SECRET=replace_with_wechat_mini_program_appsecret
 WECHAT_PAY_MCH_ID=replace_with_merchant_id
+WECHAT_PAY_SERIAL_NO=replace_with_merchant_certificate_serial_no
+WECHAT_PAY_API_V3_KEY=replace_with_api_v3_key
+WECHAT_PAY_PRIVATE_KEY_PATH=/run/secrets/wechat_pay_private_key.pem
+WECHAT_PAY_NOTIFY_URL=https://api.your-domain.com/api/sports-app/payment/wechat/notify
+WECHAT_PAY_REFUND_NOTIFY_URL=https://api.your-domain.com/api/sports-app/payment/wechat/refund-notify
 PUBLIC_API_BASE_URL=https://api.your-domain.com
 ```
 
@@ -166,7 +171,10 @@ globalData: {
 
 - 微信登录：`wx.login` 换取 openid/session
 - 用户身份：后端绑定 openid，不再只靠开发版模拟用户
-- 微信支付：统一下单、支付回调、退款回调
+- 微信支付：统一下单、支付通知验签、退款通知验签、商户证书和 API v3 key
+- 微信支付通知地址：
+  - `https://api.your-domain.com/api/sports-app/payment/wechat/notify`
+  - `https://api.your-domain.com/api/sports-app/payment/wechat/refund-notify`
 - 场馆端权限：场馆管理员只能看自己场馆订单
 - 生产数据库：禁止使用弱密码
 - HTTPS：证书自动续期

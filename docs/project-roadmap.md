@@ -93,6 +93,7 @@
 - 已有 Dockerfile 和 docker-compose.yml。
 - 已新增 `.env.example` 和 `.env.server.example`。
 - 已新增 `npm run check:deploy`。
+- 部署检查已覆盖微信登录、微信支付证书/API v3 key/通知地址、HTTPS 合法域名和合规材料入口。
 - `npm run check` 已覆盖：
   - 小程序结构检查
   - 主流程契约检查

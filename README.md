@@ -136,6 +136,8 @@ npm run check
 npm run check:deploy
 ```
 
+`check:deploy` 会检查服务器环境模板、微信登录配置、微信支付证书/API v3 key/通知地址、HTTPS 合法域名和合规文档入口。
+
 小程序页面放在：
 
 ```text

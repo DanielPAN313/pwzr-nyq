@@ -45,6 +45,9 @@ requireIncludes(".env.server.example", [
   "WECHAT_APP_ID=replace_with_wechat_mini_program_appid",
   "WECHAT_APP_SECRET=replace_with_wechat_mini_program_appsecret",
   "WECHAT_PAY_MCH_ID=replace_with_merchant_id",
+  "WECHAT_PAY_SERIAL_NO=replace_with_merchant_certificate_serial_no",
+  "WECHAT_PAY_API_V3_KEY=replace_with_api_v3_key",
+  "WECHAT_PAY_PRIVATE_KEY_PATH=/run/secrets/wechat_pay_private_key.pem",
   "PUBLIC_API_BASE_URL=https://api.your-domain.com",
 ]);
 
@@ -69,6 +72,11 @@ requireIncludes("docs/server-deploy.md", [
   "https://api.your-domain.com/api/sports-app/bootstrap",
   "开发管理 -> 开发设置 -> 服务器域名 -> request 合法域名",
   "useMockAuth: false",
+  "WECHAT_PAY_SERIAL_NO",
+  "WECHAT_PAY_API_V3_KEY",
+  "WECHAT_PAY_PRIVATE_KEY_PATH",
+  "支付通知验签",
+  "退款通知验签",
 ]);
 
 requireIncludes("docs/legal/privacy-policy.md", [
@@ -103,6 +111,7 @@ requireIncludes("docs/legal/compliance-checklist.md", [
   "宁约球上线合规检查清单",
   "微信小程序用户隐私保护指引",
   "支付通知验签",
+  "退款通知验签",
   "request 合法域名",
 ]);
 

@@ -99,6 +99,7 @@
   - H5 预览检查
   - `wx.*` 桥接覆盖检查
   - 协作文档和自测清单检查
+  - 演示/交接准备检查
   - 部署准备检查
 - 合规材料草案已放在 `docs/legal/`。
 - 微信开发者工具自测清单已放在 `docs/miniprogram-self-test.md`。
@@ -165,6 +166,7 @@ git push origin ui-polish
 2. 真机前自测：微信开发者工具打开 `miniprogram/`，逐页检查不报错。
 3. 合并 UI 分支前跑 `npm run check`。
 4. 继续补齐页面视觉统一，并按自测清单做微信开发者工具/真机检查。
+5. 演示或交接前确认 `npm run check` 中的 `check:demo-readiness` 通过。
 
 ### P1：注册小程序后做
 

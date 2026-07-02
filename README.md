@@ -16,6 +16,8 @@
 - 项目路线图与当前进度：`docs/project-roadmap.md`
 - MacBook 复现与修改：`docs/macbook-repro.md`
 - 团队协作计划：`docs/collaboration-plan.md`
+- 微信开发者工具自测清单：`docs/miniprogram-self-test.md`
+- UI 分支合并检查清单：`docs/ui-merge-checklist.md`
 - 服务器与域名上线：`docs/server-deploy.md`
 - UI 设计系统：`docs/ui-design-system.md`
 
@@ -47,6 +49,8 @@ npm run check
 `npm run check` 会检查小程序工程是否可打开：`app.json`、页面四件套、tabBar 路由、JSON 语法、UTF-8 编码和浏览器 API 误用。
 
 它还会执行 H5 小程序预览检查、H5 本地 HTTP 直达检查、`wx` 桥接层运行时检查，以及 `miniprogram/` 实际使用的 `wx.*` API 覆盖检查。
+
+它也会检查协作文档、演示准备入口和关键忽略规则，避免同伴拉代码或 UI 分支合并时漏掉必要说明。
 
 ### 4. 打开微信小程序
 

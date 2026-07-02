@@ -52,6 +52,9 @@ requireIncludes("miniprogram/pages/games/games.wxml", [
 requireIncludes("miniprogram/pages/orders/orders.js", [
   "highlightedOrderId",
   "wx.pageScrollTo",
+  "orderStep",
+  "stepTitle",
+  "stepText",
   "wx.requestPayment",
   "/prepay",
   "/pay/confirm",
@@ -61,6 +64,9 @@ requireIncludes("miniprogram/pages/orders/orders.js", [
 ]);
 
 requireIncludes("miniprogram/pages/orders/orders.wxml", [
+  "step-box",
+  "item.stepTitle",
+  "item.stepText",
   "item.canReview",
   "bindtap=\"openReview\"",
   "data-game-id",

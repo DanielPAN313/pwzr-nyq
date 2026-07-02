@@ -18,7 +18,11 @@
     <text class="muted">{{item.venueName}} · {{item.timeText}}</text>
     <view class="card-row">
       <text class="price">{{item.amountText}}</text>
-      <text class="status">{{item.statusText}}</text>
+      <text class="status status-{{item.statusTone}}">{{item.statusText}}</text>
+    </view>
+    <view class="step-box step-{{item.statusTone}}">
+      <text class="step-title">{{item.stepTitle}}</text>
+      <text class="step-text">{{item.stepText}}</text>
     </view>
     <view wx:if="{{item.showCheckin}}" class="checkin-box">
       <text class="muted">核销码</text>

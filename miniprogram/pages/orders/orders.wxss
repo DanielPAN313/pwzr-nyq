@@ -38,9 +38,73 @@
 }
 
 .status {
+  padding: 6rpx 14rpx;
+  border-radius: 8rpx;
   color: #102016;
   font-size: 26rpx;
   font-weight: 800;
+}
+
+.status-warning {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.status-info {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.status-success {
+  background: #ecfdf3;
+  color: #067647;
+}
+
+.status-muted {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.step-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+  padding: 18rpx;
+  border-left: 6rpx solid #94a3b8;
+  border-radius: 8rpx;
+  background: #f8fafc;
+}
+
+.step-warning {
+  border-left-color: #f97316;
+  background: #fff7ed;
+}
+
+.step-info {
+  border-left-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.step-success {
+  border-left-color: #12b76a;
+  background: #ecfdf3;
+}
+
+.step-muted {
+  border-left-color: #94a3b8;
+  background: #f1f5f9;
+}
+
+.step-title {
+  color: #102016;
+  font-size: 28rpx;
+  font-weight: 850;
+}
+
+.step-text {
+  color: #475569;
+  font-size: 24rpx;
+  line-height: 1.5;
 }
 
 .checkin-box {

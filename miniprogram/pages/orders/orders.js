@@ -14,6 +14,9 @@ const fallbackOrders = [
     canCheckin: false,
     canReview: false,
     showCheckin: false,
+    statusTone: "neutral",
+    stepTitle: "等待同步",
+    stepText: "订单数据同步后会显示下一步动作。",
     highlighted: false
   }
 ];
@@ -40,6 +43,54 @@ function formatTime(value) {
   return `${month}/${day} ${hour}:${minute}`;
 }
 
+function orderStep(status, order, canCheckin, canReview) {
+  if (status === "pending_payment") {
+    return {
+      tone: "warning",
+      title: "下一步：完成支付占位",
+      text: "支付后才会正式锁定名额或场地，可在未支付前直接取消。"
+    };
+  }
+
+  if (status === "paid") {
+    return {
+      tone: canCheckin ? "success" : "info",
+      title: canCheckin ? "下一步：到场后核销" : "下一步：按时到场",
+      text: order.checkin_hint || "请保管核销码，到场后出示给场馆或在可核销时间内完成核销。"
+    };
+  }
+
+  if (status === "checked_in") {
+    return {
+      tone: canReview ? "success" : "neutral",
+      title: canReview ? "下一步：完成赛后互评" : "订单已核销",
+      text: canReview ? "球局已完成到场核销，可以进入球局详情给队友评价。" : "本次订场或活动已完成到场确认。"
+    };
+  }
+
+  if (status === "cancelled") {
+    return {
+      tone: "muted",
+      title: "订单已取消",
+      text: "未支付订单已关闭，不会占用名额或场地。"
+    };
+  }
+
+  if (status === "refunded") {
+    return {
+      tone: "muted",
+      title: "订单已退款",
+      text: "退款状态已记录，如后续接入微信支付，将以支付平台到账结果为准。"
+    };
+  }
+
+  return {
+    tone: "neutral",
+    title: "等待处理",
+    text: order.checkin_hint || "订单状态更新后会显示下一步动作。"
+  };
+}
+
 function mapOrder(order, highlightedOrderId) {
   const amount = Number(order.amount || 0);
   const status = order.status || "";
@@ -47,6 +98,8 @@ function mapOrder(order, highlightedOrderId) {
   const canCancel = ["pending_payment", "paid"].includes(status);
   const canCheckin = Boolean(order.can_checkin);
   const showCheckin = ["paid", "checked_in"].includes(status);
+  const canReview = Boolean(order.game_id) && status === "checked_in";
+  const step = orderStep(status, order, canCheckin, canReview);
 
   return {
     id: order.id,
@@ -63,8 +116,11 @@ function mapOrder(order, highlightedOrderId) {
     canPay,
     canCancel,
     canCheckin,
-    canReview: Boolean(order.game_id) && status === "checked_in",
+    canReview,
     showCheckin,
+    statusTone: step.tone,
+    stepTitle: step.title,
+    stepText: step.text,
     highlighted: highlightedOrderId && String(order.id) === String(highlightedOrderId)
   };
 }

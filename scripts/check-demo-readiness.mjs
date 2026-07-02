@@ -52,6 +52,7 @@ function requirePath(file) {
   "scripts/check-api-contracts.mjs",
   "scripts/check-db-contracts.mjs",
   "scripts/check-seed-data-contracts.mjs",
+  "scripts/check-miniprogram-routes.mjs",
   "scripts/check-wxml-event-bindings.mjs",
 ].forEach(requirePath);
 
@@ -84,6 +85,7 @@ requireIncludes("package.json", [
   "\"check:api-contracts\"",
   "\"check:db-contracts\"",
   "\"check:seed-data\"",
+  "\"check:miniprogram-routes\"",
   "\"check:wxml-events\"",
   "\"check\"",
   "check:demo-readiness",
@@ -91,6 +93,7 @@ requireIncludes("package.json", [
   "check:api-contracts",
   "check:db-contracts",
   "check:seed-data",
+  "check:miniprogram-routes",
   "check:wxml-events",
 ]);
 

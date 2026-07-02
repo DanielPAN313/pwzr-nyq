@@ -33,6 +33,22 @@ requireIncludes("miniprogram/pages/messages/messages.wxml", [
   "message.targetText",
 ]);
 
+requireIncludes("miniprogram/pages/home/home.js", [
+  "buildStatCards",
+  "buildTodoItems",
+  "recommendedVenues",
+  "recommendedGames",
+  "openTarget",
+]);
+
+requireIncludes("miniprogram/pages/home/home.wxml", [
+  "待处理事项",
+  "推荐场馆",
+  "推荐球局",
+  "statCards",
+  "todoItems",
+]);
+
 requireIncludes("miniprogram/pages/venues/venues.js", [
   "sportFilters",
   "applyFilters",

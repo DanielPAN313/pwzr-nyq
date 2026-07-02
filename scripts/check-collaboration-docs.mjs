@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const root = process.cwd();
+const appJson = JSON.parse(fs.readFileSync(path.join(root, "miniprogram", "app.json"), "utf8"));
 const errors = [];
 
 function read(file) {
@@ -68,6 +69,17 @@ requireIncludes("docs/project-roadmap.md", [
   "docs/ui-merge-checklist.md",
   "docs/ui-design-system.md",
 ]);
+
+function requireCurrentPageCount(file) {
+  const source = read(file);
+  const pageCount = Array.isArray(appJson.pages) ? appJson.pages.length : 0;
+  const expected = `loaded app.js, ${pageCount} pages, and home.switchTab.`;
+  if (!source.includes(expected)) {
+    errors.push(`${file} should document current runtime page count: ${expected}`);
+  }
+}
+
+requireCurrentPageCount("docs/macbook-repro.md");
 
 if (errors.length > 0) {
   console.error("Collaboration docs check failed:");

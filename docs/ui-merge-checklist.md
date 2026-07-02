@@ -35,7 +35,15 @@ git checkout -b ui-polish-refresh
 然后把旧 `ui-polish` 里真正需要保留的 `.wxml`、`.wxss`、`app.wxss`、`docs/ui-design-system.md` 想法手动搬过来，跑 `npm run check`，再推送：
 
 ```bash
+npm run check:ui-branch-scope -- origin/feature-miniprogram-flow HEAD
 git push origin ui-polish-refresh
+```
+
+推送后也可以检查远程刷新分支：
+
+```bash
+git fetch origin ui-polish-refresh
+npm run check:ui-branch-scope -- origin/feature-miniprogram-flow origin/ui-polish-refresh
 ```
 
 如果她很确定旧分支没有误删功能，也可以在旧 `ui-polish` 上更新：

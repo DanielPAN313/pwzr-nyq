@@ -3,8 +3,9 @@ import fs from "node:fs";
 import process from "node:process";
 
 const root = process.cwd();
-const baseRef = process.env.UI_BASE_REF || "origin/feature-miniprogram-flow";
-const uiRef = process.env.UI_BRANCH_REF || "origin/ui-polish";
+const [, , baseArg, uiArg] = process.argv;
+const baseRef = baseArg || process.env.UI_BASE_REF || "origin/feature-miniprogram-flow";
+const uiRef = uiArg || process.env.UI_BRANCH_REF || "origin/ui-polish";
 const windowsGit = "C:\\Program Files\\Git\\bin\\git.exe";
 const gitBin = process.env.GIT_BIN || (fs.existsSync(windowsGit) ? windowsGit : "git");
 

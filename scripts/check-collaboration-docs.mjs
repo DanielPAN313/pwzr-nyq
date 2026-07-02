@@ -48,6 +48,7 @@ requireIncludes("docs/ui-merge-checklist.md", [
   "Safe UI candidates",
   "从最新 `feature-miniprogram-flow` 重建或更新分支",
   "git checkout -b ui-polish-refresh",
+  "npm run check:ui-branch-scope -- origin/feature-miniprogram-flow origin/ui-polish-refresh",
   "只挑安全的 `.wxml`、`.wxss`、`app.wxss`",
   "npm run check",
   "GitHub 的 `Actions` 页面",
@@ -92,6 +93,7 @@ requireIncludes("docs/macbook-repro.md", [
   "GitHub 仓库的 `Actions` 页面",
   "`ui-polish` 分支会自动跑 Ubuntu 和 macOS",
   "git checkout -b ui-polish-refresh",
+  "npm run check:ui-branch-scope -- origin/feature-miniprogram-flow HEAD",
 ]);
 
 if (errors.length > 0) {

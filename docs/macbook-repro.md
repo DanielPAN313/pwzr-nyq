@@ -245,7 +245,13 @@ git pull origin feature-miniprogram-flow
 git checkout -b ui-polish-refresh
 ```
 
-然后只把旧分支里确认要保留的 UI 想法搬过来，跑 `npm run check`，再推送 `ui-polish-refresh`。
+然后只把旧分支里确认要保留的 UI 想法搬过来，跑：
+
+```bash
+npm run check
+npm run check:ui-branch-scope -- origin/feature-miniprogram-flow HEAD
+git push origin ui-polish-refresh
+```
 
 ## 9. 当前主流程自测
 

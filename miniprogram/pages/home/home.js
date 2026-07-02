@@ -122,7 +122,7 @@ Page({
   loadBootstrap() {
     this.setData({ loading: true, error: "" });
 
-    get("/api/sports-app/bootstrap", { showLoading: false })
+    return get("/api/sports-app/bootstrap", { showLoading: false })
       .then((data) => {
         const venueCount = Array.isArray(data.venues) ? data.venues.length : 0;
         const gameCount = Array.isArray(data.games) ? data.games.length : 0;
@@ -149,6 +149,10 @@ Page({
           recommendedGames: []
         });
       });
+  },
+
+  onPullDownRefresh() {
+    this.loadBootstrap().finally(() => wx.stopPullDownRefresh());
   },
 
   switchTab(event) {

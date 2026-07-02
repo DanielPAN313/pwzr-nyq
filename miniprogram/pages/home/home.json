@@ -1,3 +1,4 @@
 {
-  "navigationBarTitleText": "宁约球"
+  "navigationBarTitleText": "宁约球",
+  "enablePullDownRefresh": true
 }

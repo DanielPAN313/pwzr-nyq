@@ -54,6 +54,7 @@ function requirePath(file) {
   "scripts/check-seed-data-contracts.mjs",
   "scripts/check-miniprogram-routes.mjs",
   "scripts/check-wxml-event-bindings.mjs",
+  "scripts/check-ui-structure.mjs",
   "scripts/check-self-test-coverage.mjs",
 ].forEach(requirePath);
 
@@ -88,6 +89,7 @@ requireIncludes("package.json", [
   "\"check:seed-data\"",
   "\"check:miniprogram-routes\"",
   "\"check:wxml-events\"",
+  "\"check:ui-structure\"",
   "\"check:self-test-coverage\"",
   "\"check\"",
   "check:demo-readiness",
@@ -97,6 +99,7 @@ requireIncludes("package.json", [
   "check:seed-data",
   "check:miniprogram-routes",
   "check:wxml-events",
+  "check:ui-structure",
   "check:self-test-coverage",
 ]);
 
@@ -144,6 +147,7 @@ requireIncludes("docs/ui-design-system.md", [
   "年轻、运动、绿色、可信",
   "loading、error、empty",
   "不要卡片套卡片",
+  "UI 基础结构",
   "npm run check",
 ]);
 

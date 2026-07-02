@@ -52,6 +52,7 @@ requireIncludes("docs/ui-design-system.md", [
   "不要卡片套卡片",
   "底部 tab 页面",
   "loading、error、empty",
+  "UI 基础结构",
   "npm run check",
 ]);
 

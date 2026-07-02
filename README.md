@@ -53,6 +53,8 @@ npm run check
 
 它还会检查 WXML 事件绑定和 `data-*` 参数，避免 UI 改动后出现按钮绑定到不存在 JS 函数、或点击时拿不到 `data-id` 的问题。
 
+它还会检查小程序 UI 基础结构，确保注册页面保留 `.page`、`.section` 和全局核心样式。
+
 它也会检查 `docs/miniprogram-self-test.md` 是否覆盖所有已注册页面，避免新增页面后漏掉微信开发者工具自测步骤。
 
 它还会执行 H5 小程序预览检查、H5 本地 HTTP 直达检查、`wx` 桥接层运行时检查，以及 `miniprogram/` 实际使用的 `wx.*` API 覆盖检查。

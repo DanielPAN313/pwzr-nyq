@@ -71,6 +71,41 @@ requireIncludes("docs/server-deploy.md", [
   "useMockAuth: false",
 ]);
 
+requireIncludes("docs/legal/privacy-policy.md", [
+  "宁约球隐私政策草案",
+  "我们可能收集的信息",
+  "用户权利",
+  "未成年人保护",
+]);
+
+requireIncludes("docs/legal/user-agreement.md", [
+  "宁约球用户协议草案",
+  "约球与订场规则",
+  "信用分与评价",
+  "禁止行为",
+]);
+
+requireIncludes("docs/legal/payment-and-refund.md", [
+  "宁约球支付与退款说明草案",
+  "/api/sports-app/orders/:id/prepay",
+  "微信支付回调预留",
+  "取消与退款规则草案",
+]);
+
+requireIncludes("docs/legal/venue-partnership.md", [
+  "宁约球场馆合作说明草案",
+  "场馆入驻资料",
+  "订单与核销",
+  "结算规则草案",
+]);
+
+requireIncludes("docs/legal/compliance-checklist.md", [
+  "宁约球上线合规检查清单",
+  "微信小程序用户隐私保护指引",
+  "支付通知验签",
+  "request 合法域名",
+]);
+
 requireIncludes("miniprogram/utils/config.js", [
   "apiBaseUrl: \"http://localhost:4174\"",
   "useMockAuth: true",

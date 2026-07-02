@@ -6,6 +6,20 @@
     <text wx:else class="muted">创建后会出现在球局列表，报名和支付沿用现有订单流程。</text>
   </view>
 
+  <view class="section summary-panel">
+    <view class="section-title">发布预览</view>
+    <text class="summary-title">{{title || "未命名球局"}}</text>
+    <text class="summary-muted">{{selectedVenueText}}</text>
+    <text class="summary-muted">{{timeRangeText}}</text>
+    <view class="summary-grid">
+      <view wx:for="{{summaryCards}}" wx:key="label" class="summary-card">
+        <text class="summary-value">{{item.value}}</text>
+        <text class="summary-label">{{item.label}}</text>
+      </view>
+    </view>
+    <text class="submit-hint">{{submitHint}}</text>
+  </view>
+
   <view class="section form-panel">
     <label class="field">
       <text class="field-label">标题</text>
@@ -22,7 +36,7 @@
     <label class="field">
       <text class="field-label">场馆</text>
       <picker range="{{venues}}" range-key="name" value="{{venueIndex}}" bindchange="changeVenue">
-        <view class="picker-value">{{venues[venueIndex].name || "请选择场馆"}}</view>
+        <view class="picker-value">{{selectedVenueText}}</view>
       </picker>
     </label>
 
@@ -63,7 +77,7 @@
     </label>
   </view>
 
-  <button class="primary submit-button" disabled="{{submitting || loading || venues.length === 0}}" bindtap="submitGame">
+  <button class="primary submit-button" disabled="{{!canSubmit}}" bindtap="submitGame">
     {{submitting ? "发布中" : "发布球局"}}
   </button>
 </view>

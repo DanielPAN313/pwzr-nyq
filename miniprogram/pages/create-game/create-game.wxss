@@ -1,8 +1,68 @@
-.page-title {
+.page-title,
+.section-title {
   display: block;
   margin-bottom: 10rpx;
   font-size: 34rpx;
   font-weight: 850;
+}
+
+.summary-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.summary-title {
+  color: #102016;
+  font-size: 34rpx;
+  font-weight: 900;
+}
+
+.summary-muted {
+  color: #64748b;
+  font-size: 25rpx;
+  line-height: 1.45;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12rpx;
+  margin-top: 6rpx;
+}
+
+.summary-card {
+  min-height: 96rpx;
+  padding: 14rpx;
+  border-radius: 8rpx;
+  background: #f8fafc;
+  border: 1rpx solid rgba(20, 32, 50, 0.08);
+}
+
+.summary-value {
+  display: block;
+  color: #102016;
+  font-size: 26rpx;
+  font-weight: 850;
+}
+
+.summary-label {
+  display: block;
+  margin-top: 8rpx;
+  color: #64748b;
+  font-size: 22rpx;
+  font-weight: 750;
+}
+
+.submit-hint {
+  padding: 16rpx;
+  border-left: 6rpx solid #12b76a;
+  border-radius: 8rpx;
+  background: #ecfdf3;
+  color: #067647;
+  font-size: 24rpx;
+  line-height: 1.5;
+  font-weight: 750;
 }
 
 .form-panel {

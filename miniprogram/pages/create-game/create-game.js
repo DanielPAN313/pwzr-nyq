@@ -35,11 +35,40 @@ function dateTimeText(date, time) {
   return `${date} ${time}:00`;
 }
 
+function dateTimeShort(date, time) {
+  return `${date} ${time}`;
+}
+
 function mapVenue(venue) {
   return {
     id: venue.id,
     name: venue.name || "未命名场馆",
     area: venue.area || venue.address || "附近"
+  };
+}
+
+function buildFormSummary(data) {
+  const venue = data.venues[data.venueIndex] || null;
+  const sport = sportOptions[data.sportIndex] || sportOptions[0];
+  const duration = durationOptions[data.durationIndex] || durationOptions[0];
+  const endTime = addHours(data.startTime, duration.value);
+  const capacity = Number(data.capacity || 0);
+  const fee = Number(data.fee || 0);
+  const title = String(data.title || "").trim();
+  const canSubmit = Boolean(venue && title && capacity >= 2 && !data.loading && !data.submitting);
+
+  return {
+    selectedVenueText: venue ? `${venue.name} · ${venue.area}` : "请选择场馆",
+    timeRangeText: `${dateTimeShort(data.date, data.startTime)}-${endTime}`,
+    submitHint: canSubmit
+      ? "发布后会进入球局详情，其他用户报名后生成待支付订单。"
+      : "请补齐标题、场馆和至少 2 人的名额。",
+    canSubmit,
+    summaryCards: [
+      { label: "运动", value: sport.label },
+      { label: "人数", value: capacity ? `${capacity} 人` : "待填写" },
+      { label: "费用", value: fee ? `¥${fee}/人` : "免费/AA" }
+    ]
   };
 }
 
@@ -59,11 +88,28 @@ Page({
     durationOptions,
     durationIndex: 0,
     venues: [],
-    venueIndex: 0
+    venueIndex: 0,
+    selectedVenueText: "请选择场馆",
+    timeRangeText: "",
+    submitHint: "请补齐标题、场馆和至少 2 人的名额。",
+    canSubmit: false,
+    summaryCards: []
   },
 
   onLoad() {
+    this.syncSummary();
     this.loadVenues();
+  },
+
+  syncSummary(patch) {
+    const nextData = {
+      ...this.data,
+      ...(patch || {})
+    };
+    this.setData({
+      ...(patch || {}),
+      ...buildFormSummary(nextData)
+    });
   },
 
   loadVenues() {
@@ -73,7 +119,7 @@ Page({
       .then((venues) => {
         const list = Array.isArray(venues) ? venues.map(mapVenue) : [];
 
-        this.setData({
+        this.syncSummary({
           loading: false,
           venues: list,
           venueIndex: 0,
@@ -81,7 +127,7 @@ Page({
         });
       })
       .catch((error) => {
-        this.setData({
+        this.syncSummary({
           loading: false,
           error: error.message || "场馆加载失败"
         });
@@ -89,15 +135,15 @@ Page({
   },
 
   updateTitle(event) {
-    this.setData({ title: event.detail.value });
+    this.syncSummary({ title: event.detail.value });
   },
 
   updateCapacity(event) {
-    this.setData({ capacity: Number(event.detail.value || 0) });
+    this.syncSummary({ capacity: Number(event.detail.value || 0) });
   },
 
   updateFee(event) {
-    this.setData({ fee: Number(event.detail.value || 0) });
+    this.syncSummary({ fee: Number(event.detail.value || 0) });
   },
 
   updateNotes(event) {
@@ -105,23 +151,23 @@ Page({
   },
 
   changeSport(event) {
-    this.setData({ sportIndex: Number(event.detail.value || 0) });
+    this.syncSummary({ sportIndex: Number(event.detail.value || 0) });
   },
 
   changeVenue(event) {
-    this.setData({ venueIndex: Number(event.detail.value || 0) });
+    this.syncSummary({ venueIndex: Number(event.detail.value || 0) });
   },
 
   changeDate(event) {
-    this.setData({ date: event.detail.value });
+    this.syncSummary({ date: event.detail.value });
   },
 
   changeStartTime(event) {
-    this.setData({ startTime: event.detail.value });
+    this.syncSummary({ startTime: event.detail.value });
   },
 
   changeDuration(event) {
-    this.setData({ durationIndex: Number(event.detail.value || 0) });
+    this.syncSummary({ durationIndex: Number(event.detail.value || 0) });
   },
 
   submitGame() {
@@ -148,7 +194,7 @@ Page({
     if (this.data.submitting) return;
 
     const endTime = addHours(this.data.startTime, duration.value);
-    this.setData({ submitting: true });
+    this.syncSummary({ submitting: true });
 
     post("/api/sports-app/games", {
       sport: sport.value,
@@ -160,13 +206,18 @@ Page({
       fee_per_person: Number(this.data.fee || 0),
       notes: this.data.notes
     }, { loadingTitle: "发起中" })
-      .then(() => {
+      .then((result) => {
         wx.showToast({
           title: "球局已发布",
           icon: "success"
         });
 
         setTimeout(() => {
+          if (result && result.id) {
+            wx.redirectTo({ url: `/pages/game-detail/game-detail?id=${result.id}` });
+            return;
+          }
+
           wx.navigateBack();
         }, 600);
       })
@@ -177,7 +228,7 @@ Page({
         });
       })
       .finally(() => {
-        this.setData({ submitting: false });
+        this.syncSummary({ submitting: false });
       });
   }
 });

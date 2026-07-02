@@ -59,6 +59,21 @@ requireIncludes("miniprogram/pages/games/games.wxml", [
   "bindtap=\"changeSport\"",
 ]);
 
+requireIncludes("miniprogram/pages/create-game/create-game.js", [
+  "buildFormSummary",
+  "syncSummary",
+  "selectedVenueText",
+  "wx.redirectTo",
+  "/pages/game-detail/game-detail?id=",
+]);
+
+requireIncludes("miniprogram/pages/create-game/create-game.wxml", [
+  "发布预览",
+  "summaryCards",
+  "submitHint",
+  "disabled=\"{{!canSubmit}}\"",
+]);
+
 requireIncludes("miniprogram/pages/me/me.js", [
   "buildStatCards",
   "buildMenuSections",

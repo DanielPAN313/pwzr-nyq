@@ -18,9 +18,10 @@ git pull origin feature-miniprogram-flow
 git fetch origin ui-polish
 git diff --stat feature-miniprogram-flow..origin/ui-polish
 git diff --name-only feature-miniprogram-flow..origin/ui-polish
+npm run check:ui-branch-scope
 ```
 
-如果差异里出现大量 `D` 删除、删除 `scripts/`、删除 `docs/`、删除小程序页面，或改动了 `.js`、`utils/`、`db/`、`package.json`，不要直接整支合并。先只挑安全的 `.wxml`、`.wxss`、`app.wxss` 和 `docs/ui-design-system.md` 改动，确认 `npm run check` 通过后再讨论是否吸收她新增的功能想法。
+如果 `npm run check:ui-branch-scope` 失败，说明 UI 分支包含删除、JS、脚本、数据库、package 或其他危险改动。不要直接整支合并。先按脚本输出的 `Safe UI candidates` 只挑安全的 `.wxml`、`.wxss`、`app.wxss` 和 `docs/ui-design-system.md` 改动，确认 `npm run check` 通过后再讨论是否吸收她新增的功能想法。
 
 ## 2. UI 分支允许主要修改
 

@@ -139,6 +139,7 @@ requireIncludes("package.json", [
   "\"check:wxml-events\"",
   "\"check:ui-structure\"",
   "\"check:self-test-coverage\"",
+  "\"check:ui-branch-scope\"",
   "\"check\"",
   "check:demo-readiness",
   "check:repository-hygiene",
@@ -149,6 +150,7 @@ requireIncludes("package.json", [
   "check:wxml-events",
   "check:ui-structure",
   "check:self-test-coverage",
+  "check:ui-branch-scope",
 ]);
 
 requireIncludes(".github/workflows/check.yml", [

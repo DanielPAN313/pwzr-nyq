@@ -57,6 +57,7 @@
     'venue-admin',
     'credit',
     'my-games',
+    'legal',
     'create',
     'teams',
     'ai',
@@ -77,6 +78,7 @@
     'pages/game-detail/game-detail': 'games',
     'pages/credit/credit': 'credit',
     'pages/my-games/my-games': 'my-games',
+    'pages/legal/legal': 'legal',
     'pages/create/create': 'create',
     'pages/teams/teams': 'teams',
     'pages/ai/ai': 'ai',
@@ -114,6 +116,7 @@
       'venue-admin': 'Venue Admin',
       credit: 'Credit',
       'my-games': 'My Games',
+      legal: 'Legal',
       create: 'Create',
       teams: 'Teams',
       ai: 'AI Clips',
@@ -1656,6 +1659,7 @@
       profileMenuItem('ai', 'AI 高光集锦', '黑客松演示入口', 'ai'),
       profileMenuItem('data', '运动数据档案', '预留数据上传', 'data'),
       profileMenuItem('demo', '完整流程', '演示主线与扩展能力', 'demo'),
+      profileMenuItem('shield', '合规说明', '隐私、协议、支付和场馆合作', 'legal'),
       '  </div>',
       '  <div class="profile-menu-card">',
       profileMenuItem('support', '联系客服', '模拟客服窗口', null, 'data-open-support'),
@@ -1673,6 +1677,33 @@
       state.profileEditOpen ? profileEditSheet() : '',
       state.reviewDetail ? reviewPanel(state.reviewDetail) : '',
       state.playerProfile ? playerProfileModal(state.playerProfile) : '',
+    ].join('');
+  }
+
+  function legalView() {
+    var sections = [
+      ['隐私政策', '开发版只展示完成找场、报名、订场、核销和信用记录所需的信息摘要。正式上线前需要补齐微信用户隐私保护指引。'],
+      ['用户协议', '用户需要按时到场、遵守场馆规则，并对报名、订场、支付和互评行为负责。'],
+      ['支付说明', '当前开发版使用模拟支付，不会真实扣款。正式交易前需要接入微信支付商户号、证书、API v3 key 和通知验签。'],
+      ['场馆合作', '场馆端用于入驻申请、资料维护、订单查看和到场核销；正式运营前需要补齐资质审核、结算和争议处理规则。'],
+    ];
+
+    return [
+      '<section class="section">',
+      '  <div class="panel profile-section">',
+      profileBackTitle('合规说明', '开发版摘要'),
+      '    <p class="section-lead">这里是开发版合规摘要，正式提交审核前请以 docs/legal/ 的完整文本为准。</p>',
+      sections.map(function (item, index) {
+        return [
+          '    <article class="profile-menu-item">',
+          '      <div class="profile-menu-icon">' + h(index + 1) + '</div>',
+          '      <div><strong>' + h(item[0]) + '</strong><p>' + h(item[1]) + '</p></div>',
+          '    </article>',
+        ].join('');
+      }).join(''),
+      '    <div class="panel-soft-block warning-block"><strong>上线前必须替换为正式文本</strong><p>请补齐运营主体、客服电话、生效日期、隐私字段和真实支付/退款规则。</p></div>',
+      '  </div>',
+      '</section>',
     ].join('');
   }
 
@@ -2370,6 +2401,7 @@
       orders: myOrdersView,
       'venue-admin': venueAdminView,
       credit: creditView,
+      legal: legalView,
       me: meView,
     }[state.userView]();
     var isHome = state.userView === 'home';

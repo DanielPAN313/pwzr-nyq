@@ -11,7 +11,8 @@
     "pages/orders/orders",
     "pages/venue-admin/venue-admin",
     "pages/credit/credit",
-    "pages/my-games/my-games"
+    "pages/my-games/my-games",
+    "pages/legal/legal"
   ],
   "window": {
     "navigationBarTitleText": "宁约球",

@@ -17,6 +17,7 @@
     'pages/venue-admin/venue-admin': 'venue-admin',
     'pages/credit/credit': 'credit',
     'pages/my-games/my-games': 'my-games',
+    'pages/legal/legal': 'legal',
     'pages/create/create': 'create',
     'pages/teams/teams': 'teams',
     'pages/ai/ai': 'ai',

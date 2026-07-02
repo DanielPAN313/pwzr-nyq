@@ -5,7 +5,8 @@ const fallbackItems = [
   { label: "我的订单", value: "0", target: "/pages/orders/orders" },
   { label: "我的球局", value: "0", target: "/pages/my-games/my-games" },
   { label: "信用分", value: "100", target: "/pages/credit/credit" },
-  { label: "场馆管理", value: "演示", target: "/pages/venue-admin/venue-admin" }
+  { label: "场馆管理", value: "演示", target: "/pages/venue-admin/venue-admin" },
+  { label: "合规说明", value: "查看", target: "/pages/legal/legal" }
 ];
 
 const fallbackStatCards = [
@@ -49,6 +50,12 @@ function buildMenuSections(profile) {
       items: [
         { label: "场馆管理", value: "进入", hint: "申请入驻、维护时段、核销订单", target: "/pages/venue-admin/venue-admin" },
         { label: "已核销", value: `${summary.checked_in || 0} 次`, hint: "已完成到场确认的球局记录", target: "/pages/credit/credit" }
+      ]
+    },
+    {
+      title: "协议与说明",
+      items: [
+        { label: "合规说明", value: "查看", hint: "隐私政策、用户协议、支付说明和场馆合作", target: "/pages/legal/legal" }
       ]
     }
   ];

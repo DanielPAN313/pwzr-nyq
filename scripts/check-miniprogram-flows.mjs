@@ -115,6 +115,7 @@ requireIncludes("miniprogram/pages/me/me.js", [
   "buildMenuSections",
   "statCards",
   "menuSections",
+  "/pages/legal/legal",
 ]);
 
 requireIncludes("miniprogram/pages/me/me.wxml", [
@@ -122,6 +123,25 @@ requireIncludes("miniprogram/pages/me/me.wxml", [
   "menuSections",
   "entry.hint",
   "openMenu",
+]);
+
+requireIncludes("miniprogram/pages/legal/legal.js", [
+  "legalTabs",
+  "legalContent",
+  "privacy",
+  "agreement",
+  "payment",
+  "venue",
+  "changeTab",
+]);
+
+requireIncludes("miniprogram/pages/legal/legal.wxml", [
+  "合规说明",
+  "隐私政策",
+  "用户协议",
+  "支付说明",
+  "场馆合作",
+  "上线前必须替换为正式文本",
 ]);
 
 requireIncludes("miniprogram/pages/my-games/my-games.js", [

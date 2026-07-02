@@ -25,7 +25,7 @@
       <text class="checkin-code">{{item.checkinCode}}</text>
     </view>
     <text class="muted">{{item.hint}}</text>
-    <view wx:if="{{item.canPay || item.canCheckin || item.canCancel}}" class="order-actions">
+    <view wx:if="{{item.canPay || item.canCheckin || item.canCancel || item.canReview}}" class="order-actions">
       <button
         wx:if="{{item.canPay}}"
         class="primary small"
@@ -52,6 +52,14 @@
         data-id="{{item.id}}"
       >
         {{actionOrderId === item.id ? "处理中" : "取消订单"}}
+      </button>
+      <button
+        wx:if="{{item.canReview}}"
+        class="secondary small"
+        bindtap="openReview"
+        data-game-id="{{item.gameId}}"
+      >
+        去评价
       </button>
     </view>
   </view>

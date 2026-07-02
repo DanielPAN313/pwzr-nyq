@@ -38,6 +38,22 @@
       <text class="muted">{{detail.notes}}</text>
     </view>
 
+    <view class="section review-panel">
+      <view class="section-title">赛后互评</view>
+      <text wx:if="{{reviewHint}}" class="muted">{{reviewHint}}</text>
+      <text wx:elif="{{!detail.reviewOpen}}" class="muted">互评会在球局结束且完成到场核销后开放。</text>
+      <text wx:else class="muted">给已到场队友提交好评，会更新对方实力分和信用记录。</text>
+      <button
+        wx:if="{{detail.reviewOpen && detail.reviewablePlayers.length > 0}}"
+        class="primary"
+        disabled="{{submittingReview}}"
+        bindtap="submitPraiseReviews"
+      >
+        {{submittingReview ? "提交中" : "给到场队友好评"}}
+      </button>
+      <text wx:elif="{{detail.reviewOpen}}" class="muted">当前没有可评价的队友，或你已经评价过了。</text>
+    </view>
+
     <view class="section">
       <view class="section-title">参与球友</view>
       <view wx:if="{{detail.players.length === 0}}" class="muted">暂无已支付报名球友。</view>
@@ -46,7 +62,10 @@
           <text class="player-name">{{item.username}}</text>
           <text class="muted">{{item.level}} · {{item.score}} 分</text>
         </view>
-        <text class="player-status">{{item.checkedInText}}</text>
+        <view class="player-tags">
+          <text class="player-status">{{item.checkedInText}}</text>
+          <text wx:if="{{item.reviewText}}" class="review-status">{{item.reviewText}}</text>
+        </view>
       </view>
     </view>
   </block>

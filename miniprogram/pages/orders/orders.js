@@ -8,9 +8,11 @@ const fallbackOrders = [
     statusText: "待同步",
     checkinCode: "------",
     hint: "当前显示本地兜底订单。",
+    gameId: "",
     canPay: false,
     canCancel: false,
     canCheckin: false,
+    canReview: false,
     showCheckin: false,
     highlighted: false
   }
@@ -57,9 +59,11 @@ function mapOrder(order, highlightedOrderId) {
     checkinCode: order.checkin_code || "------",
     hint: order.checkin_hint || (order.can_pay ? "请完成支付后正式占位。" : "请按订单时间到场核销。"),
     timeText: formatTime(order.start_time || order.booking_start_time || order.create_time),
+    gameId: order.game_id || "",
     canPay,
     canCancel,
     canCheckin,
+    canReview: Boolean(order.game_id) && status === "checked_in",
     showCheckin,
     highlighted: highlightedOrderId && String(order.id) === String(highlightedOrderId)
   };
@@ -208,5 +212,14 @@ Page({
       .finally(() => {
         this.setData({ actionOrderId: "" });
       });
+  },
+
+  openReview(event) {
+    const gameId = event.currentTarget.dataset.gameId;
+    if (!gameId) return;
+
+    wx.navigateTo({
+      url: `/pages/game-detail/game-detail?id=${gameId}&review=1`
+    });
   }
 });

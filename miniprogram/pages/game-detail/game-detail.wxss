@@ -80,3 +80,23 @@
   font-size: 26rpx;
   font-weight: 850;
 }
+
+.review-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.player-tags {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8rpx;
+  flex-shrink: 0;
+}
+
+.review-status {
+  color: #6f7c72;
+  font-size: 24rpx;
+  font-weight: 750;
+}

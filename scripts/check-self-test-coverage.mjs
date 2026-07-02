@@ -51,6 +51,20 @@ for (const page of Object.keys(pageChecks)) {
   }
 }
 
+for (const snippet of [
+  "体验版/审核前附加检查",
+  "npm run check:deploy",
+  "npm run check:release-config",
+  "release-wechat-config",
+  "setting.urlCheck",
+  "useMockAuth",
+  "当前本地开发分支运行 `npm run check:release-config` 会失败，这是正常的",
+]) {
+  if (!selfTest.includes(snippet)) {
+    errors.push(`docs/miniprogram-self-test.md is missing release self-test detail: ${snippet}`);
+  }
+}
+
 if (errors.length > 0) {
   console.error("Mini Program self-test coverage check failed:");
   for (const error of errors) console.error(`- ${error}`);

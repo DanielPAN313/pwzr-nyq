@@ -27,6 +27,7 @@
 - [ ] 微信开发者工具能编译 `miniprogram/`
 - [ ] 如果改 UI，已参考 `docs/ui-design-system.md` 和 `docs/ui-merge-checklist.md`
 - [ ] 如果改主流程，已参考 `docs/miniprogram-self-test.md`
+- [ ] 如果这是 `release-wechat-config`，已运行 `npm run check:deploy` 和 `npm run check:release-config`
 - [ ] 没有提交 `.env`、`project.private.config.json`、截图、APK、日志或 `node_modules`
 
 ## 重点页面

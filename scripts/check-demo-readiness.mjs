@@ -102,6 +102,7 @@ function requirePrTemplatePageCoverage() {
   "scripts/check-wxml-event-bindings.mjs",
   "scripts/check-ui-structure.mjs",
   "scripts/check-self-test-coverage.mjs",
+  "scripts/check-wechat-release-config.mjs",
 ].forEach(requirePath);
 
 requireIncludes("README.md", [
@@ -141,6 +142,7 @@ requireIncludes("package.json", [
   "\"check:ui-structure\"",
   "\"check:self-test-coverage\"",
   "\"check:ui-branch-scope\"",
+  "\"check:release-config\"",
   "\"check\"",
   "check:demo-readiness",
   "check:repository-hygiene",
@@ -152,6 +154,7 @@ requireIncludes("package.json", [
   "check:ui-structure",
   "check:self-test-coverage",
   "check:ui-branch-scope",
+  "check:release-config",
 ]);
 
 requireIncludes(".github/workflows/check.yml", [
@@ -164,6 +167,8 @@ requireIncludes(".github/workflows/check.yml", [
 
 requireIncludes(".github/pull_request_template.md", [
   "npm run check",
+  "npm run check:release-config",
+  "release-wechat-config",
   "docs/ui-merge-checklist.md",
   "docs/ui-design-system.md",
   "docs/miniprogram-self-test.md",
@@ -176,6 +181,7 @@ requireIncludes("docs/project-roadmap.md", [
   "feature-miniprogram-flow",
   "ui-polish",
   "touristappid",
+  "npm run check:release-config",
   "docs/miniprogram-self-test.md",
   "docs/ui-merge-checklist.md",
   "docs/ui-design-system.md",
@@ -187,11 +193,18 @@ requireIncludes("docs/current-handoff.md", [
   "ui-polish",
   "touristappid",
   "npm run check",
+  "npm run check:release-config",
   "微信开发者工具",
   "当前自动检查",
   "docs/ui-design-system.md",
   "WXML 事件绑定和 `data-*` 参数检查",
   "下一步建议",
+]);
+
+requireIncludes("docs/miniprogram-self-test.md", [
+  "体验版/审核前附加检查",
+  "npm run check:release-config",
+  "当前本地开发分支运行 `npm run check:release-config` 会失败，这是正常的",
 ]);
 
 requireIncludes("docs/ui-design-system.md", [

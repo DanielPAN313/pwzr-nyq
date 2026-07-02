@@ -4,6 +4,7 @@
     "pages/venues/venues",
     "pages/games/games",
     "pages/create-game/create-game",
+    "pages/game-detail/game-detail",
     "pages/messages/messages",
     "pages/me/me",
     "pages/orders/orders",

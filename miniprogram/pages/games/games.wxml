@@ -8,7 +8,7 @@
     <button class="primary small create-button" bindtap="createGame">发起球局</button>
   </view>
 
-  <view wx:for="{{games}}" wx:key="title" class="section game-card">
+  <view wx:for="{{games}}" wx:key="title" class="section game-card" bindtap="openGame" data-id="{{item.id}}">
     <text class="card-title">{{item.title}}</text>
     <text class="muted">{{item.time}} · {{item.venueName}} · {{item.fee}}</text>
     <view class="card-row">
@@ -16,7 +16,7 @@
       <button
         class="primary small"
         disabled="{{!item.canJoin || joiningId === item.id}}"
-        bindtap="joinGame"
+        catchtap="joinGame"
         data-id="{{item.id}}"
       >
         {{joiningId === item.id ? "报名中" : item.actionText}}

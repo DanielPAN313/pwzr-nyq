@@ -11,7 +11,7 @@
     </view>
   </view>
 
-  <view wx:for="{{games}}" wx:key="title" class="section my-game-card">
+  <view wx:for="{{games}}" wx:key="title" class="section my-game-card" bindtap="openGame" data-id="{{item.id}}">
     <text class="card-title">{{item.title}}</text>
     <text class="muted">{{item.time}} · {{item.venueName}} · {{item.fee}}</text>
     <view class="card-row">

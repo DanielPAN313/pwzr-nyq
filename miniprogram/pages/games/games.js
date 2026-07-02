@@ -123,5 +123,14 @@ Page({
     wx.navigateTo({
       url: "/pages/create-game/create-game"
     });
+  },
+
+  openGame(event) {
+    const id = event.currentTarget.dataset.id;
+    if (!id) return;
+
+    wx.navigateTo({
+      url: `/pages/game-detail/game-detail?id=${id}`
+    });
   }
 });

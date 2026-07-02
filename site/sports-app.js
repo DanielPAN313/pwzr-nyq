@@ -71,6 +71,7 @@
     'pages/me/me': 'me',
     'pages/orders/orders': 'orders',
     'pages/create-game/create-game': 'create',
+    'pages/game-detail/game-detail': 'games',
     'pages/credit/credit': 'credit',
     'pages/my-games/my-games': 'my-games',
     'pages/create/create': 'create',

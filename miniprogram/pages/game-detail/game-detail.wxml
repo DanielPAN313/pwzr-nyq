@@ -1,0 +1,53 @@
+<view class="page">
+  <view class="section">
+    <view class="page-title">球局详情</view>
+    <text wx:if="{{loading}}" class="muted">正在加载球局详情...</text>
+    <text wx:elif="{{error}}" class="muted">{{error}}</text>
+    <text wx:else class="muted">查看场馆、时间、人数和到场状态。</text>
+  </view>
+
+  <block wx:if="{{detail}}">
+    <view class="detail-hero">
+      <text class="detail-title">{{detail.title}}</text>
+      <text class="detail-status">{{detail.statusText}}</text>
+      <text class="detail-muted">{{detail.venueName}} · {{detail.area}}</text>
+    </view>
+
+    <view class="section info-grid">
+      <view class="info-item">
+        <text class="info-value">{{detail.startText}}</text>
+        <text class="muted">开始时间</text>
+      </view>
+      <view class="info-item">
+        <text class="info-value">{{detail.endText}}</text>
+        <text class="muted">结束时间</text>
+      </view>
+      <view class="info-item">
+        <text class="info-value">{{detail.playerCount}}/{{detail.capacity}}</text>
+        <text class="muted">报名人数</text>
+      </view>
+      <view class="info-item">
+        <text class="info-value">{{detail.feeText}}</text>
+        <text class="muted">费用</text>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">场地信息</view>
+      <text class="muted">{{detail.address || "暂无详细地址"}}</text>
+      <text class="muted">{{detail.notes}}</text>
+    </view>
+
+    <view class="section">
+      <view class="section-title">参与球友</view>
+      <view wx:if="{{detail.players.length === 0}}" class="muted">暂无已支付报名球友。</view>
+      <view wx:for="{{detail.players}}" wx:key="userId" class="player-row">
+        <view>
+          <text class="player-name">{{item.username}}</text>
+          <text class="muted">{{item.level}} · {{item.score}} 分</text>
+        </view>
+        <text class="player-status">{{item.checkedInText}}</text>
+      </view>
+    </view>
+  </block>
+</view>

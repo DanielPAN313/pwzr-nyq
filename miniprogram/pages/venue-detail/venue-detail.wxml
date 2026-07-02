@@ -15,9 +15,17 @@
 
     <view class="section">
       <view class="section-title">场馆信息</view>
+      <view class="detail-grid">
+        <view wx:for="{{venue.detailCards}}" wx:key="label" class="detail-card">
+          <text class="detail-value">{{item.value}}</text>
+          <text class="detail-label">{{item.label}}</text>
+        </view>
+      </view>
       <text class="muted">{{venue.address}}</text>
-      <text class="muted">联系方式：{{venue.contact}}</text>
-      <text class="slot-summary">开放时段：{{venue.openSlotsText}}</text>
+      <view class="slot-summary">
+        <text class="slot-summary-title">开放时段</text>
+        <text class="slot-summary-text">{{venue.openSlotsText}}</text>
+      </view>
     </view>
 
     <view class="section">
@@ -38,13 +46,21 @@
         data-index="{{index}}"
       >
         <text>{{item.label}}</text>
-        <text>{{item.statusText}}</text>
+        <text class="slot-status slot-{{item.statusTone}}">{{item.statusText}}</text>
       </view>
+    </view>
+
+    <view class="section booking-summary">
+      <view>
+        <text class="summary-label">当前选择</text>
+        <text class="summary-value">{{selectedSlotLabel}}</text>
+      </view>
+      <text class="summary-status">{{selectedSlotStatusText}}</text>
     </view>
 
     <button
       class="primary submit-button"
-      disabled="{{slots.length === 0 || slots[selectedSlotIndex].occupied || bookingSlotId}}"
+      disabled="{{!canSubmitBooking || bookingSlotId}}"
       bindtap="bookSelectedSlot"
     >
       {{bookingSlotId ? "锁定中" : "生成待支付订单"}}

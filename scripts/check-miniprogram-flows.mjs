@@ -102,12 +102,19 @@ requireIncludes("miniprogram/pages/venue-detail/venue-detail.js", [
   "/book",
   "/pages/orders/orders?orderId=",
   "openSlotsText",
+  "detailCards",
+  "bookingState",
+  "canSubmitBooking",
 ]);
 
 requireIncludes("miniprogram/pages/venue-detail/venue-detail.wxml", [
-  "开放时段：{{venue.openSlotsText}}",
+  "slot-summary-title",
+  "{{venue.openSlotsText}}",
   "bindtap=\"bookSelectedSlot\"",
   "生成待支付订单",
+  "detail-grid",
+  "booking-summary",
+  "selectedSlotLabel",
 ]);
 
 requireIncludes("miniprogram/pages/venue-admin/venue-admin.js", [

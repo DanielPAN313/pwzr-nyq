@@ -18,17 +18,25 @@ function tomorrowDateText() {
 function mapVenue(venue) {
   const sports = Array.isArray(venue.sports) ? venue.sports.join(" / ") : venue.sports;
   const openSlots = Array.isArray(venue.open_slots) ? venue.open_slots : [];
+  const priceText = `¥${Number(venue.price_per_hour || 0).toFixed(0)}/小时`;
+  const contact = venue.contact || "到店咨询";
+  const openSlotsText = openSlots.length ? openSlots.join("、") : "场馆暂未配置固定开放时段";
 
   return {
     id: venue.id,
     name: venue.name || "未命名场馆",
     area: venue.area || "附近",
     address: venue.address || "暂无详细地址",
-    priceText: `¥${Number(venue.price_per_hour || 0).toFixed(0)}/小时`,
+    priceText,
     sportsText: sports || "综合运动",
     indoorText: venue.indoor ? "室内" : "室外",
-    contact: venue.contact || "到店咨询",
-    openSlotsText: openSlots.length ? openSlots.join("、") : "场馆暂未配置固定开放时段"
+    contact,
+    openSlotsText,
+    detailCards: [
+      { label: "价格", value: priceText },
+      { label: "联系", value: contact },
+      { label: "类型", value: venue.indoor ? "室内场馆" : "室外场地" }
+    ]
   };
 }
 
@@ -39,7 +47,26 @@ function mapSlot(slot) {
     start: slot.start,
     end: slot.end,
     occupied: Boolean(slot.occupied),
-    statusText: slot.occupied ? "已占用" : "可预约"
+    statusText: slot.occupied ? "已占用" : "可预约",
+    statusTone: slot.occupied ? "disabled" : "available"
+  };
+}
+
+function bookingState(date, slots, selectedSlotIndex) {
+  const slot = slots[selectedSlotIndex];
+
+  if (!slot) {
+    return {
+      selectedSlotLabel: "请先选择可预约时段",
+      selectedSlotStatusText: "暂无可约",
+      canSubmitBooking: false
+    };
+  }
+
+  return {
+    selectedSlotLabel: `${date} ${slot.label}`,
+    selectedSlotStatusText: slot.occupied ? "该时段已占用，请换一个时段" : "可生成待支付订单",
+    canSubmitBooking: !slot.occupied
   };
 }
 
@@ -53,7 +80,10 @@ Page({
     error: "",
     venue: null,
     slots: [],
-    selectedSlotIndex: 0
+    selectedSlotIndex: 0,
+    selectedSlotLabel: "请先选择可预约时段",
+    selectedSlotStatusText: "暂无可约",
+    canSubmitBooking: false
   },
 
   onLoad(query) {
@@ -79,12 +109,15 @@ Page({
       .then((data) => {
         const slots = Array.isArray(data.slots) ? data.slots.map(mapSlot) : [];
         const firstAvailable = slots.findIndex((slot) => !slot.occupied);
+        const selectedSlotIndex = firstAvailable >= 0 ? firstAvailable : 0;
+        const state = bookingState(this.data.date, slots, selectedSlotIndex);
 
         this.setData({
           loading: false,
           venue: mapVenue(data.venue || {}),
           slots,
-          selectedSlotIndex: firstAvailable >= 0 ? firstAvailable : 0,
+          selectedSlotIndex,
+          ...state,
           error: slots.length ? "" : "该场馆暂未开放可预约时段。"
         });
       })
@@ -102,8 +135,10 @@ Page({
   },
 
   selectSlot(event) {
+    const selectedSlotIndex = Number(event.currentTarget.dataset.index || 0);
     this.setData({
-      selectedSlotIndex: Number(event.currentTarget.dataset.index || 0)
+      selectedSlotIndex,
+      ...bookingState(this.data.date, this.data.slots, selectedSlotIndex)
     });
   },
 

@@ -177,6 +177,8 @@ GitHub Actions 已经配置在 Ubuntu 和 macOS 上执行 `npm ci` 与 `npm run 
 
 UI 同伴推送 `ui-polish` 后，也要去 GitHub 的 `Actions` 页面确认 `Check` 工作流是绿色勾；失败时先看 job 日志，不要直接合并。
 
+合并 UI 分支前先运行 `npm run check:ui-branch-scope`。如果它提示大量删除或危险改动，不要整支合并，按 `docs/ui-merge-checklist.md` 只挑安全 UI 文件。
+
 UI 同伴或功能同伴提交 PR 时，GitHub 会自动套用 `.github/pull_request_template.md`。按模板勾选检查项，能减少合并前遗漏页面自测或误提交本机文件。
 
 ## 上线前重点

@@ -110,6 +110,7 @@ requireIncludes("README.md", [
   "touristappid",
   "ui-polish",
   "GitHub 的 `Actions` 页面",
+  "npm run check:ui-branch-scope",
   "docs/project-roadmap.md",
   "docs/current-handoff.md",
   "docs/miniprogram-self-test.md",

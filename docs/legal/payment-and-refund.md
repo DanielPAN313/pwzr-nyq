@@ -13,6 +13,7 @@
 - 预支付接口：`/api/sports-app/orders/:id/prepay`
 - 支付确认接口：`/api/sports-app/orders/:id/pay/confirm`
 - 微信支付回调预留：`/api/sports-app/payment/wechat/notify`
+- 微信退款回调预留：`/api/sports-app/payment/wechat/refund-notify`
 
 本地开发阶段返回模拟支付参数，不会真实扣款。
 

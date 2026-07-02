@@ -87,6 +87,7 @@
   - `/api/sports-app/orders/:id/prepay`
   - `/api/sports-app/orders/:id/pay/confirm`
 - 微信支付回调预留：`/api/sports-app/payment/wechat/notify`。
+- 微信退款回调预留：`/api/sports-app/payment/wechat/refund-notify`。
 - 当前不会真实扣款，仍是本地模拟支付。
 
 ### 上线准备

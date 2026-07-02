@@ -135,6 +135,7 @@ requireIncludes("docs/legal/payment-and-refund.md", [
   "宁约球支付与退款说明草案",
   "/api/sports-app/orders/:id/prepay",
   "微信支付回调预留",
+  "/api/sports-app/payment/wechat/refund-notify",
   "取消与退款规则草案",
 ]);
 

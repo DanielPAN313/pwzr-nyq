@@ -328,6 +328,7 @@ requireIncludes("scripts/serve-local-mirror.mjs", [
   "createMockPrepay",
   "markSportsOrderPaid",
   "/api/sports-app/payment/wechat/notify",
+  "/api/sports-app/payment/wechat/refund-notify",
   "/api/sports-app/venue-admin/checkin-code",
   "venueAdminUpdateMatch",
   "venueAdminCheckinOrder",

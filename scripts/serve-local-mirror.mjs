@@ -2093,6 +2093,13 @@ const handleSportsApi = async (req, res, requestUrl) => {
       }, 501)
     }
 
+    if (pathName === '/api/sports-app/payment/wechat/refund-notify' && req.method === 'POST') {
+      return json(res, {
+        ok: false,
+        error: 'wechat refund notify is reserved; configure merchant keys and signature verification before enabling',
+      }, 501)
+    }
+
     const cancelOrderMatch = pathName.match(/^\/api\/sports-app\/orders\/(\d+)\/cancel$/)
     if (cancelOrderMatch && req.method === 'POST') {
       const orderId = Number(cancelOrderMatch[1])

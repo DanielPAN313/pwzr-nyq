@@ -59,7 +59,8 @@ requireIncludes(backend, "scripts/serve-local-mirror.mjs", [
   "pathName === '/api/sports-app/venue-admin/checkin-code' && req.method === 'POST'",
   "pathName.match(/^\\/api\\/sports-app\\/venue-admin\\/orders\\/(\\d+)\\/checkin$/)",
   "pathName.match(/^\\/api\\/sports-app\\/venue-admin\\/venues\\/(\\d+)$/)",
-  "pathName === '/api/sports-app/payment/wechat/notify' && req.method === 'POST'"
+  "pathName === '/api/sports-app/payment/wechat/notify' && req.method === 'POST'",
+  "pathName === '/api/sports-app/payment/wechat/refund-notify' && req.method === 'POST'"
 ]);
 
 requireIncludes(frontend, "miniprogram frontend", [

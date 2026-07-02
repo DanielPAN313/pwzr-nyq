@@ -1,5 +1,5 @@
 const { buildUrl, getConfig } = require("./config");
-const { ensureDevLogin, getStoredUser, getToken } = require("./auth");
+const { ensureLogin, getStoredUser, getToken } = require("./auth");
 
 function normalizeError(error, fallbackMessage) {
   if (error instanceof Error) return error;
@@ -38,7 +38,7 @@ function request(path, options = {}) {
     loadingVisible = true;
   }
 
-  const authReady = needAuth ? ensureDevLogin() : Promise.resolve(null);
+  const authReady = needAuth ? ensureLogin() : Promise.resolve(null);
 
   return authReady.then(() => new Promise((resolve, reject) => {
     const token = getToken();

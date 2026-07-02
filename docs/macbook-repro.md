@@ -118,6 +118,26 @@ $env:PORT="4190"; npm run dev
 apiBaseUrl: "http://localhost:4174"
 ```
 
+本地开发默认使用模拟登录，不需要注册小程序也能继续开发和改 UI。
+
+后续注册小程序并准备接真实微信登录时，再在启动后端前配置：
+
+```bash
+export WECHAT_APP_ID="你的小程序 AppID"
+export WECHAT_APP_SECRET="你的小程序 AppSecret"
+npm run dev
+```
+
+Windows PowerShell 对应写法是：
+
+```powershell
+$env:WECHAT_APP_ID="你的小程序 AppID"
+$env:WECHAT_APP_SECRET="你的小程序 AppSecret"
+npm run dev
+```
+
+然后把 `miniprogram/utils/config.js` 里的 `useMockAuth` 改成 `false`，小程序会通过 `wx.login` 请求 `/api/sports-app/auth/wechat-login`。
+
 ## 6. 浏览器预览
 
 未注册小程序时，也可以先用浏览器看 H5 小程序预览：

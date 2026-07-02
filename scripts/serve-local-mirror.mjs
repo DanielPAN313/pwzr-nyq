@@ -112,6 +112,60 @@ const publicAuthUser = (user) => ({
   token: makeAuthToken(user),
 })
 
+const publicSportsAuthUser = (user) => ({
+  id: Number(user.id),
+  username: user.username,
+  nickName: user.username,
+  avatarUrl: '',
+  creditScore: 100,
+})
+
+const stableDevWechatOpenid = (code = '') => {
+  const seed = code ? String(code) : 'local-dev'
+  return `dev_${crypto.createHash('sha1').update(seed).digest('hex').slice(0, 12)}`
+}
+
+const resolveWechatOpenid = async (code) => {
+  const appId = process.env.WECHAT_APP_ID || process.env.WX_APP_ID
+  const appSecret = process.env.WECHAT_APP_SECRET || process.env.WX_APP_SECRET
+
+  if (!appId || !appSecret) {
+    return stableDevWechatOpenid(code)
+  }
+
+  const url = new URL('https://api.weixin.qq.com/sns/jscode2session')
+  url.searchParams.set('appid', appId)
+  url.searchParams.set('secret', appSecret)
+  url.searchParams.set('js_code', code)
+  url.searchParams.set('grant_type', 'authorization_code')
+
+  const response = await fetch(url)
+  const data = await response.json()
+
+  if (!response.ok || data.errcode || !data.openid) {
+    const message = data.errmsg || `wechat session failed: ${response.status}`
+    const error = new Error(message)
+    error.statusCode = 401
+    throw error
+  }
+
+  return data.openid
+}
+
+const ensureWechatUser = async (pool, openid) => {
+  const username = text(`wx_${openid}`, 50)
+  const [[existing]] = await pool.execute('SELECT id, username FROM `user` WHERE username = ? LIMIT 1', [username])
+  if (existing) return existing
+
+  const passwordHash = `wechat:${crypto.randomUUID()}`
+  const [result] = await pool.execute(
+    'INSERT INTO `user` (username, password_hash, status) VALUES (?, ?, 1)',
+    [username, passwordHash],
+  )
+
+  return { id: result.insertId, username }
+}
+
 let sportsSchemaPromise = null
 
 const CREDIT_PUBLIC_JOIN_MIN = 80
@@ -1328,6 +1382,23 @@ const handleSportsApi = async (req, res, requestUrl) => {
   try {
     const pool = await ensureSportsSchema()
     await cleanupSportsDemoText(pool)
+
+    if (pathName === '/api/sports-app/auth/wechat-login' && req.method === 'POST') {
+      const body = await readJsonBody(req)
+      const code = text(body.code, 200)
+      if (!code) return json(res, { ok: false, error: 'wx.login code is required' }, 400)
+
+      const openid = await resolveWechatOpenid(code)
+      const authUser = await ensureWechatUser(pool, openid)
+      const token = makeAuthToken(authUser)
+
+      return json(res, {
+        ok: true,
+        token,
+        user: publicSportsAuthUser(authUser),
+      })
+    }
+
     const user = requestUser(req)
 
     if (pathName === '/api/sports-app/venues' && req.method === 'GET') {

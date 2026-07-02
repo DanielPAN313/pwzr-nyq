@@ -3,6 +3,7 @@ const DEFAULT_CONFIG = {
   apiBaseUrl: "http://localhost:4174",
   requestTimeout: 10000,
   useMockAuth: true,
+  wechatLoginPath: "/api/sports-app/auth/wechat-login",
   storageKeys: {
     token: "nyq_token",
     user: "nyq_user"

@@ -86,7 +86,17 @@ requireIncludes("miniprogram/pages/game-detail/game-detail.wxml", [
   "detail.reviewOpen",
 ]);
 
+requireIncludes("miniprogram/utils/auth.js", [
+  "ensureLogin",
+  "wx.login",
+  "requestWechatSession",
+  "wechatLoginPath",
+]);
+
 requireIncludes("scripts/serve-local-mirror.mjs", [
+  "/api/sports-app/auth/wechat-login",
+  "resolveWechatOpenid",
+  "ensureWechatUser",
   "/api/sports-app/venue-admin/checkin-code",
   "venueAdminUpdateMatch",
   "venueAdminCheckinOrder",

@@ -10,6 +10,7 @@ const fallbackOrders = [
     hint: "当前显示本地兜底订单。",
     canPay: false,
     canCancel: false,
+    canCheckin: false,
     showCheckin: false
   }
 ];
@@ -41,6 +42,7 @@ function mapOrder(order) {
   const status = order.status || "";
   const canPay = Boolean(order.can_pay);
   const canCancel = ["pending_payment", "paid"].includes(status);
+  const canCheckin = Boolean(order.can_checkin);
   const showCheckin = ["paid", "checked_in"].includes(status);
 
   return {
@@ -55,6 +57,7 @@ function mapOrder(order) {
     timeText: formatTime(order.start_time || order.booking_start_time || order.create_time),
     canPay,
     canCancel,
+    canCheckin,
     showCheckin
   };
 }
@@ -143,6 +146,32 @@ Page({
       .catch((error) => {
         wx.showToast({
           title: error.message || "取消失败",
+          icon: "none"
+        });
+      })
+      .finally(() => {
+        this.setData({ actionOrderId: "" });
+      });
+  },
+
+  checkinOrder(event) {
+    const id = event.currentTarget.dataset.id;
+    if (!id || this.data.actionOrderId) return;
+
+    this.setData({ actionOrderId: id });
+
+    post(`/api/sports-app/orders/${id}/checkin`, {}, { loadingTitle: "核销中" })
+      .then(() => {
+        wx.showToast({
+          title: "核销成功",
+          icon: "success"
+        });
+
+        return this.loadOrders();
+      })
+      .catch((error) => {
+        wx.showToast({
+          title: error.message || "核销失败",
           icon: "none"
         });
       })

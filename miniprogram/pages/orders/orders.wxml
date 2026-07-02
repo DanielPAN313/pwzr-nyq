@@ -19,7 +19,7 @@
       <text class="checkin-code">{{item.checkinCode}}</text>
     </view>
     <text class="muted">{{item.hint}}</text>
-    <view wx:if="{{item.canPay || item.canCancel}}" class="order-actions">
+    <view wx:if="{{item.canPay || item.canCheckin || item.canCancel}}" class="order-actions">
       <button
         wx:if="{{item.canPay}}"
         class="primary small"
@@ -28,6 +28,15 @@
         data-id="{{item.id}}"
       >
         {{actionOrderId === item.id ? "处理中" : "模拟支付"}}
+      </button>
+      <button
+        wx:if="{{item.canCheckin}}"
+        class="primary small"
+        disabled="{{actionOrderId === item.id}}"
+        bindtap="checkinOrder"
+        data-id="{{item.id}}"
+      >
+        {{actionOrderId === item.id ? "处理中" : "模拟核销"}}
       </button>
       <button
         wx:if="{{item.canCancel}}"

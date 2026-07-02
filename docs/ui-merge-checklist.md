@@ -59,7 +59,7 @@ node_modules/
 
 ## 3. 不能删的关键绑定
 
-UI 改 WXML 时，不要删除这些能力：
+UI 改 WXML 时，不要删除事件绑定和对应的 `data-*` 参数，例如 `bindtap`、`bindinput`、`data-id`、`data-target`、`data-field`。这些能力必须保留：
 
 - 首页：快捷入口、待处理事项、推荐场馆、推荐球局。
 - 订场页：搜索、筛选、重试、清空筛选、订场按钮。

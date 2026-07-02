@@ -49,7 +49,7 @@ npm run check
 
 `npm run check` 会检查小程序工程是否可打开：`app.json`、页面四件套、tabBar 路由、JSON 语法、UTF-8 编码和浏览器 API 误用。
 
-它还会检查 WXML 事件绑定，避免 UI 改动后出现按钮绑定到不存在 JS 函数的问题。
+它还会检查 WXML 事件绑定和 `data-*` 参数，避免 UI 改动后出现按钮绑定到不存在 JS 函数、或点击时拿不到 `data-id` 的问题。
 
 它还会执行 H5 小程序预览检查、H5 本地 HTTP 直达检查、`wx` 桥接层运行时检查，以及 `miniprogram/` 实际使用的 `wx.*` API 覆盖检查。
 

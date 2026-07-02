@@ -64,7 +64,7 @@ requireIncludes("README.md", [
   "docs/miniprogram-self-test.md",
   "docs/ui-merge-checklist.md",
   "docs/ui-design-system.md",
-  "WXML 事件绑定",
+  "WXML 事件绑定和 `data-*` 参数",
   "npm run check",
   "npm run dev",
 ]);
@@ -118,7 +118,7 @@ requireIncludes("docs/project-roadmap.md", [
   "docs/miniprogram-self-test.md",
   "docs/ui-merge-checklist.md",
   "docs/ui-design-system.md",
-  "WXML 事件绑定检查",
+  "WXML 事件绑定和 `data-*` 参数检查",
 ]);
 
 requireIncludes("docs/current-handoff.md", [
@@ -129,7 +129,7 @@ requireIncludes("docs/current-handoff.md", [
   "微信开发者工具",
   "当前自动检查",
   "docs/ui-design-system.md",
-  "WXML 事件绑定检查",
+  "WXML 事件绑定和 `data-*` 参数检查",
   "下一步建议",
 ]);
 

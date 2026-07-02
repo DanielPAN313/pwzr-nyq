@@ -39,20 +39,32 @@ requireIncludes("docs/ui-merge-checklist.md", [
   "ui-polish",
   "feature-miniprogram-flow",
   "git diff --stat",
+  "docs/ui-design-system.md",
   "不能删的关键绑定",
   "npm run check",
   "docs/miniprogram-self-test.md",
   "git merge origin/ui-polish",
 ]);
 
+requireIncludes("docs/ui-design-system.md", [
+  "miniprogram/",
+  "年轻、运动、绿色、可信",
+  "不要卡片套卡片",
+  "底部 tab 页面",
+  "loading、error、empty",
+  "npm run check",
+]);
+
 requireIncludes("docs/collaboration-plan.md", [
   "docs/miniprogram-self-test.md",
   "docs/ui-merge-checklist.md",
+  "docs/ui-design-system.md",
 ]);
 
 requireIncludes("docs/project-roadmap.md", [
   "docs/miniprogram-self-test.md",
   "docs/ui-merge-checklist.md",
+  "docs/ui-design-system.md",
 ]);
 
 if (errors.length > 0) {

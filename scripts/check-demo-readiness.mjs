@@ -40,6 +40,7 @@ function requirePath(file) {
   "docs/collaboration-plan.md",
   "docs/miniprogram-self-test.md",
   "docs/ui-merge-checklist.md",
+  "docs/ui-design-system.md",
   "docs/server-deploy.md",
   ".env.example",
   ".env.server.example",
@@ -61,6 +62,7 @@ requireIncludes("README.md", [
   "docs/current-handoff.md",
   "docs/miniprogram-self-test.md",
   "docs/ui-merge-checklist.md",
+  "docs/ui-design-system.md",
   "npm run check",
   "npm run dev",
 ]);
@@ -98,6 +100,7 @@ requireIncludes(".github/workflows/check.yml", [
 requireIncludes(".github/pull_request_template.md", [
   "npm run check",
   "docs/ui-merge-checklist.md",
+  "docs/ui-design-system.md",
   "docs/miniprogram-self-test.md",
   "微信开发者工具",
   "场馆管理页",
@@ -110,6 +113,7 @@ requireIncludes("docs/project-roadmap.md", [
   "touristappid",
   "docs/miniprogram-self-test.md",
   "docs/ui-merge-checklist.md",
+  "docs/ui-design-system.md",
 ]);
 
 requireIncludes("docs/current-handoff.md", [
@@ -119,7 +123,16 @@ requireIncludes("docs/current-handoff.md", [
   "npm run check",
   "微信开发者工具",
   "当前自动检查",
+  "docs/ui-design-system.md",
   "下一步建议",
+]);
+
+requireIncludes("docs/ui-design-system.md", [
+  "miniprogram/",
+  "年轻、运动、绿色、可信",
+  "loading、error、empty",
+  "不要卡片套卡片",
+  "npm run check",
 ]);
 
 if (errors.length > 0) {

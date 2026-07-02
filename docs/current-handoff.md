@@ -2,7 +2,7 @@
 
 更新时间：2026-07-02
 
-这份文档用于快速交接当前小程序状态。详细路线图看 `docs/project-roadmap.md`，逐页自测看 `docs/miniprogram-self-test.md`。
+这份文档用于快速交接当前小程序状态。详细路线图看 `docs/project-roadmap.md`，逐页自测看 `docs/miniprogram-self-test.md`，UI 标准看 `docs/ui-design-system.md`。
 
 ## 当前结论
 
@@ -94,6 +94,7 @@ npm run check
 短期：
 
 - UI 同伴按 `docs/ui-merge-checklist.md` 做视觉统一。
+- UI 同伴按 `docs/ui-design-system.md` 控制颜色、间距、按钮、状态和空态。
 - 你按 `docs/miniprogram-self-test.md` 在微信开发者工具逐页点通。
 - 合并 UI 分支前跑 `npm run check`。
 

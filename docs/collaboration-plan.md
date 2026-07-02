@@ -4,6 +4,11 @@
 
 总路线图和当前进度看：`docs/project-roadmap.md`。
 
+自测和 UI 合并看：
+
+- `docs/miniprogram-self-test.md`
+- `docs/ui-merge-checklist.md`
+
 ## 分支规则
 
 - `main`：稳定基线。
@@ -122,6 +127,7 @@ npm run check
 - H5 预览路由
 - `wx.*` 桥接覆盖
 - 主流程契约：订单定位、场馆入驻、场馆资料维护、场馆核销权限、赛后互评等
+- 协作文档：自测清单和 UI 合并清单是否存在并覆盖关键步骤
 
 ## 不要提交
 
@@ -177,4 +183,4 @@ P0 已完成并持续维护：
 - 真实微信登录：前后端接口已预留，注册后配置 AppID/AppSecret 即可切换
 - 真实支付和退款回调：已拆出预支付、确认支付和微信回调预留；后续补商户号、证书和验签
 - 生产服务器、HTTPS 域名和微信合法域名配置：已补环境模板和检查脚本，后续购买服务器/域名后实配
-- UI polish 和一致性设计
+- UI polish、一致性设计和按 `docs/miniprogram-self-test.md` 做真机自测

@@ -97,8 +97,11 @@
   - 小程序运行时检查
   - H5 预览检查
   - `wx.*` 桥接覆盖检查
+  - 协作文档和自测清单检查
   - 部署准备检查
 - 合规材料草案已放在 `docs/legal/`。
+- 微信开发者工具自测清单已放在 `docs/miniprogram-self-test.md`。
+- UI 分支合并检查清单已放在 `docs/ui-merge-checklist.md`。
 
 ## 当前还不是正式上线版的原因
 
@@ -160,7 +163,7 @@ git push origin ui-polish
 1. UI polish：统一视觉、间距、按钮、状态标签和空状态。
 2. 真机前自测：微信开发者工具打开 `miniprogram/`，逐页检查不报错。
 3. 合并 UI 分支前跑 `npm run check`。
-4. 继续补齐页面视觉统一、真机自测清单和 UI 分支合并检查。
+4. 继续补齐页面视觉统一，并按自测清单做微信开发者工具/真机检查。
 
 ### P1：注册小程序后做
 
@@ -219,6 +222,8 @@ git push origin feature-miniprogram-flow
 
 - MacBook 复现：`docs/macbook-repro.md`
 - 协作说明：`docs/collaboration-plan.md`
+- 小程序自测：`docs/miniprogram-self-test.md`
+- UI 合并检查：`docs/ui-merge-checklist.md`
 - 服务器上线：`docs/server-deploy.md`
 - 合规材料：`docs/legal/`
 - 产品需求：`docs/snapsport-c-prd.md`

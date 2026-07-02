@@ -23,6 +23,30 @@ npm run check:ui-branch-scope
 
 如果 `npm run check:ui-branch-scope` 失败，说明 UI 分支包含删除、JS、脚本、数据库、package 或其他危险改动。不要直接整支合并。如果输出里出现很多被删除的页面、文档或脚本，通常代表 `ui-polish` 太旧，需要先让 UI 同伴从最新 `feature-miniprogram-flow` 重建或更新分支。短期要吸收 UI 时，先按脚本输出的 `Safe UI candidates` 只挑安全的 `.wxml`、`.wxss`、`app.wxss` 和 `docs/ui-design-system.md` 改动，确认 `npm run check` 通过后再讨论是否吸收她新增的功能想法。
 
+如果 UI 分支太旧，推荐 UI 同伴新建干净分支重新做：
+
+```bash
+git fetch origin
+git checkout feature-miniprogram-flow
+git pull origin feature-miniprogram-flow
+git checkout -b ui-polish-refresh
+```
+
+然后把旧 `ui-polish` 里真正需要保留的 `.wxml`、`.wxss`、`app.wxss`、`docs/ui-design-system.md` 想法手动搬过来，跑 `npm run check`，再推送：
+
+```bash
+git push origin ui-polish-refresh
+```
+
+如果她很确定旧分支没有误删功能，也可以在旧 `ui-polish` 上更新：
+
+```bash
+git checkout ui-polish
+git fetch origin
+git merge origin/feature-miniprogram-flow
+npm run check
+```
+
 ## 2. UI 分支允许主要修改
 
 优先允许：

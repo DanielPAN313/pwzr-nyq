@@ -47,6 +47,7 @@ requireIncludes("docs/ui-merge-checklist.md", [
   "不要直接整支合并",
   "Safe UI candidates",
   "从最新 `feature-miniprogram-flow` 重建或更新分支",
+  "git checkout -b ui-polish-refresh",
   "只挑安全的 `.wxml`、`.wxss`、`app.wxss`",
   "npm run check",
   "GitHub 的 `Actions` 页面",
@@ -90,6 +91,7 @@ requireCurrentPageCount("docs/macbook-repro.md");
 requireIncludes("docs/macbook-repro.md", [
   "GitHub 仓库的 `Actions` 页面",
   "`ui-polish` 分支会自动跑 Ubuntu 和 macOS",
+  "git checkout -b ui-polish-refresh",
 ]);
 
 if (errors.length > 0) {

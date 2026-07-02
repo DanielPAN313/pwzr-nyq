@@ -110,6 +110,8 @@ requireIncludes("README.md", [
   "miniprogram/",
   "touristappid",
   "ui-polish",
+  "ui-polish-refresh",
+  "release-wechat-config",
   "GitHub 的 `Actions` 页面",
   "npm run check:ui-branch-scope",
   "docs/project-roadmap.md",
@@ -162,7 +164,10 @@ requireIncludes(".github/workflows/check.yml", [
   "macos-latest",
   "feature-miniprogram-flow",
   "ui-polish",
+  "ui-polish-refresh",
+  "release-wechat-config",
   "npm run check",
+  "npm run check:release-config",
 ]);
 
 requireIncludes(".github/pull_request_template.md", [

@@ -235,7 +235,7 @@ git push origin ui-polish
 ui-polish
 ```
 
-推送后去 GitHub 仓库的 `Actions` 页面看 `Check` 工作流。`ui-polish` 分支会自动跑 Ubuntu 和 macOS 两套 `npm run check`；两个都变成绿色勾后，再创建 Pull Request 或把分支名发给团队。如果失败，点进失败的 job，把报错截图或日志发回来。
+推送后去 GitHub 仓库的 `Actions` 页面看 `Check` 工作流。`ui-polish` 和 `ui-polish-refresh` 分支会自动跑 Ubuntu 和 macOS 两套 `npm run check`；两个都变成绿色勾后，再创建 Pull Request 或把分支名发给团队。如果失败，点进失败的 job，把报错截图或日志发回来。
 
 如果团队说你的 `ui-polish` 分支太旧，不要强行合并。推荐从最新功能分支重新建一个干净 UI 分支：
 

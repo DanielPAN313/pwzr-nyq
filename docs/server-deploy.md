@@ -219,6 +219,8 @@ npm run check:release-config
 
 注意：在当前本地开发分支运行 `npm run check:release-config` 会失败，这是正常的；它只用于 `release-wechat-config` 这类体验版/审核前配置分支。
 
+`release-wechat-config` 推送到 GitHub 后，Actions 会自动运行常规 `npm run check`，并额外运行 `npm run check:release-config`。这两个检查都变成绿色后，再用这个分支准备体验版/审核。
+
 ## 上线前必须补齐
 
 当前项目已经有开发版模拟登录和模拟支付。真正上线前还需要：

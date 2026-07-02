@@ -43,6 +43,8 @@ requireIncludes("docs/ui-merge-checklist.md", [
   "git diff --stat",
   "docs/ui-design-system.md",
   "不能删的关键绑定",
+  "不要直接整支合并",
+  "只挑安全的 `.wxml`、`.wxss`、`app.wxss`",
   "npm run check",
   "GitHub 的 `Actions` 页面",
   "macOS",

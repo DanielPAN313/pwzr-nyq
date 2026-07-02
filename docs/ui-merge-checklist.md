@@ -20,6 +20,8 @@ git diff --stat feature-miniprogram-flow..origin/ui-polish
 git diff --name-only feature-miniprogram-flow..origin/ui-polish
 ```
 
+如果差异里出现大量 `D` 删除、删除 `scripts/`、删除 `docs/`、删除小程序页面，或改动了 `.js`、`utils/`、`db/`、`package.json`，不要直接整支合并。先只挑安全的 `.wxml`、`.wxss`、`app.wxss` 和 `docs/ui-design-system.md` 改动，确认 `npm run check` 通过后再讨论是否吸收她新增的功能想法。
+
 ## 2. UI 分支允许主要修改
 
 优先允许：

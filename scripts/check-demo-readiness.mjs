@@ -153,6 +153,7 @@ requireIncludes(".github/workflows/check.yml", [
   "ubuntu-latest",
   "macos-latest",
   "feature-miniprogram-flow",
+  "ui-polish",
   "npm run check",
 ]);
 

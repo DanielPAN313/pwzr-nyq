@@ -2,7 +2,7 @@ name: Check
 
 on:
   push:
-    branches: [main, feature-miniprogram-flow]
+    branches: [main, feature-miniprogram-flow, ui-polish]
   pull_request:
   workflow_dispatch:
 

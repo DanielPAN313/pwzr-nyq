@@ -1,26 +1,56 @@
-const { get } = require("../../utils/api");
+const { get, post } = require("../../utils/api");
 
 const fallbackVenues = [
-  { name: "江宁大学城篮球馆", area: "江宁大学城", price: "180/小时", sportsText: "篮球" },
-  { name: "未来科技城五人制足球馆", area: "江宁开发区", price: "260/小时", sportsText: "足球" }
+  { name: "江宁大学城篮球馆", area: "江宁大学城", price: "180/小时", sportsText: "篮球", canBook: false, actionText: "待同步" },
+  { name: "未来科技城五人制足球馆", area: "江宁开发区", price: "260/小时", sportsText: "足球", canBook: false, actionText: "待同步" }
 ];
+
+function pad2(value) {
+  return String(value).padStart(2, "0");
+}
+
+function tomorrowDateText() {
+  const date = new Date();
+  date.setDate(date.getDate() + 1);
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+}
+
+function defaultSlot(venue) {
+  const slots = Array.isArray(venue.open_slot_ranges) ? venue.open_slot_ranges : [];
+  const firstSlot = slots.find((slot) => slot && slot.start && slot.end);
+
+  return {
+    date: tomorrowDateText(),
+    start: firstSlot ? firstSlot.start : "19:00",
+    end: firstSlot ? firstSlot.end : "20:00",
+    label: firstSlot ? firstSlot.label : "19:00-20:00"
+  };
+}
 
 function mapVenue(venue) {
   const price = venue.price_per_hour || venue.price || 0;
   const sports = Array.isArray(venue.sports) ? venue.sports.join(" / ") : venue.sports;
+  const slot = defaultSlot(venue);
 
   return {
     id: venue.id,
     name: venue.name || "未命名场馆",
     area: venue.area || venue.address || "附近",
     price: `${price}/小时`,
-    sportsText: sports || "综合运动"
+    sportsText: sports || "综合运动",
+    bookingDate: slot.date,
+    bookingStartTime: slot.start,
+    bookingEndTime: slot.end,
+    bookingLabel: `明天 ${slot.label}`,
+    canBook: Boolean(venue.id),
+    actionText: "订场"
   };
 }
 
 Page({
   data: {
     loading: false,
+    bookingVenueId: "",
     error: "",
     empty: false,
     venues: fallbackVenues
@@ -54,6 +84,39 @@ Page({
           empty: false,
           venues: fallbackVenues
         });
+      });
+  },
+
+  bookVenue(event) {
+    const id = event.currentTarget.dataset.id;
+    const venue = this.data.venues.find((item) => String(item.id) === String(id));
+    if (!id || !venue || this.data.bookingVenueId) return;
+
+    this.setData({ bookingVenueId: id });
+
+    post(`/api/sports-app/venues/${id}/book`, {
+      booking_date: venue.bookingDate,
+      booking_start_time: venue.bookingStartTime,
+      booking_end_time: venue.bookingEndTime
+    }, { loadingTitle: "锁定场地" })
+      .then((result) => {
+        wx.showToast({
+          title: result.order_id ? "已生成待支付订单" : "订场成功",
+          icon: "success"
+        });
+
+        setTimeout(() => {
+          wx.navigateTo({ url: "/pages/orders/orders" });
+        }, 600);
+      })
+      .catch((error) => {
+        wx.showToast({
+          title: error.message || "订场失败",
+          icon: "none"
+        });
+      })
+      .finally(() => {
+        this.setData({ bookingVenueId: "" });
       });
   }
 });

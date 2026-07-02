@@ -10,9 +10,17 @@
   <view wx:for="{{venues}}" wx:key="name" class="section venue-card">
     <text class="card-title">{{item.name}}</text>
     <text class="muted">{{item.area}} · {{item.sportsText}}</text>
+    <text class="muted">默认时段：{{item.bookingLabel}}</text>
     <view class="card-row">
       <text class="price">¥{{item.price}}</text>
-      <button class="primary small">订场</button>
+      <button
+        class="primary small"
+        disabled="{{!item.canBook || bookingVenueId === item.id}}"
+        bindtap="bookVenue"
+        data-id="{{item.id}}"
+      >
+        {{bookingVenueId === item.id ? "锁定中" : item.actionText}}
+      </button>
     </view>
   </view>
 </view>

@@ -7,7 +7,7 @@
     <text wx:else class="muted">已接入真实场馆列表，后续继续补筛选和预订支付。</text>
   </view>
 
-  <view wx:for="{{venues}}" wx:key="name" class="section venue-card">
+  <view wx:for="{{venues}}" wx:key="name" class="section venue-card" bindtap="openVenue" data-id="{{item.id}}">
     <text class="card-title">{{item.name}}</text>
     <text class="muted">{{item.area}} · {{item.sportsText}}</text>
     <text class="muted">默认时段：{{item.bookingLabel}}</text>
@@ -16,7 +16,7 @@
       <button
         class="primary small"
         disabled="{{!item.canBook || bookingVenueId === item.id}}"
-        bindtap="bookVenue"
+        catchtap="bookVenue"
         data-id="{{item.id}}"
       >
         {{bookingVenueId === item.id ? "锁定中" : item.actionText}}

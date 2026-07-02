@@ -118,5 +118,14 @@ Page({
       .finally(() => {
         this.setData({ bookingVenueId: "" });
       });
+  },
+
+  openVenue(event) {
+    const id = event.currentTarget.dataset.id;
+    if (!id) return;
+
+    wx.navigateTo({
+      url: `/pages/venue-detail/venue-detail?id=${id}`
+    });
   }
 });

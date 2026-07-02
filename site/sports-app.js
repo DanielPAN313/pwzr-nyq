@@ -70,6 +70,7 @@
     'pages/messages/messages': 'messages',
     'pages/me/me': 'me',
     'pages/orders/orders': 'orders',
+    'pages/venue-detail/venue-detail': 'venues',
     'pages/create-game/create-game': 'create',
     'pages/game-detail/game-detail': 'games',
     'pages/credit/credit': 'credit',

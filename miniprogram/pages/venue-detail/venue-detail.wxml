@@ -1,0 +1,52 @@
+<view class="page">
+  <view class="section">
+    <view class="page-title">场馆详情</view>
+    <text wx:if="{{loading}}" class="muted">正在加载场馆...</text>
+    <text wx:elif="{{error}}" class="muted">{{error}}</text>
+    <text wx:else class="muted">选择日期和开放时段，生成待支付订单。</text>
+  </view>
+
+  <block wx:if="{{venue}}">
+    <view class="venue-hero">
+      <text class="venue-title">{{venue.name}}</text>
+      <text class="venue-tag">{{venue.indoorText}} · {{venue.sportsText}}</text>
+      <text class="venue-muted">{{venue.area}} · {{venue.priceText}}</text>
+    </view>
+
+    <view class="section">
+      <view class="section-title">场馆信息</view>
+      <text class="muted">{{venue.address}}</text>
+      <text class="muted">联系方式：{{venue.contact}}</text>
+    </view>
+
+    <view class="section">
+      <view class="section-title">选择日期</view>
+      <picker mode="date" value="{{date}}" start="{{minDate}}" bindchange="changeDate">
+        <view class="picker-value">{{date}}</view>
+      </picker>
+    </view>
+
+    <view class="section">
+      <view class="section-title">开放时段</view>
+      <view wx:if="{{slots.length === 0}}" class="muted">暂无可选时段。</view>
+      <view
+        wx:for="{{slots}}"
+        wx:key="id"
+        class="slot-row {{selectedSlotIndex === index ? 'selected' : ''}} {{item.occupied ? 'disabled' : ''}}"
+        bindtap="selectSlot"
+        data-index="{{index}}"
+      >
+        <text>{{item.label}}</text>
+        <text>{{item.statusText}}</text>
+      </view>
+    </view>
+
+    <button
+      class="primary submit-button"
+      disabled="{{slots.length === 0 || slots[selectedSlotIndex].occupied || bookingSlotId}}"
+      bindtap="bookSelectedSlot"
+    >
+      {{bookingSlotId ? "锁定中" : "生成待支付订单"}}
+    </button>
+  </block>
+</view>

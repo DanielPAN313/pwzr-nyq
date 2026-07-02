@@ -1399,6 +1399,13 @@ const handleSportsApi = async (req, res, requestUrl) => {
       return json(res, { ok: true, id: result.insertId }, 201)
     }
 
+    const venueAvailabilityMatch = pathName.match(/^\/api\/sports-app\/venues\/(\d+)\/availability$/)
+    if (venueAvailabilityMatch && req.method === 'GET') {
+      const availability = await venueAvailability(pool, Number(venueAvailabilityMatch[1]), requestUrl.searchParams.get('date'))
+      if (!availability) return json(res, { ok: false, error: 'venue not found or invalid date' }, 404)
+      return json(res, availability)
+    }
+
     const venueBookMatch = pathName.match(/^\/api\/sports-app\/venues\/(\d+)\/book$/)
     if (venueBookMatch && req.method === 'POST') {
       const body = await readJsonBody(req)

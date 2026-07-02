@@ -2,6 +2,7 @@
   "pages": [
     "pages/home/home",
     "pages/venues/venues",
+    "pages/venue-detail/venue-detail",
     "pages/games/games",
     "pages/create-game/create-game",
     "pages/game-detail/game-detail",

@@ -9,6 +9,7 @@
     "pages/messages/messages",
     "pages/me/me",
     "pages/orders/orders",
+    "pages/venue-admin/venue-admin",
     "pages/credit/credit",
     "pages/my-games/my-games"
   ],

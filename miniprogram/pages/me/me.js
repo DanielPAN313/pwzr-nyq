@@ -5,7 +5,7 @@ const fallbackItems = [
   { label: "我的订单", value: "0", target: "/pages/orders/orders" },
   { label: "我的球局", value: "0", target: "/pages/my-games/my-games" },
   { label: "信用分", value: "100", target: "/pages/credit/credit" },
-  { label: "场馆合作", value: "联系中" }
+  { label: "场馆管理", value: "演示", target: "/pages/venue-admin/venue-admin" }
 ];
 
 function buildItems(profile) {
@@ -16,6 +16,7 @@ function buildItems(profile) {
     { label: "我的订单", value: String(orders.length), target: "/pages/orders/orders" },
     { label: "我的球局", value: String(summary.played || 0), target: "/pages/my-games/my-games" },
     { label: "信用分", value: String(summary.credit_score || 100), target: "/pages/credit/credit" },
+    { label: "场馆管理", value: "演示", target: "/pages/venue-admin/venue-admin" },
     { label: "已核销", value: String(summary.checked_in || 0) }
   ];
 }

@@ -14,6 +14,7 @@
     'pages/venue-detail/venue-detail': 'venue-detail',
     'pages/create-game/create-game': 'create-game',
     'pages/game-detail/game-detail': 'game-detail',
+    'pages/venue-admin/venue-admin': 'venue-admin',
     'pages/credit/credit': 'credit',
     'pages/my-games/my-games': 'my-games',
     'pages/create/create': 'create',

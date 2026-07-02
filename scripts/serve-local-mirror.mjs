@@ -764,6 +764,60 @@ const canCancelOrder = (order) => {
   return { ok: true, nextStatus: 'refunded', penalty: 0, note: '订单已取消' }
 }
 
+const sportsVenueAdminDashboard = async (pool) => {
+  const [venues] = await pool.execute(
+    `SELECT *
+     FROM sports_venue
+     WHERE status = 'approved'
+     ORDER BY create_time DESC
+     LIMIT 20`,
+  )
+  const [orders] = await pool.execute(
+    `SELECT o.*, g.title, g.start_time, g.end_time, v.name AS venue_name, v.area
+     FROM sports_order o
+     LEFT JOIN sports_game g ON g.id = o.game_id
+     JOIN sports_venue v ON v.id = o.venue_id
+     WHERE v.status = 'approved'
+     ORDER BY
+       CASE o.status
+         WHEN 'paid' THEN 0
+         WHEN 'pending_payment' THEN 1
+         WHEN 'checked_in' THEN 2
+         ELSE 3
+       END,
+       o.create_time DESC
+     LIMIT 100`,
+  )
+  const [[summary]] = await pool.execute(
+    `SELECT
+       COUNT(CASE WHEN DATE(o.create_time) = CURRENT_DATE() THEN 1 END) AS today_orders,
+       COUNT(CASE WHEN o.status = 'paid' THEN 1 END) AS pending_checkins,
+       COUNT(CASE WHEN o.status = 'checked_in' THEN 1 END) AS checked_in_orders,
+       COALESCE(SUM(CASE WHEN o.status IN ('paid', 'checked_in') THEN o.amount ELSE 0 END), 0) AS revenue
+     FROM sports_order o
+     JOIN sports_venue v ON v.id = o.venue_id
+     WHERE v.status = 'approved'`,
+  )
+  const normalizedSummary = {
+    today_orders: Number(summary.today_orders || 0),
+    pending_checkins: Number(summary.pending_checkins || 0),
+    checked_in_orders: Number(summary.checked_in_orders || 0),
+    revenue: Number(summary.revenue || 0),
+  }
+
+  return {
+    summary: normalizedSummary,
+    metrics: [
+      { label: '今日订单', value: normalizedSummary.today_orders },
+      { label: '待核销', value: normalizedSummary.pending_checkins },
+      { label: '已核销', value: normalizedSummary.checked_in_orders },
+      { label: '收入', value: `¥${normalizedSummary.revenue.toFixed(0)}` },
+    ],
+    venues: venues.map(serializeVenue),
+    orders: orders.map(serializeOrder),
+  }
+}
+
 const trackEvent = async (pool, user, eventName, payload = {}) => {
   await pool.execute(
     `INSERT INTO sports_analytics_event
@@ -1690,6 +1744,46 @@ const handleSportsApi = async (req, res, requestUrl) => {
         [user.id],
       )
       return json(res, orders.map(serializeOrder))
+    }
+
+    if (pathName === '/api/sports-app/venue-admin' && req.method === 'GET') {
+      return json(res, await sportsVenueAdminDashboard(pool))
+    }
+
+    const venueAdminCheckinMatch = pathName.match(/^\/api\/sports-app\/venue-admin\/orders\/(\d+)\/checkin$/)
+    if (venueAdminCheckinMatch && req.method === 'POST') {
+      const orderId = Number(venueAdminCheckinMatch[1])
+      const [[order]] = await pool.execute(
+        `SELECT o.*, g.start_time, g.end_time
+         FROM sports_order o
+         LEFT JOIN sports_game g ON g.id = o.game_id
+         WHERE o.id = ?
+         LIMIT 1`,
+        [orderId],
+      )
+      if (!order) return json(res, { ok: false, error: 'order not found' }, 404)
+      if (order.status === 'checked_in') {
+        return json(res, { ok: true, order_id: orderId, checkin_code: order.checkin_code, status: 'checked_in' })
+      }
+      if (order.status !== 'paid') return json(res, { ok: false, error: '只有已支付订单可以核销' }, 409)
+
+      await pool.execute('UPDATE sports_order SET status = "checked_in", checked_in_at = NOW() WHERE id = ?', [orderId])
+      if (order.game_id) {
+        await pool.execute('UPDATE sports_signup SET checked_in = 1 WHERE game_id = ? AND user_id = ?', [order.game_id, order.user_id])
+        await pool.execute(
+          'INSERT INTO sports_credit_event (user_id, username, event_type, score_delta, note, related_game_id) VALUES (?, ?, "checkin", 3, "场馆端到场核销", ?)',
+          [order.user_id, order.username, order.game_id],
+        )
+      }
+      await trackEvent(pool, { id: order.user_id, username: order.username }, 'checkin_success', { entity_type: order.game_id ? 'game' : 'venue', entity_id: order.game_id || order.venue_id, metadata: { order_id: orderId, source: 'venue_admin' } })
+      await createNotification(pool, { id: order.user_id, username: order.username }, {
+        type: 'checkin_success',
+        title: '核销成功',
+        body: `订单 #${orderId} 已由场馆确认到场。`,
+        order_id: orderId,
+        game_id: order.game_id,
+      })
+      return json(res, { ok: true, order_id: orderId, checkin_code: order.checkin_code, status: 'checked_in' })
     }
 
     if (pathName === '/api/sports-app/notifications' && req.method === 'GET') {

@@ -1,0 +1,54 @@
+<view class="page">
+  <view class="section">
+    <view class="page-title">场馆管理</view>
+    <text wx:if="{{loading}}" class="muted">正在加载场馆数据...</text>
+    <text wx:elif="{{error}}" class="muted">{{error}}，已显示本地兜底数据。</text>
+    <text wx:else class="muted">查看预约、支付和到场核销状态。</text>
+  </view>
+
+  <view class="metric-grid">
+    <view wx:for="{{metrics}}" wx:key="label" class="metric-card">
+      <text class="metric-value">{{item.value}}</text>
+      <text class="muted">{{item.label}}</text>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">管理场馆</view>
+    <view wx:for="{{venues}}" wx:key="id" class="venue-row">
+      <view>
+        <text class="card-title">{{item.name}}</text>
+        <text class="muted">{{item.area}}</text>
+      </view>
+      <text class="status">{{item.statusText}}</text>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">近期订单</view>
+    <text wx:if="{{empty}}" class="muted">暂时没有订单。用户订场或报名后会出现在这里。</text>
+  </view>
+
+  <view wx:for="{{orders}}" wx:key="id" class="section order-card">
+    <text class="card-title">{{item.title}}</text>
+    <text class="muted">{{item.venueName}} · {{item.timeText}}</text>
+    <text class="muted">用户：{{item.username}}</text>
+    <view class="order-row">
+      <text class="price">{{item.amountText}}</text>
+      <text class="status">{{item.statusText}}</text>
+    </view>
+    <view class="checkin-box">
+      <text class="muted">核销码</text>
+      <text class="checkin-code">{{item.checkinCode}}</text>
+    </view>
+    <button
+      wx:if="{{item.canCheckin}}"
+      class="primary"
+      disabled="{{actionOrderId === item.id}}"
+      bindtap="checkinOrder"
+      data-id="{{item.id}}"
+    >
+      {{actionOrderId === item.id ? "处理中" : "确认到场核销"}}
+    </button>
+  </view>
+</view>

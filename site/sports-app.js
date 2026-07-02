@@ -54,6 +54,7 @@
     'messages',
     'me',
     'orders',
+    'venue-admin',
     'credit',
     'my-games',
     'create',
@@ -70,6 +71,7 @@
     'pages/messages/messages': 'messages',
     'pages/me/me': 'me',
     'pages/orders/orders': 'orders',
+    'pages/venue-admin/venue-admin': 'venue-admin',
     'pages/venue-detail/venue-detail': 'venues',
     'pages/create-game/create-game': 'create',
     'pages/game-detail/game-detail': 'games',
@@ -109,6 +111,7 @@
       messages: 'Messages',
       me: 'Me',
       orders: 'Orders',
+      'venue-admin': 'Venue Admin',
       credit: 'Credit',
       'my-games': 'My Games',
       create: 'Create',
@@ -1644,6 +1647,7 @@
       '  </div>',
       '  <div class="profile-menu-card">',
       profileMenuItem('ball', '我的球局', '已报名和待处理球局', 'my-games'),
+      profileMenuItem('venue', '场馆管理', '订单、核销和收入概览', 'venue-admin'),
       profileMenuItem('team', '球队', '创建或加入固定球队', 'teams'),
       profileMenuItem('shield', '守约账户', '信用分、扣分和恢复记录', 'credit'),
       profileMenuItem('star', '我的球馆', '常用场馆与关注球局', 'favorites'),
@@ -1748,6 +1752,42 @@
       '<section class="order-todo-group">',
       '  <div class="panel-title mini"><h3>' + h(title) + '</h3><span>' + h(desc) + '</span></div>',
       myOrderList(orders, emptyText),
+      '</section>',
+    ].join('');
+  }
+
+  function venueAdminView() {
+    var venues = (state.data.venues || []).filter(function (venue) { return venue.status === 'approved'; });
+    var orders = state.data.myOrders || [];
+    var pending = orders.filter(function (order) { return order.status === 'paid'; });
+    var checkedIn = orders.filter(function (order) { return order.status === 'checked_in'; });
+    var revenue = orders.reduce(function (sum, order) {
+      return ['paid', 'checked_in'].includes(order.status) ? sum + Number(order.amount || 0) : sum;
+    }, 0);
+    return [
+      '<section class="section">',
+      '  <div class="panel">',
+      profileBackTitle('场馆管理', '本地演示场馆端：订单、核销和收入概览'),
+      '    <div class="order-todo-summary">',
+      '      <article><span>今日订单</span><strong>' + h(orders.length) + '</strong></article>',
+      '      <article><span>待核销</span><strong>' + h(pending.length) + '</strong></article>',
+      '      <article><span>已核销</span><strong>' + h(checkedIn.length) + '</strong></article>',
+      '      <article><span>收入</span><strong>¥' + h(revenue.toFixed(0)) + '</strong></article>',
+      '    </div>',
+      '    <div class="panel-soft-block"><strong>管理场馆</strong><p>' + h(venues.map(function (venue) { return venue.name; }).slice(0, 3).join('、') || '暂无可管理场馆') + '</p></div>',
+      '  </div>',
+      '  <div class="compact-list">' + (orders.length ? orders.map(function (order) {
+        return [
+          '<article class="compact-order">',
+          '  <div>',
+          '    <strong>' + h(order.title || '场地预约订单') + '</strong>',
+          '    <span>' + h(order.venue_name || '场馆待定') + ' / ' + fmtDate(order.start_time || order.booking_start_time || order.create_time) + '</span>',
+          '    <em>用户 ' + h(order.username || '用户') + ' / 核销码 ' + h(order.checkin_code || '------') + '</em>',
+          '  </div>',
+          '  <span class="tag ' + orderStatusClass(order.status) + '">' + statusLabel(order.status) + '</span>',
+          '</article>',
+        ].join('');
+      }).join('') : empty3d('暂无订单。用户订场或报名后会出现在这里。', 'venue')) + '</div>',
       '</section>',
     ].join('');
   }
@@ -2328,6 +2368,7 @@
       demo: demoView,
       messages: messagesView,
       orders: myOrdersView,
+      'venue-admin': venueAdminView,
       credit: creditView,
       me: meView,
     }[state.userView]();

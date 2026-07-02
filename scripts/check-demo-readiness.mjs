@@ -98,6 +98,7 @@ function requirePrTemplatePageCoverage() {
   "scripts/check-api-contracts.mjs",
   "scripts/check-db-contracts.mjs",
   "scripts/check-seed-data-contracts.mjs",
+  "scripts/check-miniprogram-config-modes.mjs",
   "scripts/check-miniprogram-routes.mjs",
   "scripts/check-wxml-event-bindings.mjs",
   "scripts/check-ui-structure.mjs",
@@ -136,6 +137,7 @@ requireIncludes(".gitignore", [
 
 requireIncludes("package.json", [
   "\"check:demo-readiness\"",
+  "\"check:miniprogram-config-modes\"",
   "\"check:repository-hygiene\"",
   "\"check:api-contracts\"",
   "\"check:db-contracts\"",
@@ -149,6 +151,7 @@ requireIncludes("package.json", [
   "\"check:release-config-self-test\"",
   "\"check\"",
   "check:demo-readiness",
+  "check:miniprogram-config-modes",
   "check:repository-hygiene",
   "check:api-contracts",
   "check:db-contracts",

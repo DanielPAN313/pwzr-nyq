@@ -69,6 +69,10 @@ const rootProjectConfig = parseJson(path.join(root, "project.config.json"));
 const miniProjectConfig = parseJson(path.join(miniRoot, "project.config.json"));
 const sitemapJson = parseJson(path.join(miniRoot, "sitemap.json"));
 
+function looksLikeWechatAppId(appid) {
+  return /^wx[A-Za-z0-9_-]{8,}$/.test(appid);
+}
+
 function validateProjectConfig(config, file, expectedRoots) {
   if (!config) return;
   const label = rel(file);
@@ -76,14 +80,20 @@ function validateProjectConfig(config, file, expectedRoots) {
   if (config.compileType !== "miniprogram") {
     errors.push(`${label} compileType must be "miniprogram".`);
   }
-  if (appid !== "touristappid") {
-    errors.push(`${label} appid must stay "touristappid" before Mini Program registration and production config split.`);
-  }
   if (!expectedRoots.includes(config.miniprogramRoot)) {
     errors.push(`${label} miniprogramRoot must be one of: ${expectedRoots.join(", ")}.`);
   }
-  if (config.setting?.urlCheck !== false) {
-    errors.push(`${label} setting.urlCheck must be false for local localhost API development before registration.`);
+  if (appid === "touristappid") {
+    if (config.setting?.urlCheck !== false) {
+      errors.push(`${label} setting.urlCheck must be false for local localhost API development before registration.`);
+    }
+  } else {
+    if (!looksLikeWechatAppId(appid)) {
+      errors.push(`${label} appid must be touristappid for local development or a real WeChat AppID starting with "wx" for release config.`);
+    }
+    if (config.setting?.urlCheck === false) {
+      errors.push(`${label} setting.urlCheck must not stay false when using a real WeChat AppID for release config.`);
+    }
   }
 }
 

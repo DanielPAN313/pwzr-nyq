@@ -11,6 +11,42 @@
   font-size: 30rpx;
 }
 
+.checkin-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.code-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.code-input {
+  flex: 1;
+  min-width: 0;
+  height: 76rpx;
+  padding: 0 20rpx;
+  box-sizing: border-box;
+  border: 1rpx solid rgba(219, 228, 216, 0.95);
+  border-radius: 14rpx;
+  background: #f8faf7;
+  color: #102016;
+  font-size: 28rpx;
+}
+
+.code-button {
+  flex-shrink: 0;
+  min-width: 132rpx;
+}
+
+.result-text {
+  color: #0b6b3e;
+  font-size: 26rpx;
+  font-weight: 750;
+}
+
 .metric-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -51,6 +87,11 @@
   display: flex;
   flex-direction: column;
   gap: 14rpx;
+}
+
+.order-card.is-highlighted {
+  border-color: #12824f;
+  box-shadow: 0 12rpx 30rpx rgba(18, 130, 79, 0.16);
 }
 
 .price {

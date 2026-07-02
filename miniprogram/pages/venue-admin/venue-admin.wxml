@@ -6,6 +6,28 @@
     <text wx:else class="muted">查看预约、支付和到场核销状态。</text>
   </view>
 
+  <view class="section checkin-panel">
+    <view class="section-title">核销码核销</view>
+    <view class="code-row">
+      <input
+        class="code-input"
+        type="number"
+        maxlength="30"
+        placeholder="输入用户出示的核销码"
+        value="{{checkinCode}}"
+        bindinput="onCodeInput"
+      />
+      <button
+        class="primary code-button"
+        disabled="{{actionOrderId === 'code'}}"
+        bindtap="checkinByCode"
+      >
+        {{actionOrderId === "code" ? "核销中" : "核销"}}
+      </button>
+    </view>
+    <text wx:if="{{checkinResultText}}" class="result-text">{{checkinResultText}}</text>
+  </view>
+
   <view class="metric-grid">
     <view wx:for="{{metrics}}" wx:key="label" class="metric-card">
       <text class="metric-value">{{item.value}}</text>
@@ -29,7 +51,12 @@
     <text wx:if="{{empty}}" class="muted">暂时没有订单。用户订场或报名后会出现在这里。</text>
   </view>
 
-  <view wx:for="{{orders}}" wx:key="id" class="section order-card">
+  <view
+    wx:for="{{orders}}"
+    wx:key="id"
+    id="{{item.anchorId}}"
+    class="section order-card {{item.highlighted ? 'is-highlighted' : ''}}"
+  >
     <text class="card-title">{{item.title}}</text>
     <text class="muted">{{item.venueName}} · {{item.timeText}}</text>
     <text class="muted">用户：{{item.username}}</text>

@@ -818,6 +818,46 @@ const sportsVenueAdminDashboard = async (pool) => {
   }
 }
 
+const venueAdminCheckinOrder = async (pool, order) => {
+  if (!order) {
+    const error = new Error('order not found')
+    error.statusCode = 404
+    throw error
+  }
+  if (order.status === 'checked_in') {
+    return {
+      ok: true,
+      order_id: order.id,
+      checkin_code: order.checkin_code,
+      status: 'checked_in',
+      already_checked_in: true,
+    }
+  }
+  if (order.status !== 'paid') {
+    const error = new Error('只有已支付订单可以核销')
+    error.statusCode = 409
+    throw error
+  }
+
+  await pool.execute('UPDATE sports_order SET status = "checked_in", checked_in_at = NOW() WHERE id = ?', [order.id])
+  if (order.game_id) {
+    await pool.execute('UPDATE sports_signup SET checked_in = 1 WHERE game_id = ? AND user_id = ?', [order.game_id, order.user_id])
+    await pool.execute(
+      'INSERT INTO sports_credit_event (user_id, username, event_type, score_delta, note, related_game_id) VALUES (?, ?, "checkin", 3, "场馆端到场核销", ?)',
+      [order.user_id, order.username, order.game_id],
+    )
+  }
+  await trackEvent(pool, { id: order.user_id, username: order.username }, 'checkin_success', { entity_type: order.game_id ? 'game' : 'venue', entity_id: order.game_id || order.venue_id, metadata: { order_id: order.id, source: 'venue_admin' } })
+  await createNotification(pool, { id: order.user_id, username: order.username }, {
+    type: 'checkin_success',
+    title: '核销成功',
+    body: `订单 #${order.id} 已由场馆确认到场。`,
+    order_id: order.id,
+    game_id: order.game_id,
+  })
+  return { ok: true, order_id: order.id, checkin_code: order.checkin_code, status: 'checked_in' }
+}
+
 const trackEvent = async (pool, user, eventName, payload = {}) => {
   await pool.execute(
     `INSERT INTO sports_analytics_event
@@ -1761,29 +1801,32 @@ const handleSportsApi = async (req, res, requestUrl) => {
          LIMIT 1`,
         [orderId],
       )
-      if (!order) return json(res, { ok: false, error: 'order not found' }, 404)
-      if (order.status === 'checked_in') {
-        return json(res, { ok: true, order_id: orderId, checkin_code: order.checkin_code, status: 'checked_in' })
+      try {
+        return json(res, await venueAdminCheckinOrder(pool, order))
+      } catch (error) {
+        return json(res, { ok: false, error: error.message || '核销失败' }, error.statusCode || 500)
       }
-      if (order.status !== 'paid') return json(res, { ok: false, error: '只有已支付订单可以核销' }, 409)
+    }
 
-      await pool.execute('UPDATE sports_order SET status = "checked_in", checked_in_at = NOW() WHERE id = ?', [orderId])
-      if (order.game_id) {
-        await pool.execute('UPDATE sports_signup SET checked_in = 1 WHERE game_id = ? AND user_id = ?', [order.game_id, order.user_id])
-        await pool.execute(
-          'INSERT INTO sports_credit_event (user_id, username, event_type, score_delta, note, related_game_id) VALUES (?, ?, "checkin", 3, "场馆端到场核销", ?)',
-          [order.user_id, order.username, order.game_id],
-        )
+    if (pathName === '/api/sports-app/venue-admin/checkin-code' && req.method === 'POST') {
+      const body = await readJson(req)
+      const code = text(body.checkin_code || body.code, 30)
+      if (!code) return json(res, { ok: false, error: '请输入核销码' }, 400)
+
+      const [[order]] = await pool.execute(
+        `SELECT o.*, g.start_time, g.end_time
+         FROM sports_order o
+         LEFT JOIN sports_game g ON g.id = o.game_id
+         WHERE o.checkin_code = ?
+         ORDER BY o.create_time DESC
+         LIMIT 1`,
+        [code],
+      )
+      try {
+        return json(res, await venueAdminCheckinOrder(pool, order))
+      } catch (error) {
+        return json(res, { ok: false, error: error.message || '核销失败' }, error.statusCode || 500)
       }
-      await trackEvent(pool, { id: order.user_id, username: order.username }, 'checkin_success', { entity_type: order.game_id ? 'game' : 'venue', entity_id: order.game_id || order.venue_id, metadata: { order_id: orderId, source: 'venue_admin' } })
-      await createNotification(pool, { id: order.user_id, username: order.username }, {
-        type: 'checkin_success',
-        title: '核销成功',
-        body: `订单 #${orderId} 已由场馆确认到场。`,
-        order_id: orderId,
-        game_id: order.game_id,
-      })
-      return json(res, { ok: true, order_id: orderId, checkin_code: order.checkin_code, status: 'checked_in' })
     }
 
     if (pathName === '/api/sports-app/notifications' && req.method === 'GET') {

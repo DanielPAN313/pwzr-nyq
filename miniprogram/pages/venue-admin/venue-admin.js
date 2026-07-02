@@ -60,11 +60,12 @@ function mapVenue(venue) {
   };
 }
 
-function mapOrder(order) {
+function mapOrder(order, highlightedOrderId) {
   const status = order.status || "";
 
   return {
     id: order.id,
+    anchorId: `venue-order-${order.id}`,
     title: order.title || "场地预约订单",
     venueName: order.venue_name || "场馆待定",
     username: order.username || "用户",
@@ -73,11 +74,12 @@ function mapOrder(order) {
     amountText: money(order.amount),
     timeText: formatTime(order.start_time || order.booking_start_time || order.create_time),
     checkinCode: order.checkin_code || "------",
-    canCheckin: status === "paid"
+    canCheckin: status === "paid",
+    highlighted: highlightedOrderId && String(order.id) === String(highlightedOrderId)
   };
 }
 
-function mapDashboard(data) {
+function mapDashboard(data, highlightedOrderId) {
   const summary = data.summary || {};
   const revenue = Number(summary.revenue || 0);
   const metrics = Array.isArray(data.metrics) && data.metrics.length
@@ -92,7 +94,7 @@ function mapDashboard(data) {
   return {
     metrics,
     venues: Array.isArray(data.venues) ? data.venues.map(mapVenue) : [],
-    orders: Array.isArray(data.orders) ? data.orders.map(mapOrder) : []
+    orders: Array.isArray(data.orders) ? data.orders.map((order) => mapOrder(order, highlightedOrderId)) : []
   };
 }
 
@@ -100,6 +102,9 @@ Page({
   data: {
     loading: false,
     actionOrderId: "",
+    highlightedOrderId: "",
+    checkinCode: "",
+    checkinResultText: "",
     error: "",
     empty: false,
     metrics: fallbackDashboard.metrics,
@@ -120,7 +125,7 @@ Page({
 
     return get("/api/sports-app/venue-admin", { showLoading: false })
       .then((data) => {
-        const dashboard = mapDashboard(data || {});
+        const dashboard = mapDashboard(data || {}, this.data.highlightedOrderId);
 
         this.setData({
           loading: false,
@@ -129,6 +134,10 @@ Page({
           orders: dashboard.orders,
           empty: dashboard.orders.length === 0
         });
+
+        if (this.data.highlightedOrderId) {
+          this.scrollToOrder(this.data.highlightedOrderId);
+        }
       })
       .catch((error) => {
         this.setData({
@@ -142,16 +151,36 @@ Page({
       });
   },
 
-  checkinOrder(event) {
-    const id = event.currentTarget.dataset.id;
-    if (!id || this.data.actionOrderId) return;
+  onCodeInput(event) {
+    this.setData({
+      checkinCode: String(event.detail.value || "").trim(),
+      checkinResultText: ""
+    });
+  },
 
-    this.setData({ actionOrderId: id });
+  checkinByCode() {
+    const code = this.data.checkinCode;
+    if (!code || this.data.actionOrderId) {
+      wx.showToast({
+        title: "请输入核销码",
+        icon: "none"
+      });
+      return;
+    }
 
-    post(`/api/sports-app/venue-admin/orders/${id}/checkin`, {}, { loadingTitle: "核销中" })
-      .then(() => {
+    this.setData({ actionOrderId: "code" });
+
+    post("/api/sports-app/venue-admin/checkin-code", { checkin_code: code }, { loadingTitle: "核销中" })
+      .then((result) => {
+        const highlightedOrderId = String(result.order_id || "");
+        this.setData({
+          highlightedOrderId,
+          checkinCode: "",
+          checkinResultText: result.already_checked_in ? "该订单此前已完成核销。" : "核销成功，已更新订单状态。"
+        });
+
         wx.showToast({
-          title: "核销成功",
+          title: result.already_checked_in ? "已核销" : "核销成功",
           icon: "success"
         });
 
@@ -166,5 +195,44 @@ Page({
       .finally(() => {
         this.setData({ actionOrderId: "" });
       });
+  },
+
+  checkinOrder(event) {
+    const id = event.currentTarget.dataset.id;
+    if (!id || this.data.actionOrderId) return;
+
+    this.setData({ actionOrderId: id, highlightedOrderId: String(id) });
+
+    post(`/api/sports-app/venue-admin/orders/${id}/checkin`, {}, { loadingTitle: "核销中" })
+      .then((result) => {
+        this.setData({
+          checkinResultText: result.already_checked_in ? "该订单此前已完成核销。" : "核销成功，已更新订单状态。"
+        });
+
+        wx.showToast({
+          title: result.already_checked_in ? "已核销" : "核销成功",
+          icon: "success"
+        });
+
+        return this.loadDashboard();
+      })
+      .catch((error) => {
+        wx.showToast({
+          title: error.message || "核销失败",
+          icon: "none"
+        });
+      })
+      .finally(() => {
+        this.setData({ actionOrderId: "" });
+      });
+  },
+
+  scrollToOrder(id) {
+    setTimeout(() => {
+      wx.pageScrollTo({
+        selector: `#venue-order-${id}`,
+        duration: 260
+      });
+    }, 120);
   }
 });

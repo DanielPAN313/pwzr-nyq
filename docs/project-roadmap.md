@@ -1,6 +1,6 @@
 # 宁约球小程序当前进度与路线图
 
-更新时间：2026-07-02
+更新时间：2026-07-03
 
 这份文档是项目协作总览。它回答三个问题：
 
@@ -94,7 +94,8 @@
 - 已有 Dockerfile 和 docker-compose.yml。
 - 已新增 `.env.example` 和 `.env.server.example`。
 - 已新增 `npm run check:deploy`。
-- 部署检查已覆盖微信登录、微信支付证书/API v3 key/通知地址、HTTPS 合法域名和合规材料入口。
+- 部署检查已覆盖微信登录、微信支付证书/API v3 key/通知地址、HTTPS 合法域名、商户私钥 `secrets/` 只读挂载和合规材料入口。
+- 服务器密钥规则已补齐：`.env.server`、`secrets/`、`.pem` 和证书文件不会入库，微信支付商户私钥通过 `./secrets:/run/secrets:ro` 只读挂载。
 - `npm run check` 已覆盖：
   - 小程序结构检查
   - 页面标题和下拉刷新配置检查，确保页面 JSON 与 `onPullDownRefresh` 保持一致，并调用 `wx.stopPullDownRefresh` 收尾
@@ -106,7 +107,7 @@
   - 数据库契约检查，覆盖场馆、球局、订单、报名、信用、通知和互评字段
   - 演示数据契约检查，确保本地首次启动有基础场馆、球局、开放时段和演示球队
   - 小程序运行时检查
-  - H5 预览检查
+  - H5 预览检查，支持 `http://localhost:4174/?page=splash` 查看启动页
   - `wx.*` 桥接覆盖检查
   - 协作文档和自测清单检查
   - 自测覆盖检查，确保所有已注册页面都在 `docs/miniprogram-self-test.md` 里有人工验收步骤
@@ -192,15 +193,16 @@ git push origin ui-polish
 
 1. 购买服务器和域名。
 2. 部署 Docker Compose。
-3. 配置 HTTPS 反向代理。
-4. 在微信公众平台配置 request 合法域名。
-5. 把小程序 `apiBaseUrl` 改成 HTTPS 域名。
-6. 跑 `npm run check:deploy`。
+3. 在服务器本地放置 `secrets/wechat_pay_private_key.pem`，容器读取 `/run/secrets/wechat_pay_private_key.pem`。
+4. 配置 HTTPS 反向代理。
+5. 在微信公众平台配置 request 合法域名。
+6. 把小程序 `apiBaseUrl` 改成 HTTPS 域名。
+7. 跑 `npm run check:deploy`。
 
 ### P3：真实交易前做
 
 1. 开通微信支付商户号。
-2. 配置商户证书和 API v3 key。
+2. 配置商户证书、API v3 key 和服务器本地 `secrets/wechat_pay_private_key.pem`。
 3. 实现支付通知验签。
 4. 实现退款申请和退款通知验签。
 5. 增加对账和异常订单处理。

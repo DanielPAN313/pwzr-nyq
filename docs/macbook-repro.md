@@ -112,7 +112,7 @@ Windows PowerShell 是：
 $env:PORT="4190"; npm run dev
 ```
 
-小程序默认接口地址在 `miniprogram/app.js` 中，目前是：
+小程序默认接口地址在 `miniprogram/utils/config.js` 中，目前是：
 
 ```js
 apiBaseUrl: "http://localhost:4174"
@@ -144,6 +144,7 @@ npm run dev
 
 ```text
 http://localhost:4174/
+http://localhost:4174/?page=splash
 http://localhost:4174/?page=home
 http://localhost:4174/?page=venues
 http://localhost:4174/?page=games
@@ -151,7 +152,7 @@ http://localhost:4174/?page=messages
 http://localhost:4174/?page=me
 ```
 
-浏览器预览在 `site/`，它模拟了常用 `wx` API、底部 tab、页面跳转、启动参数和本地请求任务。最终小程序代码仍以 `miniprogram/` 为准。
+浏览器预览在 `site/`，它模拟了常用 `wx` API、启动页、底部 tab、页面跳转、启动参数和本地请求任务。最终小程序代码仍以 `miniprogram/` 为准。
 
 ## 7. UI 同伴主要改哪些文件
 

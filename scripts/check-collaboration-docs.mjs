@@ -71,12 +71,16 @@ requireIncludes("docs/collaboration-plan.md", [
   "docs/miniprogram-self-test.md",
   "docs/ui-merge-checklist.md",
   "docs/ui-design-system.md",
+  "secrets/",
+  "*.pem",
 ]);
 
 requireIncludes("docs/project-roadmap.md", [
   "docs/miniprogram-self-test.md",
   "docs/ui-merge-checklist.md",
   "docs/ui-design-system.md",
+  "http://localhost:4174/?page=splash",
+  "./secrets:/run/secrets:ro",
 ]);
 
 function requireCurrentPageCount(file) {
@@ -91,9 +95,17 @@ function requireCurrentPageCount(file) {
 requireCurrentPageCount("docs/macbook-repro.md");
 requireIncludes("docs/macbook-repro.md", [
   "GitHub 仓库的 `Actions` 页面",
+  "miniprogram/utils/config.js",
+  "http://localhost:4174/?page=splash",
   "`ui-polish` 分支会自动跑 Ubuntu 和 macOS",
   "git checkout -b ui-polish-refresh",
   "npm run check:ui-branch-scope -- origin/feature-miniprogram-flow HEAD",
+]);
+
+requireIncludes("README.md", [
+  "miniprogram/utils/config.js",
+  "http://localhost:4174/?page=splash",
+  "商户私钥 `secrets/` 只读挂载",
 ]);
 
 if (errors.length > 0) {

@@ -1,6 +1,6 @@
 # 当前交接快照
 
-更新时间：2026-07-02
+更新时间：2026-07-03
 
 这份文档用于快速交接当前小程序状态。详细路线图看 `docs/project-roadmap.md`，逐页自测看 `docs/miniprogram-self-test.md`，UI 标准看 `docs/ui-design-system.md`。
 
@@ -12,6 +12,8 @@
 - 小程序目录：`miniprogram/`。
 - 未注册阶段 AppID：`touristappid`。
 - 本地后端：`http://localhost:4174`。
+- API 配置入口：`miniprogram/utils/config.js`。
+- 浏览器启动页预览：`http://localhost:4174/?page=splash`。
 - 当前仍使用开发版模拟登录和模拟支付。
 
 ## 先跑这些命令
@@ -43,6 +45,7 @@ AppID：touristappid
 - 我的：订单、我的球局、信用分、场馆端、合规说明。
 - 场馆端：入驻申请、资料维护、订单列表、核销码核销。
 - 合规说明：隐私政策、用户协议、支付说明、场馆合作摘要。
+- H5 预览：已支持 `?page=splash` 查看保留光斑的启动页，并会自动进入首页。
 
 ## 当前自动检查
 
@@ -65,6 +68,7 @@ AppID：touristappid
 - 演示准备检查。
 - 仓库卫生检查。
 - 部署准备检查。
+- 服务器密钥检查：`.env.server`、`secrets/`、`.pem`、证书和本机产物不会被提交，微信支付私钥通过 `/run/secrets` 只读挂载。
 
 ## UI 同伴注意
 
@@ -114,5 +118,6 @@ npm run check
 
 - 购买服务器和 HTTPS 域名。
 - 配置微信 request 合法域名。
+- 将商户私钥放到服务器本地 `secrets/wechat_pay_private_key.pem`，容器内路径保持 `/run/secrets/wechat_pay_private_key.pem`。
 - 配置微信支付商户号、证书、API v3 key、支付通知验签和退款通知验签。
 - 补齐 `docs/legal/` 中的正式主体、客服电话、生效日期和隐私字段。

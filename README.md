@@ -115,7 +115,7 @@ Windows PowerShell：
 $env:PORT="4190"; npm run dev
 ```
 
-小程序默认接口地址在 `miniprogram/app.js`：
+小程序默认接口地址在 `miniprogram/utils/config.js`：
 
 ```js
 apiBaseUrl: "http://localhost:4174"
@@ -127,11 +127,12 @@ apiBaseUrl: "http://localhost:4174"
 
 ```text
 http://localhost:4174/
+http://localhost:4174/?page=splash
 http://localhost:4174/?page=home
 http://localhost:4174/?path=pages/games/games
 ```
 
-H5 预览里已经模拟了常用 `wx` API、底部 tab、页面直达、页面栈、启动参数、扫码、支付、上传下载任务和请求任务，用来让本地开发尽量接近真实微信小程序。
+H5 预览里已经模拟了常用 `wx` API、启动页、底部 tab、页面直达、页面栈、启动参数、扫码、支付、上传下载任务和请求任务，用来让本地开发尽量接近真实微信小程序。
 
 ## 协作规则
 
@@ -147,7 +148,7 @@ npm run check
 npm run check:deploy
 ```
 
-`check:deploy` 会检查服务器环境模板、微信登录配置、微信支付证书/API v3 key/通知地址、HTTPS 合法域名和合规文档入口。
+`check:deploy` 会检查服务器环境模板、微信登录配置、微信支付证书/API v3 key/通知地址、商户私钥 `secrets/` 只读挂载、HTTPS 合法域名和合规文档入口。
 
 小程序页面放在：
 

@@ -144,6 +144,11 @@ npm run check
 ```text
 .env
 .env.server
+secrets/
+certs/
+*.pem
+*.key
+*.crt
 miniprogram/project.private.config.json
 node_modules/
 *.log

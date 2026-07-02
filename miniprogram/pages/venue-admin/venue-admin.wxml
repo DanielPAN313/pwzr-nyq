@@ -6,6 +6,15 @@
     <text wx:else class="muted">当前范围：{{scopeText}}。查看预约、支付和到场核销状态。</text>
   </view>
 
+  <view wx:if="{{error}}" class="state-panel warning">
+    <text class="state-title">场馆端数据暂时没连上</text>
+    <text class="state-text">当前展示的是本地兜底数据。确认后端运行后可以重试，或先去订场页查看用户端场馆展示。</text>
+    <view class="state-actions">
+      <button class="primary small" bindtap="retryLoadDashboard">重试加载</button>
+      <button class="secondary small" bindtap="goVenues">去订场页</button>
+    </view>
+  </view>
+
   <view class="step-grid">
     <view wx:for="{{adminSteps}}" wx:key="title" class="step-card">
       <text class="step-title">{{item.title}}</text>
@@ -44,9 +53,15 @@
       data-field="contact"
       bindinput="onApplicationInput"
     />
+    <view class="validation-list">
+      <view wx:for="{{applicationChecks}}" wx:key="key" class="validation-item {{item.ok ? 'is-ok' : 'is-pending'}}">
+        <text class="validation-dot">{{item.ok ? "✓" : "!"}}</text>
+        <text class="validation-text">{{item.text}}</text>
+      </view>
+    </view>
     <button
       class="primary"
-      disabled="{{submittingVenue}}"
+      disabled="{{!canSubmitApplication || submittingVenue}}"
       bindtap="submitVenueApplication"
     >
       {{submittingVenue ? "提交中" : "提交入驻申请"}}
@@ -79,9 +94,15 @@
       data-field="openSlotsText"
       bindinput="onMaintenanceInput"
     />
+    <view class="validation-list">
+      <view wx:for="{{maintenanceChecks}}" wx:key="key" class="validation-item {{item.ok ? 'is-ok' : 'is-pending'}}">
+        <text class="validation-dot">{{item.ok ? "✓" : "!"}}</text>
+        <text class="validation-text">{{item.text}}</text>
+      </view>
+    </view>
     <button
       class="primary"
-      disabled="{{savingVenue}}"
+      disabled="{{!canSaveMaintenance || savingVenue}}"
       bindtap="saveVenueMaintenance"
     >
       {{savingVenue ? "保存中" : "保存场馆资料"}}
@@ -120,6 +141,10 @@
 
   <view class="section">
     <view class="section-title">管理场馆</view>
+    <view wx:if="{{venues.length === 0}}" class="state-panel empty">
+      <text class="state-title">还没有可管理场馆</text>
+      <text class="state-text">先提交入驻申请。后续绑定为场馆管理员后，这里会显示可维护的场馆。</text>
+    </view>
     <view wx:for="{{venues}}" wx:key="id" class="venue-row">
       <view>
         <text class="card-title">{{item.name}}</text>
@@ -131,7 +156,14 @@
 
   <view class="section">
     <view class="section-title">近期订单</view>
-    <text wx:if="{{empty}}" class="muted">暂时没有订单。用户订场或报名后会出现在这里。</text>
+    <view wx:if="{{empty}}" class="state-panel empty">
+      <text class="state-title">暂时没有待处理订单</text>
+      <text class="state-text">用户订场或报名后会出现在这里。可以先去订场页生成演示订单，再回场馆端核销。</text>
+      <view class="state-actions">
+        <button class="primary small" bindtap="goVenues">去订场页</button>
+        <button class="secondary small" bindtap="retryLoadDashboard">刷新订单</button>
+      </view>
+    </view>
   </view>
 
   <view

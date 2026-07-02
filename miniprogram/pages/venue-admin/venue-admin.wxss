@@ -84,6 +84,53 @@
   font-size: 28rpx;
 }
 
+.validation-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10rpx;
+}
+
+.validation-item {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 12rpx 14rpx;
+  border-radius: 14rpx;
+  background: #f8fafc;
+}
+
+.validation-item.is-ok {
+  background: #ecfdf3;
+}
+
+.validation-item.is-pending {
+  background: #fff7ed;
+}
+
+.validation-dot {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 34rpx;
+  height: 34rpx;
+  border-radius: 50%;
+  color: #ffffff;
+  background: #f97316;
+  font-size: 22rpx;
+  font-weight: 900;
+}
+
+.validation-item.is-ok .validation-dot {
+  background: #12824f;
+}
+
+.validation-text {
+  color: #334138;
+  font-size: 24rpx;
+  line-height: 1.4;
+}
+
 .code-row {
   display: flex;
   align-items: center;

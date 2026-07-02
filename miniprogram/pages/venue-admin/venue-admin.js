@@ -162,6 +162,43 @@ function mapDashboard(data, highlightedOrderId) {
   };
 }
 
+function buildApplicationChecks(application) {
+  const name = String(application.name || "").trim();
+  const area = String(application.area || "").trim();
+  const address = String(application.address || "").trim();
+  const contact = String(application.contact || "").trim();
+
+  return [
+    { key: "name", text: name ? "场馆名称已填写" : "填写场馆名称", ok: Boolean(name) },
+    { key: "area", text: area ? "区域已填写" : "填写所在区域", ok: Boolean(area) },
+    { key: "address", text: address ? "详细地址已填写" : "填写详细地址", ok: Boolean(address) },
+    { key: "contact", text: contact ? "联系方式已填写" : "填写联系方式", ok: Boolean(contact) }
+  ];
+}
+
+function normalizeOpenSlotsText(value) {
+  return String(value || "")
+    .split(/[,\n，]/)
+    .map((slot) => slot.trim())
+    .filter(Boolean);
+}
+
+function buildMaintenanceChecks(maintenance) {
+  const price = Number(maintenance.pricePerHour || 0);
+  const contact = String(maintenance.contact || "").trim();
+  const openSlots = normalizeOpenSlotsText(maintenance.openSlotsText);
+
+  return [
+    { key: "price", text: price >= 0 ? "价格有效" : "价格不能为负数", ok: price >= 0 },
+    { key: "contact", text: contact ? "联系方式已填写" : "填写联系方式", ok: Boolean(contact) },
+    { key: "slots", text: openSlots.length ? `已配置 ${openSlots.length} 个开放时段` : "至少配置 1 个开放时段", ok: openSlots.length > 0 }
+  ];
+}
+
+function checksOk(checks) {
+  return checks.every((item) => item.ok);
+}
+
 Page({
   data: {
     loading: false,
@@ -183,6 +220,10 @@ Page({
       contact: ""
     },
     submittingVenue: false,
+    applicationChecks: buildApplicationChecks({}),
+    canSubmitApplication: false,
+    maintenanceChecks: buildMaintenanceChecks({}),
+    canSaveMaintenance: false,
     error: "",
     empty: false,
     scopeText: "演示场馆",
@@ -201,6 +242,14 @@ Page({
     this.loadDashboard().finally(() => wx.stopPullDownRefresh());
   },
 
+  retryLoadDashboard() {
+    this.loadDashboard();
+  },
+
+  goVenues() {
+    wx.switchTab({ url: "/pages/venues/venues" });
+  },
+
   loadDashboard() {
     this.setData({ loading: true, error: "", empty: false });
 
@@ -210,19 +259,24 @@ Page({
         const canMaintainVenue = data && data.scope === "owned" && dashboard.venues.length > 0;
         const primaryVenue = canMaintainVenue ? dashboard.venues[0] : null;
 
+        const maintenance = primaryVenue
+          ? {
+            venueId: primaryVenue.id,
+            pricePerHour: String(primaryVenue.pricePerHour || ""),
+            contact: primaryVenue.contact || "",
+            openSlotsText: primaryVenue.openSlotsText || ""
+          }
+          : this.data.maintenance;
+        const maintenanceChecks = buildMaintenanceChecks(maintenance);
+
         this.setData({
           loading: false,
           scopeText: data && data.scope === "owned" ? "我的场馆" : "演示场馆",
           canMaintainVenue,
           adminSteps: buildAdminSteps(canMaintainVenue),
-          maintenance: primaryVenue
-            ? {
-              venueId: primaryVenue.id,
-              pricePerHour: String(primaryVenue.pricePerHour || ""),
-              contact: primaryVenue.contact || "",
-              openSlotsText: primaryVenue.openSlotsText || ""
-            }
-            : this.data.maintenance,
+          maintenance,
+          maintenanceChecks,
+          canSaveMaintenance: Boolean(maintenance.venueId) && checksOk(maintenanceChecks),
           metrics: dashboard.metrics,
           venues: dashboard.venues,
           orders: dashboard.orders,
@@ -253,6 +307,7 @@ Page({
     this.setData({
       [`application.${field}`]: String(event.detail.value || "").trim()
     });
+    this.refreshApplicationChecks(field, event.detail.value);
   },
 
   onMaintenanceInput(event) {
@@ -262,16 +317,45 @@ Page({
     this.setData({
       [`maintenance.${field}`]: String(event.detail.value || "").trim()
     });
+    this.refreshMaintenanceChecks(field, event.detail.value);
+  },
+
+  refreshApplicationChecks(field, value) {
+    const application = {
+      ...this.data.application,
+      [field]: String(value || "").trim()
+    };
+    const applicationChecks = buildApplicationChecks(application);
+    this.setData({
+      applicationChecks,
+      canSubmitApplication: checksOk(applicationChecks)
+    });
+  },
+
+  refreshMaintenanceChecks(field, value) {
+    const maintenance = {
+      ...this.data.maintenance,
+      [field]: String(value || "").trim()
+    };
+    const maintenanceChecks = buildMaintenanceChecks(maintenance);
+    this.setData({
+      maintenanceChecks,
+      canSaveMaintenance: Boolean(maintenance.venueId) && checksOk(maintenanceChecks)
+    });
   },
 
   saveVenueMaintenance() {
     const maintenance = this.data.maintenance;
     if (!maintenance.venueId || this.data.savingVenue) return;
+    if (!this.data.canSaveMaintenance) {
+      wx.showToast({
+        title: "请补齐场馆资料",
+        icon: "none"
+      });
+      return;
+    }
 
-    const openSlots = String(maintenance.openSlotsText || "")
-      .split(/[,\n，]/)
-      .map((slot) => slot.trim())
-      .filter(Boolean);
+    const openSlots = normalizeOpenSlotsText(maintenance.openSlotsText);
 
     this.setData({ savingVenue: true });
 
@@ -305,9 +389,9 @@ Page({
 
   submitVenueApplication() {
     const application = this.data.application;
-    if (!application.name || !application.address || this.data.submittingVenue) {
+    if (!this.data.canSubmitApplication || this.data.submittingVenue) {
       wx.showToast({
-        title: "请填写场馆名和地址",
+        title: "请补齐入驻信息",
         icon: "none"
       });
       return;
@@ -337,7 +421,9 @@ Page({
             area: "",
             address: "",
             contact: ""
-          }
+          },
+          applicationChecks: buildApplicationChecks({}),
+          canSubmitApplication: false
         });
 
         return this.loadDashboard();

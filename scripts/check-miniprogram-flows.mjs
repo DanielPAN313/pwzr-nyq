@@ -21,6 +21,16 @@ requireIncludes("miniprogram/pages/messages/messages.js", [
   "/pages/orders/orders?orderId=",
   "/pages/game-detail/game-detail?id=",
   "/api/sports-app/notifications/",
+  "buildMessageSections",
+  "unreadCount",
+  "messageSections",
+]);
+
+requireIncludes("miniprogram/pages/messages/messages.wxml", [
+  "未读 {{unreadCount}} 条",
+  "messageSections",
+  "message.actionHint",
+  "message.targetText",
 ]);
 
 requireIncludes("miniprogram/pages/venues/venues.js", [

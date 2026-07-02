@@ -5,14 +5,18 @@ const fallbackMessages = [
     title: "报名提醒",
     body: "你的球局名额已保留，等待支付确认。",
     statusText: "未读",
+    status: "unread",
     timeText: "刚刚",
+    actionHint: "关联订单",
     targetText: "查看订单"
   },
   {
     title: "场馆动态",
     body: "宁约球新增黄金时段，快去看看可订场地。",
     statusText: "未读",
+    status: "unread",
     timeText: "今天",
+    actionHint: "系统通知",
     targetText: ""
   }
 ];
@@ -34,18 +38,50 @@ function formatTime(value) {
 function mapMessage(message) {
   const relatedOrderId = message.related_order_id || "";
   const relatedGameId = message.related_game_id || "";
+  const status = message.status || "unread";
+  const targetText = relatedOrderId ? "查看订单" : relatedGameId ? "查看球局" : "";
 
   return {
     id: message.id,
     title: message.title || "系统通知",
     body: message.body || "",
-    status: message.status || "unread",
-    statusText: message.status === "read" ? "已读" : "未读",
+    status,
+    statusText: status === "read" ? "已读" : "未读",
+    statusTone: status === "read" ? "muted" : "active",
     timeText: formatTime(message.create_time),
     relatedOrderId,
     relatedGameId,
-    targetText: relatedOrderId ? "查看订单" : relatedGameId ? "查看球局" : ""
+    actionHint: relatedOrderId ? "关联订单" : relatedGameId ? "关联球局" : "系统通知",
+    targetText
   };
+}
+
+function buildMessageSections(messages) {
+  const unread = messages.filter((message) => message.status !== "read");
+  const read = messages.filter((message) => message.status === "read");
+  const sections = [];
+
+  if (unread.length) {
+    sections.push({
+      title: "未读消息",
+      count: unread.length,
+      messages: unread
+    });
+  }
+
+  if (read.length) {
+    sections.push({
+      title: "已读消息",
+      count: read.length,
+      messages: read
+    });
+  }
+
+  return sections;
+}
+
+function unreadCount(messages) {
+  return messages.filter((message) => message.status !== "read").length;
 }
 
 Page({
@@ -53,6 +89,8 @@ Page({
     loading: false,
     error: "",
     empty: false,
+    unreadCount: 0,
+    messageSections: [],
     messages: fallbackMessages
   },
 
@@ -74,6 +112,8 @@ Page({
         this.setData({
           loading: false,
           messages: list.length ? list : [],
+          unreadCount: unreadCount(list),
+          messageSections: buildMessageSections(list),
           empty: list.length === 0
         });
       })
@@ -82,6 +122,8 @@ Page({
           loading: false,
           error: error.message || "消息数据加载失败",
           empty: false,
+          unreadCount: unreadCount(fallbackMessages),
+          messageSections: buildMessageSections(fallbackMessages),
           messages: fallbackMessages
         });
       });
@@ -114,11 +156,17 @@ Page({
           return {
             ...message,
             status: "read",
-            statusText: "已读"
+            statusText: "已读",
+            statusTone: "muted"
           };
         });
 
-        this.setData({ messages });
+        this.setData({
+          messages,
+          unreadCount: unreadCount(messages),
+          messageSections: buildMessageSections(messages),
+          empty: messages.length === 0
+        });
       });
   },
 

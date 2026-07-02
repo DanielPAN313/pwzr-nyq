@@ -1,13 +1,81 @@
 .page-title,
 .card-title {
   display: block;
-  margin-bottom: 10rpx;
   font-size: 34rpx;
   font-weight: 850;
 }
 
+.message-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.section-title {
+  color: #102016;
+  font-size: 30rpx;
+  font-weight: 850;
+}
+
+.section-count {
+  min-width: 44rpx;
+  height: 44rpx;
+  border-radius: 8rpx;
+  background: #ecfdf3;
+  color: #067647;
+  font-size: 24rpx;
+  font-weight: 850;
+  line-height: 44rpx;
+  text-align: center;
+}
+
 .message-card {
+  padding: 18rpx;
+  border: 1rpx solid rgba(20, 32, 50, 0.08);
+  border-radius: 8rpx;
+  background: #ffffff;
   cursor: pointer;
+}
+
+.message-active {
+  border-color: rgba(18, 183, 106, 0.38);
+  background: #f6fef9;
+}
+
+.message-muted {
+  background: #f8fafc;
+}
+
+.message-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+  margin-bottom: 10rpx;
+}
+
+.status-pill {
+  flex-shrink: 0;
+  padding: 6rpx 12rpx;
+  border-radius: 8rpx;
+  font-size: 22rpx;
+  font-weight: 850;
+}
+
+.status-active {
+  background: #dcfce7;
+  color: #067647;
+}
+
+.status-muted {
+  background: #e2e8f0;
+  color: #64748b;
 }
 
 .message-footer {
@@ -16,6 +84,12 @@
   justify-content: space-between;
   gap: 16rpx;
   margin-top: 12rpx;
+}
+
+.target-hint {
+  color: #64748b;
+  font-size: 24rpx;
+  font-weight: 650;
 }
 
 .action-text {

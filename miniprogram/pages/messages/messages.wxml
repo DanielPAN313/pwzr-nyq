@@ -4,21 +4,36 @@
     <text wx:if="{{loading}}" class="muted">正在加载消息...</text>
     <text wx:elif="{{error}}" class="muted">{{error}}，已显示本地兜底消息。</text>
     <text wx:elif="{{empty}}" class="muted">暂时没有新消息。</text>
-    <text wx:else class="muted">已接入订单提醒、核销提醒和系统通知。</text>
+    <text wx:else class="muted">未读 {{unreadCount}} 条。订单、球局和系统通知会在这里汇总。</text>
   </view>
 
   <view
-    wx:for="{{messages}}"
-    wx:key="id"
-    class="section message-card"
-    bindtap="openMessage"
-    data-id="{{item.id}}"
+    wx:for="{{messageSections}}"
+    wx:key="title"
+    class="section message-section"
   >
-    <text class="card-title">{{item.title}}</text>
-    <text class="muted">{{item.body}}</text>
-    <view class="message-footer">
-      <text class="muted">{{item.statusText}} {{item.timeText}}</text>
-      <text wx:if="{{item.targetText}}" class="action-text">{{item.targetText}}</text>
+    <view class="section-head">
+      <text class="section-title">{{item.title}}</text>
+      <text class="section-count">{{item.count}}</text>
+    </view>
+
+    <view
+      wx:for="{{item.messages}}"
+      wx:for-item="message"
+      wx:key="id"
+      class="message-card message-{{message.statusTone}}"
+      bindtap="openMessage"
+      data-id="{{message.id}}"
+    >
+      <view class="message-title-row">
+        <text class="card-title">{{message.title}}</text>
+        <text class="status-pill status-{{message.statusTone}}">{{message.statusText}}</text>
+      </view>
+      <text class="muted">{{message.body}}</text>
+      <view class="message-footer">
+        <text class="target-hint">{{message.actionHint}} · {{message.timeText}}</text>
+        <text wx:if="{{message.targetText}}" class="action-text">{{message.targetText}}</text>
+      </view>
     </view>
   </view>
 </view>

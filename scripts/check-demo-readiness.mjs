@@ -49,6 +49,7 @@ function requirePath(file) {
   "scripts/check-repository-hygiene.mjs",
   "scripts/check-api-contracts.mjs",
   "scripts/check-db-contracts.mjs",
+  "scripts/check-seed-data-contracts.mjs",
 ].forEach(requirePath);
 
 requireIncludes("README.md", [
@@ -76,11 +77,13 @@ requireIncludes("package.json", [
   "\"check:repository-hygiene\"",
   "\"check:api-contracts\"",
   "\"check:db-contracts\"",
+  "\"check:seed-data\"",
   "\"check\"",
   "check:demo-readiness",
   "check:repository-hygiene",
   "check:api-contracts",
   "check:db-contracts",
+  "check:seed-data",
 ]);
 
 requireIncludes(".github/workflows/check.yml", [

@@ -53,6 +53,7 @@ requireIncludes("docs/ui-merge-checklist.md", [
   "npm run check",
   "GitHub 的 `Actions` 页面",
   "macOS",
+  "`ui-polish` 或 `ui-polish-refresh` 分支的 `Check` 工作流通过",
   "docs/miniprogram-self-test.md",
   "git merge origin/ui-polish",
 ]);
@@ -81,6 +82,7 @@ requireIncludes("docs/project-roadmap.md", [
   "docs/ui-design-system.md",
   "http://localhost:4174/?page=splash",
   "./secrets:/run/secrets:ro",
+  "release-wechat-config",
 ]);
 
 function requireCurrentPageCount(file) {
@@ -106,6 +108,13 @@ requireIncludes("README.md", [
   "miniprogram/utils/config.js",
   "http://localhost:4174/?page=splash",
   "商户私钥 `secrets/` 只读挂载",
+]);
+
+requireIncludes("docs/无需注册小程序的开发预览说明.md", [
+  "release-wechat-config",
+  "真实 `wx...` AppID",
+  "miniprogram/app.js",
+  "useMockAuth: false",
 ]);
 
 if (errors.length > 0) {

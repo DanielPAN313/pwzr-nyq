@@ -12,32 +12,35 @@
 
 .light-spot {
   position: absolute;
+  z-index: 0;
   border-radius: 999rpx;
-  opacity: 0.34;
+  filter: blur(2rpx);
+  opacity: 0.28;
   pointer-events: none;
   transform: rotate(-18deg);
-  animation: light-in 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: light-in 900ms cubic-bezier(0.16, 1, 0.3, 1) both, light-breathe 8s 1200ms ease-in-out infinite;
 }
 
 .light-spot-top {
-  right: -180rpx;
-  top: -110rpx;
-  width: 430rpx;
-  height: 250rpx;
-  background: radial-gradient(ellipse at center, rgba(216, 255, 62, 0.28) 0%, rgba(216, 255, 62, 0.12) 44%, rgba(216, 255, 62, 0) 72%);
+  right: -230rpx;
+  top: -150rpx;
+  width: 540rpx;
+  height: 320rpx;
+  background: radial-gradient(ellipse at center, rgba(216, 255, 62, 0.24) 0%, rgba(216, 255, 62, 0.1) 48%, rgba(216, 255, 62, 0) 76%);
 }
 
 .light-spot-bottom {
-  left: -190rpx;
-  bottom: 150rpx;
-  width: 390rpx;
-  height: 230rpx;
-  background: radial-gradient(ellipse at center, rgba(18, 130, 79, 0.32) 0%, rgba(18, 130, 79, 0.12) 46%, rgba(18, 130, 79, 0) 74%);
+  left: -260rpx;
+  bottom: 112rpx;
+  width: 560rpx;
+  height: 330rpx;
+  background: radial-gradient(ellipse at center, rgba(18, 130, 79, 0.3) 0%, rgba(18, 130, 79, 0.11) 50%, rgba(18, 130, 79, 0) 78%);
   animation-delay: 100ms;
 }
 
 .splash-stage {
   position: relative;
+  z-index: 1;
   height: 560rpx;
   margin-bottom: 28rpx;
   border-color: rgba(255, 255, 255, 0.14);
@@ -143,6 +146,8 @@
 }
 
 .brand-copy {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   flex-direction: column;
@@ -174,6 +179,7 @@
 
 .progress {
   position: absolute;
+  z-index: 1;
   left: 96rpx;
   right: 96rpx;
   bottom: 54rpx;
@@ -265,7 +271,19 @@
     transform: rotate(-18deg) scale(0.88);
   }
   to {
-    opacity: 0.34;
+    opacity: 0.28;
     transform: rotate(-18deg) scale(1);
+  }
+}
+
+@keyframes light-breathe {
+  0%,
+  100% {
+    opacity: 0.24;
+    transform: rotate(-18deg) scale(1);
+  }
+  50% {
+    opacity: 0.32;
+    transform: rotate(-18deg) scale(1.04);
   }
 }

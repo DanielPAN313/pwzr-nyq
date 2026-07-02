@@ -24,6 +24,24 @@
     </view>
   </view>
 
+  <view wx:if="{{error}}" class="state-panel warning">
+    <text class="state-title">场馆数据暂时没连上</text>
+    <text class="state-text">当前展示的是本地兜底场馆。可以先继续看页面，也可以确认后端运行后重试。</text>
+    <view class="state-actions">
+      <button class="primary small" bindtap="retryLoadVenues">重试加载</button>
+      <button class="secondary small" bindtap="resetFilters">清空筛选</button>
+    </view>
+  </view>
+
+  <view wx:elif="{{empty}}" class="state-panel empty">
+    <text class="state-title">没有匹配的场馆</text>
+    <text class="state-text">换个关键词、运动类型或先清空筛选，再看看附近可订场馆。</text>
+    <view class="state-actions">
+      <button class="primary small" bindtap="resetFilters">清空筛选</button>
+      <button class="secondary small" bindtap="retryLoadVenues">重新加载</button>
+    </view>
+  </view>
+
   <view wx:for="{{venues}}" wx:key="name" class="section venue-card" bindtap="openVenue" data-id="{{item.id}}">
     <text class="card-title">{{item.name}}</text>
     <text class="muted">{{item.area}} · {{item.sportsText}}</text>

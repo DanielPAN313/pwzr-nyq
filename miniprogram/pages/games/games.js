@@ -139,6 +139,18 @@ Page({
     this.applyFilters();
   },
 
+  retryLoadGames() {
+    this.loadGames();
+  },
+
+  resetFilters() {
+    this.setData({
+      query: "",
+      activeSport: "all"
+    });
+    this.applyFilters();
+  },
+
   joinGame(event) {
     const id = event.currentTarget.dataset.id;
     if (!id || this.data.joiningId) return;

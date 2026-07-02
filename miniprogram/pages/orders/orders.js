@@ -149,6 +149,18 @@ Page({
     this.loadOrders().finally(() => wx.stopPullDownRefresh());
   },
 
+  retryLoadOrders() {
+    this.loadOrders();
+  },
+
+  goGames() {
+    wx.switchTab({ url: "/pages/games/games" });
+  },
+
+  goVenues() {
+    wx.switchTab({ url: "/pages/venues/venues" });
+  },
+
   loadOrders() {
     this.setData({ loading: true, error: "", empty: false });
 

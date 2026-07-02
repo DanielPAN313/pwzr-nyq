@@ -7,6 +7,24 @@
     <text wx:else class="muted">未读 {{unreadCount}} 条。订单、球局和系统通知会在这里汇总。</text>
   </view>
 
+  <view wx:if="{{error}}" class="state-panel warning">
+    <text class="state-title">消息数据暂时没连上</text>
+    <text class="state-text">当前展示的是本地兜底消息。确认后端运行后可以重试。</text>
+    <view class="state-actions">
+      <button class="primary small" bindtap="retryLoadMessages">重试加载</button>
+      <button class="secondary small" bindtap="goHome">回首页</button>
+    </view>
+  </view>
+
+  <view wx:elif="{{empty}}" class="state-panel empty">
+    <text class="state-title">暂时没有消息</text>
+    <text class="state-text">订单支付、核销提醒和球局动态后续都会出现在这里。</text>
+    <view class="state-actions">
+      <button class="primary small" bindtap="goHome">回首页</button>
+      <button class="secondary small" bindtap="goOrders">查看订单</button>
+    </view>
+  </view>
+
   <view
     wx:for="{{messageSections}}"
     wx:key="title"

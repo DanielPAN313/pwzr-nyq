@@ -24,6 +24,8 @@ requireIncludes("miniprogram/pages/messages/messages.js", [
   "buildMessageSections",
   "unreadCount",
   "messageSections",
+  "retryLoadMessages",
+  "goHome",
 ]);
 
 requireIncludes("miniprogram/pages/messages/messages.wxml", [
@@ -31,6 +33,8 @@ requireIncludes("miniprogram/pages/messages/messages.wxml", [
   "messageSections",
   "message.actionHint",
   "message.targetText",
+  "state-panel",
+  "retryLoadMessages",
 ]);
 
 requireIncludes("miniprogram/pages/home/home.js", [
@@ -54,12 +58,17 @@ requireIncludes("miniprogram/pages/venues/venues.js", [
   "applyFilters",
   "onSearchInput",
   "changeSport",
+  "retryLoadVenues",
+  "resetFilters",
 ]);
 
 requireIncludes("miniprogram/pages/venues/venues.wxml", [
   "搜索场馆、区域或运动",
   "bindinput=\"onSearchInput\"",
   "bindtap=\"changeSport\"",
+  "state-panel",
+  "retryLoadVenues",
+  "resetFilters",
 ]);
 
 requireIncludes("miniprogram/pages/games/games.js", [
@@ -67,12 +76,17 @@ requireIncludes("miniprogram/pages/games/games.js", [
   "applyFilters",
   "onSearchInput",
   "changeSport",
+  "retryLoadGames",
+  "resetFilters",
 ]);
 
 requireIncludes("miniprogram/pages/games/games.wxml", [
   "搜索球局或场馆",
   "bindinput=\"onSearchInput\"",
   "bindtap=\"changeSport\"",
+  "state-panel",
+  "retryLoadGames",
+  "resetFilters",
 ]);
 
 requireIncludes("miniprogram/pages/create-game/create-game.js", [
@@ -150,6 +164,8 @@ requireIncludes("miniprogram/pages/orders/orders.js", [
   "openReview",
   "/pages/game-detail/game-detail?id=",
   "/api/sports-app/orders/",
+  "retryLoadOrders",
+  "goVenues",
 ]);
 
 requireIncludes("miniprogram/pages/orders/orders.wxml", [
@@ -159,6 +175,15 @@ requireIncludes("miniprogram/pages/orders/orders.wxml", [
   "item.canReview",
   "bindtap=\"openReview\"",
   "data-game-id",
+  "state-panel",
+  "retryLoadOrders",
+]);
+
+requireIncludes("miniprogram/app.wxss", [
+  ".state-panel",
+  ".state-actions",
+  ".state-title",
+  ".state-text",
 ]);
 
 requireIncludes("miniprogram/pages/venue-detail/venue-detail.js", [

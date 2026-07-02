@@ -8,6 +8,24 @@
     <text wx:if="{{noticeText}}" class="notice-text">{{noticeText}}</text>
   </view>
 
+  <view wx:if="{{error}}" class="state-panel warning">
+    <text class="state-title">订单数据暂时没连上</text>
+    <text class="state-text">当前展示的是本地兜底订单。确认后端运行后可以重试。</text>
+    <view class="state-actions">
+      <button class="primary small" bindtap="retryLoadOrders">重试加载</button>
+      <button class="secondary small" bindtap="goGames">去报名</button>
+    </view>
+  </view>
+
+  <view wx:elif="{{empty}}" class="state-panel empty">
+    <text class="state-title">还没有订单</text>
+    <text class="state-text">报名球局或订场后会生成待支付订单，支付、核销和评价入口都会在这里。</text>
+    <view class="state-actions">
+      <button class="primary small" bindtap="goGames">去报名</button>
+      <button class="secondary small" bindtap="goVenues">去订场</button>
+    </view>
+  </view>
+
   <view
     wx:for="{{orders}}"
     wx:key="id"

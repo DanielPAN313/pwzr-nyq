@@ -102,6 +102,18 @@ Page({
     this.loadMessages().finally(() => wx.stopPullDownRefresh());
   },
 
+  retryLoadMessages() {
+    this.loadMessages();
+  },
+
+  goHome() {
+    wx.switchTab({ url: "/pages/home/home" });
+  },
+
+  goOrders() {
+    wx.navigateTo({ url: "/pages/orders/orders" });
+  },
+
   loadMessages() {
     this.setData({ loading: true, error: "", empty: false });
 

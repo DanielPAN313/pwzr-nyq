@@ -25,6 +25,24 @@
     <button class="primary small create-button" bindtap="createGame">发起球局</button>
   </view>
 
+  <view wx:if="{{error}}" class="state-panel warning">
+    <text class="state-title">球局数据暂时没连上</text>
+    <text class="state-text">当前展示的是本地兜底球局。确认后端运行后可以重试，或者先发起一场球局继续开发。</text>
+    <view class="state-actions">
+      <button class="primary small" bindtap="retryLoadGames">重试加载</button>
+      <button class="secondary small" bindtap="createGame">发起球局</button>
+    </view>
+  </view>
+
+  <view wx:elif="{{empty}}" class="state-panel empty">
+    <text class="state-title">没有匹配的球局</text>
+    <text class="state-text">可以清空筛选重新找，或者直接发起一个新球局。</text>
+    <view class="state-actions">
+      <button class="primary small" bindtap="resetFilters">清空筛选</button>
+      <button class="secondary small" bindtap="createGame">发起球局</button>
+    </view>
+  </view>
+
   <view wx:for="{{games}}" wx:key="title" class="section game-card" bindtap="openGame" data-id="{{item.id}}">
     <text class="card-title">{{item.title}}</text>
     <text class="muted">{{item.time}} · {{item.venueName}} · {{item.fee}}</text>

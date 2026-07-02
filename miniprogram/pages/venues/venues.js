@@ -137,6 +137,18 @@ Page({
     this.applyFilters();
   },
 
+  retryLoadVenues() {
+    this.loadVenues();
+  },
+
+  resetFilters() {
+    this.setData({
+      query: "",
+      activeSport: "all"
+    });
+    this.applyFilters();
+  },
+
   bookVenue(event) {
     const id = event.currentTarget.dataset.id;
     const venue = this.data.venues.find((item) => String(item.id) === String(id));

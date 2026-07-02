@@ -97,3 +97,177 @@ button[disabled] {
   color: #12824f;
   background: #eef6ed;
 }
+
+.eyebrow {
+  display: block;
+  color: #12824f;
+  font-size: 24rpx;
+  font-weight: 900;
+}
+
+.section-title,
+.card-title {
+  display: block;
+  color: #102016;
+  font-size: 30rpx;
+  font-weight: 900;
+  line-height: 1.35;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14rpx;
+  margin-bottom: 24rpx;
+}
+
+.stat-card {
+  min-height: 118rpx;
+  padding: 20rpx;
+  border: 1rpx solid rgba(219, 228, 216, 0.9);
+  border-radius: 20rpx;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+.stat-success {
+  border-color: rgba(18, 130, 79, 0.18);
+}
+
+.stat-info {
+  border-color: rgba(33, 112, 190, 0.18);
+}
+
+.stat-warning {
+  border-color: rgba(240, 122, 50, 0.22);
+}
+
+.stat-value {
+  display: block;
+  color: #102016;
+  font-size: 34rpx;
+  font-weight: 950;
+}
+
+.stat-label {
+  display: block;
+  margin-top: 6rpx;
+  color: #6f7c72;
+  font-size: 22rpx;
+  line-height: 1.35;
+}
+
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14rpx;
+  margin-top: 18rpx;
+}
+
+.quick-card {
+  min-height: 82rpx;
+  border-radius: 18rpx;
+  color: #102016;
+  background: #eef6ed;
+  font-size: 28rpx;
+  font-weight: 900;
+}
+
+.todo-card,
+.recommend-row,
+.message-section,
+.menu-section,
+.step-box {
+  margin-top: 18rpx;
+  padding: 20rpx;
+  border: 1rpx solid rgba(219, 228, 216, 0.86);
+  border-radius: 18rpx;
+  background: #fbfdf9;
+}
+
+.todo-card,
+.recommend-row,
+.section-head,
+.message-title-row,
+.message-footer,
+.menu-main,
+.order-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.todo-title,
+.recommend-title,
+.message-title,
+.step-title {
+  display: block;
+  color: #102016;
+  font-size: 28rpx;
+  font-weight: 900;
+  line-height: 1.35;
+}
+
+.todo-text,
+.recommend-meta,
+.menu-hint,
+.step-text,
+.target-hint,
+.notice-text {
+  display: block;
+  margin-top: 6rpx;
+  color: #6f7c72;
+  font-size: 24rpx;
+  line-height: 1.5;
+}
+
+.action-text {
+  flex-shrink: 0;
+  color: #12824f;
+  font-size: 24rpx;
+  font-weight: 900;
+}
+
+.search-input {
+  width: 100%;
+  min-height: 78rpx;
+  padding: 0 22rpx;
+  border: 1rpx solid rgba(219, 228, 216, 0.95);
+  border-radius: 18rpx;
+  background: #ffffff;
+  box-sizing: border-box;
+  color: #102016;
+  font-size: 26rpx;
+}
+
+.filter-chip,
+.status,
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52rpx;
+  padding: 0 18rpx;
+  border-radius: 999rpx;
+  color: #12824f;
+  background: #eef6ed;
+  font-size: 23rpx;
+  font-weight: 900;
+  box-sizing: border-box;
+}
+
+.filter-chip.active {
+  color: #ffffff;
+  background: #12824f;
+}
+
+.create-button {
+  flex-shrink: 0;
+}
+
+.section-count {
+  color: #6f7c72;
+  font-size: 23rpx;
+  font-weight: 800;
+}

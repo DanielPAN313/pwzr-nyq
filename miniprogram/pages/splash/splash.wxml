@@ -1,4 +1,7 @@
 <view class="page splash-page">
+  <view class="light-spot light-spot-top"></view>
+  <view class="light-spot light-spot-bottom"></view>
+
   <view class="section splash-stage">
     <view class="court-card">
       <view class="court-line line-top"></view>

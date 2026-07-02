@@ -1843,6 +1843,37 @@ const handleSportsApi = async (req, res, requestUrl) => {
       }
     }
 
+    const venueAdminUpdateMatch = pathName.match(/^\/api\/sports-app\/venue-admin\/venues\/(\d+)$/)
+    if (venueAdminUpdateMatch && req.method === 'PATCH') {
+      const venueId = Number(venueAdminUpdateMatch[1])
+      const [[venue]] = await pool.execute('SELECT * FROM sports_venue WHERE id = ? LIMIT 1', [venueId])
+      if (!venue) return json(res, { ok: false, error: 'venue not found' }, 404)
+      if (Number(venue.manager_user_id || 0) !== Number(user.id)) {
+        return json(res, { ok: false, error: '只能维护自己管理的场馆' }, 403)
+      }
+
+      const body = await readJson(req)
+      const openSlots = Array.isArray(body.open_slots)
+        ? body.open_slots.map((slot) => text(slot, 40)).filter(Boolean)
+        : parseJsonList(venue.open_slots_json)
+
+      await pool.execute(
+        `UPDATE sports_venue SET
+          price_per_hour = COALESCE(?, price_per_hour),
+          contact = COALESCE(NULLIF(?, ''), contact),
+          open_slots_json = ?
+         WHERE id = ? AND manager_user_id = ?`,
+        [
+          body.price_per_hour === undefined ? null : Number(body.price_per_hour),
+          text(body.contact, 80),
+          JSON.stringify(openSlots),
+          venueId,
+          user.id,
+        ],
+      )
+      return json(res, { ok: true, id: venueId })
+    }
+
     if (pathName === '/api/sports-app/notifications' && req.method === 'GET') {
       return json(res, await sportsNotificationsForUser(pool, user))
     }

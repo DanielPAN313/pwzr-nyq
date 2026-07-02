@@ -1,4 +1,4 @@
-const { get, post } = require("../../utils/api");
+const { get, post, request } = require("../../utils/api");
 
 const fallbackDashboard = {
   metrics: [
@@ -52,12 +52,17 @@ function mapMetric(metric) {
 }
 
 function mapVenue(venue) {
+  const openSlots = Array.isArray(venue.open_slots) ? venue.open_slots : [];
+
   return {
     id: venue.id,
     name: venue.name || "未命名场馆",
     area: venue.area || "区域待定",
     status: venue.status || "",
-    statusText: venue.status === "approved" ? "营业中" : "待审核"
+    statusText: venue.status === "approved" ? "营业中" : "待审核",
+    pricePerHour: Number(venue.price_per_hour || 0),
+    contact: venue.contact || "",
+    openSlotsText: openSlots.join(", ")
   };
 }
 
@@ -106,6 +111,13 @@ Page({
     highlightedOrderId: "",
     checkinCode: "",
     checkinResultText: "",
+    maintenance: {
+      venueId: "",
+      pricePerHour: "",
+      contact: "",
+      openSlotsText: ""
+    },
+    savingVenue: false,
     application: {
       name: "",
       area: "",
@@ -116,6 +128,7 @@ Page({
     error: "",
     empty: false,
     scopeText: "演示场馆",
+    canMaintainVenue: false,
     metrics: fallbackDashboard.metrics,
     venues: fallbackDashboard.venues,
     orders: fallbackDashboard.orders
@@ -135,10 +148,21 @@ Page({
     return get("/api/sports-app/venue-admin", { showLoading: false })
       .then((data) => {
         const dashboard = mapDashboard(data || {}, this.data.highlightedOrderId);
+        const canMaintainVenue = data && data.scope === "owned" && dashboard.venues.length > 0;
+        const primaryVenue = canMaintainVenue ? dashboard.venues[0] : null;
 
         this.setData({
           loading: false,
           scopeText: data && data.scope === "owned" ? "我的场馆" : "演示场馆",
+          canMaintainVenue,
+          maintenance: primaryVenue
+            ? {
+              venueId: primaryVenue.id,
+              pricePerHour: String(primaryVenue.pricePerHour || ""),
+              contact: primaryVenue.contact || "",
+              openSlotsText: primaryVenue.openSlotsText || ""
+            }
+            : this.data.maintenance,
           metrics: dashboard.metrics,
           venues: dashboard.venues,
           orders: dashboard.orders,
@@ -168,6 +192,54 @@ Page({
     this.setData({
       [`application.${field}`]: String(event.detail.value || "").trim()
     });
+  },
+
+  onMaintenanceInput(event) {
+    const field = event.currentTarget.dataset.field;
+    if (!field) return;
+
+    this.setData({
+      [`maintenance.${field}`]: String(event.detail.value || "").trim()
+    });
+  },
+
+  saveVenueMaintenance() {
+    const maintenance = this.data.maintenance;
+    if (!maintenance.venueId || this.data.savingVenue) return;
+
+    const openSlots = String(maintenance.openSlotsText || "")
+      .split(/[,\n，]/)
+      .map((slot) => slot.trim())
+      .filter(Boolean);
+
+    this.setData({ savingVenue: true });
+
+    request(`/api/sports-app/venue-admin/venues/${maintenance.venueId}`, {
+      method: "PATCH",
+      data: {
+        price_per_hour: maintenance.pricePerHour === "" ? 0 : Number(maintenance.pricePerHour),
+        contact: maintenance.contact,
+        open_slots: openSlots
+      },
+      loadingTitle: "保存中"
+    })
+      .then(() => {
+        wx.showToast({
+          title: "已保存",
+          icon: "success"
+        });
+
+        return this.loadDashboard();
+      })
+      .catch((error) => {
+        wx.showToast({
+          title: error.message || "保存失败",
+          icon: "none"
+        });
+      })
+      .finally(() => {
+        this.setData({ savingVenue: false });
+      });
   },
 
   submitVenueApplication() {

@@ -41,7 +41,9 @@ requireIncludes("miniprogram/pages/venue-admin/venue-admin.js", [
   "/api/sports-app/venue-admin/checkin-code",
   "/api/sports-app/venue-admin/orders/",
   "/api/sports-app/venues",
+  "/api/sports-app/venue-admin/venues/",
   "submitVenueApplication",
+  "saveVenueMaintenance",
   "checkinByCode",
   "wx.pageScrollTo",
 ]);
@@ -49,6 +51,8 @@ requireIncludes("miniprogram/pages/venue-admin/venue-admin.js", [
 requireIncludes("miniprogram/pages/venue-admin/venue-admin.wxml", [
   "申请入驻场馆",
   "bindtap=\"submitVenueApplication\"",
+  "维护我的场馆",
+  "bindtap=\"saveVenueMaintenance\"",
   "核销码核销",
   "bindinput=\"onCodeInput\"",
   "bindtap=\"checkinByCode\"",
@@ -69,6 +73,7 @@ requireIncludes("miniprogram/pages/game-detail/game-detail.wxml", [
 
 requireIncludes("scripts/serve-local-mirror.mjs", [
   "/api/sports-app/venue-admin/checkin-code",
+  "venueAdminUpdateMatch",
   "venueAdminCheckinOrder",
   "manager_user_id",
   "gameReviewMatch",

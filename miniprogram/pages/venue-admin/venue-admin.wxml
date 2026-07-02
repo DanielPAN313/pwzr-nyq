@@ -46,6 +46,39 @@
     <text class="muted">提交后会先进入待审核状态，本地开发阶段可用于演示场馆端账号绑定。</text>
   </view>
 
+  <view wx:if="{{canMaintainVenue}}" class="section maintenance-panel">
+    <view class="section-title">维护我的场馆</view>
+    <input
+      class="form-input"
+      type="number"
+      placeholder="每小时价格，例如 120"
+      value="{{maintenance.pricePerHour}}"
+      data-field="pricePerHour"
+      bindinput="onMaintenanceInput"
+    />
+    <input
+      class="form-input"
+      placeholder="联系方式"
+      value="{{maintenance.contact}}"
+      data-field="contact"
+      bindinput="onMaintenanceInput"
+    />
+    <textarea
+      class="form-textarea"
+      placeholder="可预约时段，用逗号分隔，例如 18:00-20:00, 20:00-22:00"
+      value="{{maintenance.openSlotsText}}"
+      data-field="openSlotsText"
+      bindinput="onMaintenanceInput"
+    />
+    <button
+      class="primary"
+      disabled="{{savingVenue}}"
+      bindtap="saveVenueMaintenance"
+    >
+      {{savingVenue ? "保存中" : "保存场馆资料"}}
+    </button>
+  </view>
+
   <view class="section checkin-panel">
     <view class="section-title">核销码核销</view>
     <view class="code-row">

@@ -138,6 +138,8 @@ requireIncludes("miniprogram/pages/venue-admin/venue-admin.js", [
   "/api/sports-app/venues",
   "/api/sports-app/venue-admin/venues/",
   "Boolean(order.can_checkin)",
+  "buildAdminSteps",
+  "stepText",
   "submitVenueApplication",
   "saveVenueMaintenance",
   "checkinByCode",
@@ -145,6 +147,9 @@ requireIncludes("miniprogram/pages/venue-admin/venue-admin.js", [
 ]);
 
 requireIncludes("miniprogram/pages/venue-admin/venue-admin.wxml", [
+  "adminSteps",
+  "section-hint",
+  "item.stepText",
   "申请入驻场馆",
   "bindtap=\"submitVenueApplication\"",
   "维护我的场馆",

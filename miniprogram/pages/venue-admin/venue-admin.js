@@ -26,6 +26,60 @@ const statusText = {
   refunded: "已退款"
 };
 
+function buildAdminSteps(canMaintainVenue) {
+  return [
+    {
+      title: "1. 入驻场馆",
+      text: canMaintainVenue ? "已绑定自己的场馆，可继续维护资料。" : "先提交场馆名称、地址和联系方式。"
+    },
+    {
+      title: "2. 维护资料",
+      text: canMaintainVenue ? "维护价格、联系方式和可预约时段。" : "入驻审核通过后开放维护入口。"
+    },
+    {
+      title: "3. 到场核销",
+      text: canMaintainVenue ? "用户到场后输入核销码或在订单上确认。" : "演示模式只可查看，真实核销需绑定自己的场馆。"
+    }
+  ];
+}
+
+function orderStep(order) {
+  const status = order.status || "";
+
+  if (status === "paid" && order.canCheckin) {
+    return {
+      tone: "success",
+      text: "用户已支付，到场后可确认核销。"
+    };
+  }
+
+  if (status === "paid") {
+    return {
+      tone: "info",
+      text: "订单已支付，但当前账号不能核销该订单。"
+    };
+  }
+
+  if (status === "pending_payment") {
+    return {
+      tone: "warning",
+      text: "用户还未支付，暂不需要核销。"
+    };
+  }
+
+  if (status === "checked_in") {
+    return {
+      tone: "muted",
+      text: "订单已完成到场核销。"
+    };
+  }
+
+  return {
+    tone: "muted",
+    text: "订单已关闭或无需处理。"
+  };
+}
+
 function formatTime(value) {
   if (!value) return "时间待定";
 
@@ -68,6 +122,8 @@ function mapVenue(venue) {
 
 function mapOrder(order, highlightedOrderId) {
   const status = order.status || "";
+  const canCheckin = status === "paid" && Boolean(order.can_checkin);
+  const step = orderStep({ ...order, status, canCheckin });
 
   return {
     id: order.id,
@@ -80,7 +136,9 @@ function mapOrder(order, highlightedOrderId) {
     amountText: money(order.amount),
     timeText: formatTime(order.start_time || order.booking_start_time || order.create_time),
     checkinCode: order.checkin_code || "------",
-    canCheckin: status === "paid" && Boolean(order.can_checkin),
+    canCheckin,
+    stepText: step.text,
+    stepTone: step.tone,
     highlighted: highlightedOrderId && String(order.id) === String(highlightedOrderId)
   };
 }
@@ -129,6 +187,7 @@ Page({
     empty: false,
     scopeText: "演示场馆",
     canMaintainVenue: false,
+    adminSteps: buildAdminSteps(false),
     metrics: fallbackDashboard.metrics,
     venues: fallbackDashboard.venues,
     orders: fallbackDashboard.orders
@@ -155,6 +214,7 @@ Page({
           loading: false,
           scopeText: data && data.scope === "owned" ? "我的场馆" : "演示场馆",
           canMaintainVenue,
+          adminSteps: buildAdminSteps(canMaintainVenue),
           maintenance: primaryVenue
             ? {
               venueId: primaryVenue.id,
@@ -179,6 +239,7 @@ Page({
           error: error.message || "场馆管理数据加载失败",
           empty: false,
           metrics: fallbackDashboard.metrics,
+          adminSteps: buildAdminSteps(false),
           venues: fallbackDashboard.venues,
           orders: fallbackDashboard.orders
         });

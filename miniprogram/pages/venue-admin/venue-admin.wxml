@@ -6,8 +6,16 @@
     <text wx:else class="muted">当前范围：{{scopeText}}。查看预约、支付和到场核销状态。</text>
   </view>
 
+  <view class="step-grid">
+    <view wx:for="{{adminSteps}}" wx:key="title" class="step-card">
+      <text class="step-title">{{item.title}}</text>
+      <text class="step-text">{{item.text}}</text>
+    </view>
+  </view>
+
   <view class="section application-panel">
     <view class="section-title">申请入驻场馆</view>
+    <text class="section-hint">还没有自己的场馆时，先提交入驻申请；审核/绑定后会开放资料维护和真实核销。</text>
     <input
       class="form-input"
       placeholder="场馆名称"
@@ -48,6 +56,7 @@
 
   <view wx:if="{{canMaintainVenue}}" class="section maintenance-panel">
     <view class="section-title">维护我的场馆</view>
+    <text class="section-hint">这里维护的价格、联系方式和开放时段，会展示到用户端场馆详情页。</text>
     <input
       class="form-input"
       type="number"
@@ -81,6 +90,7 @@
 
   <view class="section checkin-panel">
     <view class="section-title">核销码核销</view>
+    <text class="section-hint">只允许核销自己管理场馆的已支付订单；演示场馆不会开放真实核销权限。</text>
     <view class="code-row">
       <input
         class="code-input"
@@ -141,6 +151,7 @@
       <text class="muted">核销码</text>
       <text class="checkin-code">{{item.checkinCode}}</text>
     </view>
+    <text class="order-step order-{{item.stepTone}}">{{item.stepText}}</text>
     <button
       wx:if="{{item.canCheckin}}"
       class="primary"

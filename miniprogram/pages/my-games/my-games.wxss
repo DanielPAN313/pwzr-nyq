@@ -1,12 +1,56 @@
-.page-title,
+.section:first-child {
+  position: relative;
+  padding: 30rpx;
+  border-radius: 28rpx;
+  color: #ffffff;
+  background: linear-gradient(145deg, #10231a 0%, #0b3d27 52%, #12824f 100%);
+  box-shadow: 0 28rpx 64rpx rgba(16, 32, 22, 0.2);
+  overflow: hidden;
+}
+
+.section:first-child::after {
+  content: "";
+  position: absolute;
+  right: -92rpx;
+  top: -112rpx;
+  width: 290rpx;
+  height: 220rpx;
+  border-radius: 999rpx;
+  background: radial-gradient(ellipse at center, rgba(216, 255, 62, 0.22) 0%, rgba(216, 255, 62, 0.1) 48%, rgba(216, 255, 62, 0) 74%);
+}
+
+.page-title {
+  position: relative;
+  z-index: 1;
+  display: block;
+  color: #ffffff;
+  font-size: 42rpx;
+  font-weight: 950;
+  line-height: 1.2;
+}
+
+.section:first-child .muted {
+  position: relative;
+  z-index: 1;
+  display: block;
+  margin-top: 12rpx;
+  color: rgba(247, 251, 245, 0.76);
+  font-size: 25rpx;
+  line-height: 1.5;
+}
+
 .card-title {
   display: block;
   margin-bottom: 10rpx;
-  font-size: 34rpx;
-  font-weight: 850;
+  color: #102016;
+  font-size: 30rpx;
+  font-weight: 950;
+  line-height: 1.35;
 }
 
 .action-row {
+  position: relative;
+  z-index: 1;
   display: flex;
   gap: 16rpx;
   margin-top: 22rpx;
@@ -25,6 +69,7 @@
 
 .stat-card {
   display: flex;
+  min-height: 132rpx;
   min-width: 0;
   flex-direction: column;
   gap: 6rpx;
@@ -37,7 +82,7 @@
 .stat-value {
   color: #102016;
   font-size: 36rpx;
-  font-weight: 900;
+  font-weight: 950;
   line-height: 1;
 }
 
@@ -62,6 +107,7 @@
   font-size: 26rpx;
   font-weight: 800;
   background: #ffffff;
+  box-sizing: border-box;
 }
 
 .tab.active {
@@ -93,9 +139,14 @@
 }
 
 .my-game-card {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 14rpx;
+  gap: 16rpx;
+  padding: 28rpx;
+  border-radius: 24rpx;
+  box-shadow: 0 18rpx 44rpx rgba(16, 32, 22, 0.08);
+  overflow: hidden;
 }
 
 .card-head {
@@ -120,17 +171,19 @@
 .role {
   color: #12824f;
   font-size: 26rpx;
-  font-weight: 850;
+  font-weight: 900;
 }
 
 .status {
   flex-shrink: 0;
+  min-height: 48rpx;
   padding: 8rpx 14rpx;
   border-radius: 999rpx;
   color: #102016;
   font-size: 24rpx;
-  font-weight: 850;
+  font-weight: 900;
   background: #f3f7f1;
+  box-sizing: border-box;
 }
 
 .status.success {
@@ -171,7 +224,7 @@
 .progress-fill {
   height: 100%;
   border-radius: inherit;
-  background: #12824f;
+  background: linear-gradient(90deg, #12824f 0%, #12b76a 100%);
 }
 
 .joined {
@@ -205,7 +258,7 @@
 .step-title {
   color: #102016;
   font-size: 27rpx;
-  font-weight: 900;
+  font-weight: 950;
 }
 
 .step-text {
@@ -220,6 +273,7 @@
   height: 58rpx;
   padding: 0;
   font-size: 24rpx;
+  font-weight: 900;
   line-height: 58rpx;
 }
 

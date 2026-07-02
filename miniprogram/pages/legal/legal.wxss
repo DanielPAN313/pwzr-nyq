@@ -1,9 +1,42 @@
+.section:first-child {
+  position: relative;
+  padding: 30rpx;
+  border-radius: 28rpx;
+  color: #ffffff;
+  background: linear-gradient(145deg, #10231a 0%, #0b3d27 52%, #12824f 100%);
+  box-shadow: 0 28rpx 64rpx rgba(16, 32, 22, 0.2);
+  overflow: hidden;
+}
+
+.section:first-child::after {
+  content: "";
+  position: absolute;
+  right: -92rpx;
+  top: -112rpx;
+  width: 290rpx;
+  height: 220rpx;
+  border-radius: 999rpx;
+  background: radial-gradient(ellipse at center, rgba(216, 255, 62, 0.22) 0%, rgba(216, 255, 62, 0.1) 48%, rgba(216, 255, 62, 0) 74%);
+}
+
 .page-title {
+  position: relative;
+  z-index: 1;
   display: block;
-  margin-bottom: 10rpx;
-  color: #102016;
-  font-size: 34rpx;
-  font-weight: 850;
+  color: #ffffff;
+  font-size: 42rpx;
+  font-weight: 950;
+  line-height: 1.2;
+}
+
+.section:first-child .muted {
+  position: relative;
+  z-index: 1;
+  display: block;
+  margin-top: 12rpx;
+  color: rgba(247, 251, 245, 0.76);
+  font-size: 25rpx;
+  line-height: 1.5;
 }
 
 .tabs {
@@ -27,6 +60,7 @@
   font-size: 26rpx;
   font-weight: 800;
   background: #ffffff;
+  box-sizing: border-box;
 }
 
 .tab.active {
@@ -38,13 +72,15 @@
 .legal-card {
   display: flex;
   flex-direction: column;
-  gap: 14rpx;
+  gap: 16rpx;
+  box-shadow: 0 18rpx 44rpx rgba(16, 32, 22, 0.07);
 }
 
 .legal-title {
   color: #102016;
-  font-size: 34rpx;
-  font-weight: 900;
+  font-size: 36rpx;
+  font-weight: 950;
+  line-height: 1.25;
 }
 
 .legal-meta {
@@ -57,13 +93,14 @@
   color: #334138;
   font-size: 27rpx;
   line-height: 1.55;
+  font-weight: 750;
 }
 
 .legal-row {
   display: flex;
   align-items: flex-start;
   gap: 14rpx;
-  padding: 16rpx 0;
+  padding: 18rpx 0;
   border-top: 1rpx solid rgba(219, 228, 216, 0.9);
 }
 
@@ -86,4 +123,5 @@
   color: #5c6a61;
   font-size: 26rpx;
   line-height: 1.5;
+  font-weight: 750;
 }

@@ -46,6 +46,7 @@ function requirePath(file) {
   "miniprogram/project.config.json",
   ".github/workflows/check.yml",
   ".github/pull_request_template.md",
+  "scripts/check-repository-hygiene.mjs",
 ].forEach(requirePath);
 
 requireIncludes("README.md", [
@@ -70,8 +71,10 @@ requireIncludes(".gitignore", [
 
 requireIncludes("package.json", [
   "\"check:demo-readiness\"",
+  "\"check:repository-hygiene\"",
   "\"check\"",
   "check:demo-readiness",
+  "check:repository-hygiene",
 ]);
 
 requireIncludes(".github/workflows/check.yml", [

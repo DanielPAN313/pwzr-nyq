@@ -19,8 +19,9 @@
     "check:h5-bridge-coverage": "node scripts/check-h5-bridge-coverage.mjs",
     "check:collaboration-docs": "node scripts/check-collaboration-docs.mjs",
     "check:demo-readiness": "node scripts/check-demo-readiness.mjs",
+    "check:repository-hygiene": "node scripts/check-repository-hygiene.mjs",
     "check:deploy": "node scripts/check-deploy-readiness.mjs",
-    "check": "npm run check:miniprogram && npm run check:miniprogram-flows && npm run check:miniprogram-runtime && npm run check:h5-preview && npm run check:h5-http-preview && npm run check:h5-bridge && npm run check:h5-bridge-coverage && npm run check:collaboration-docs && npm run check:demo-readiness && npm run check:deploy"
+    "check": "npm run check:miniprogram && npm run check:miniprogram-flows && npm run check:miniprogram-runtime && npm run check:h5-preview && npm run check:h5-http-preview && npm run check:h5-bridge && npm run check:h5-bridge-coverage && npm run check:collaboration-docs && npm run check:demo-readiness && npm run check:repository-hygiene && npm run check:deploy"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",

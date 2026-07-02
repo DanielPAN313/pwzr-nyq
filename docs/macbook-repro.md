@@ -44,7 +44,7 @@ npm run check
 ```text
 Mini Program check passed.
 Mini Program flow contract check passed.
-Mini Program runtime check passed: loaded app.js, 12 pages, and home.switchTab.
+Mini Program runtime check passed: loaded app.js, 14 pages, and home.switchTab.
 H5 Mini Program preview check passed.
 H5 HTTP preview check passed.
 H5 Mini Program bridge runtime check passed.
@@ -174,6 +174,18 @@ miniprogram/pages/venue-admin/*.wxml
 miniprogram/pages/venue-admin/*.wxss
 miniprogram/pages/game-detail/*.wxml
 miniprogram/pages/game-detail/*.wxss
+miniprogram/pages/create-game/*.wxml
+miniprogram/pages/create-game/*.wxss
+miniprogram/pages/venue-detail/*.wxml
+miniprogram/pages/venue-detail/*.wxss
+miniprogram/pages/credit/*.wxml
+miniprogram/pages/credit/*.wxss
+miniprogram/pages/my-games/*.wxml
+miniprogram/pages/my-games/*.wxss
+miniprogram/pages/legal/*.wxml
+miniprogram/pages/legal/*.wxss
+miniprogram/pages/splash/*.wxml
+miniprogram/pages/splash/*.wxss
 miniprogram/app.wxss
 ```
 

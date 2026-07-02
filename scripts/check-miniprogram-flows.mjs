@@ -49,6 +49,20 @@ requireIncludes("miniprogram/pages/games/games.wxml", [
   "bindtap=\"changeSport\"",
 ]);
 
+requireIncludes("miniprogram/pages/me/me.js", [
+  "buildStatCards",
+  "buildMenuSections",
+  "statCards",
+  "menuSections",
+]);
+
+requireIncludes("miniprogram/pages/me/me.wxml", [
+  "stat-grid",
+  "menuSections",
+  "entry.hint",
+  "openMenu",
+]);
+
 requireIncludes("miniprogram/pages/orders/orders.js", [
   "highlightedOrderId",
   "wx.pageScrollTo",

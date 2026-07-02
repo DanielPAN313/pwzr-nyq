@@ -7,10 +7,28 @@
     <text wx:else class="muted">{{profileHint}}</text>
   </view>
 
-  <view class="section">
-    <view wx:for="{{items}}" wx:key="label" class="menu-row" bindtap="openMenu" data-target="{{item.target}}">
-      <text>{{item.label}}</text>
-      <text class="muted">{{item.value}} ›</text>
+  <view class="stat-grid">
+    <view wx:for="{{statCards}}" wx:key="label" class="stat-card stat-{{item.tone}}">
+      <text class="stat-value">{{item.value}}</text>
+      <text class="stat-label">{{item.label}}</text>
+    </view>
+  </view>
+
+  <view wx:for="{{menuSections}}" wx:key="title" class="section menu-section">
+    <view class="section-title">{{item.title}}</view>
+    <view
+      wx:for="{{item.items}}"
+      wx:for-item="entry"
+      wx:key="label"
+      class="menu-row"
+      bindtap="openMenu"
+      data-target="{{entry.target}}"
+    >
+      <view class="menu-main">
+        <text class="menu-label">{{entry.label}}</text>
+        <text class="menu-hint">{{entry.hint}}</text>
+      </view>
+      <text class="menu-value">{{entry.value}} ›</text>
     </view>
   </view>
 </view>

@@ -152,6 +152,9 @@ if (appJson) {
       if (hasPullDownHandler && pageJson.enablePullDownRefresh !== true) {
         errors.push(`${rel(jsFile)} defines onPullDownRefresh but ${rel(jsonFile)} does not enable pull-down refresh.`);
       }
+      if (hasPullDownHandler && !jsSource.includes("wx.stopPullDownRefresh")) {
+        errors.push(`${rel(jsFile)} defines onPullDownRefresh but does not call wx.stopPullDownRefresh.`);
+      }
     }
 
     if (fs.existsSync(jsFile) && fs.existsSync(wxmlFile)) {

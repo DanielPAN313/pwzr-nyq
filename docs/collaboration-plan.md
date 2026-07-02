@@ -1,96 +1,177 @@
 # 小程序协作计划
 
-## 目标
+当前项目只按微信小程序方向推进。历史 Android、APK、Capacitor、旧 H5 手机壳不作为当前主线。
 
-三个人围绕同一个微信小程序工程协作，默认只改 `miniprogram/`、`scripts/`、`db/` 和 `docs/`。历史 Android、APK、Capacitor、旧 H5 手机壳都不作为当前任务继续推进。
+## 分支规则
 
-## 推荐分工
+- `main`：稳定基线。
+- `feature-miniprogram-flow`：当前小程序功能集成分支。
+- `ui-polish`：UI 同伴可以从 `feature-miniprogram-flow` 拉出自己的 UI 分支。
 
-### 同伴 A：用户端与首页
-
-主要文件：
-
-- `miniprogram/pages/home/`
-- `miniprogram/pages/me/`
-- `miniprogram/utils/api.js`
-
-当前目标：
-
-- 完善首页入口、推荐球局、推荐场馆
-- 做微信登录入口和用户资料展示
-- 展示订单、信用分、报名记录入口
-
-### 同伴 B：场馆与订单
-
-主要文件：
-
-- `miniprogram/pages/venues/`
-- `scripts/serve-local-mirror.mjs`
-- `db/schema.sql`
-
-当前目标：
-
-- 完善场馆列表、筛选、时段库存
-- 跑通场地预订、订单生成、核销码展示
-- 保持接口字段和数据库字段一致
-
-### 同伴 C：球局与消息
-
-主要文件：
-
-- `miniprogram/pages/games/`
-- `miniprogram/pages/messages/`
-- `scripts/serve-local-mirror.mjs`
-
-当前目标：
-
-- 完善附近球局、发起球局、报名占位
-- 展示报名提醒、订单提醒、场馆通知
-- 预留支付成功、成局、满员锁局等状态
-
-## 本地开发流程
+推荐 UI 同伴执行：
 
 ```bash
-npm ci
-npm run check
-npm run dev
+git checkout feature-miniprogram-flow
+git pull origin feature-miniprogram-flow
+git checkout -b ui-polish
 ```
 
-微信开发者工具导入：
+改完后：
+
+```bash
+npm run check
+git status
+git add miniprogram
+git commit -m "Polish miniprogram UI"
+git push origin ui-polish
+```
+
+## 当前功能范围
+
+小程序当前已覆盖这些主流程：
+
+- 首页 bootstrap 数据
+- 订场列表和场馆详情
+- 场馆预约下单
+- 球局列表、球局详情、创建球局
+- 报名生成订单
+- 订单支付、取消、核销
+- 消息中心跳转关联订单或球局
+- 我的订单、我的球局、信用分
+- 场馆管理页
+- 场馆端核销码核销
+- 赛后互评
+
+`npm run check` 已经加入主流程契约检查，误删关键入口会失败。
+
+## 分工建议
+
+### 功能开发
+
+主要文件：
 
 ```text
-miniprogram/
+miniprogram/pages/**/*.js
+miniprogram/utils/
+scripts/serve-local-mirror.mjs
+db/schema.sql
 ```
 
-没有正式 AppID 时使用测试号即可。
+负责：
+
+- 接口字段
+- 页面数据映射
+- 下单、支付、核销、消息、评价逻辑
+- 检查脚本
+
+### UI 同伴
+
+主要文件：
+
+```text
+miniprogram/pages/**/*.wxml
+miniprogram/pages/**/*.wxss
+miniprogram/app.wxss
+docs/ui-design-system.md
+```
+
+负责：
+
+- 页面布局
+- 视觉层级
+- 按钮、卡片、列表、空状态
+- 移动端适配
+
+UI 同伴先不要改 JS。如果需要新增交互状态，先说明需要的数据字段或事件名。
+
+### 文档和部署
+
+主要文件：
+
+```text
+README.md
+docs/
+.github/workflows/
+```
+
+负责：
+
+- MacBook 复现
+- 微信开发者工具导入
+- 服务器和域名上线步骤
+- 团队协作说明
 
 ## 提交前检查
 
+每次提交前必须运行：
+
 ```bash
 npm run check
 ```
 
-检查通过后再提交。这个命令会验证：
+这个命令会检查：
 
-- `miniprogram/app.json` 可解析
-- 每个注册页面都有 `.js/.json/.wxml/.wxss`
-- tabBar 页面已注册
-- 页面 JSON 可解析
-- 小程序 JS 没有误用 `window/document/localStorage/fetch` 等浏览器 API
-- 文件没有 UTF-8 替换字符
+- 小程序结构
+- 页面四件套
+- WXML 事件是否有对应 JS 方法
+- 小程序运行时加载
+- H5 预览路由
+- `wx.*` 桥接覆盖
+- 主流程契约：订单定位、场馆核销、赛后互评等
 
-## 不要踩的坑
+## 不要提交
 
-- 不要把新页面写进 `site/`
-- 不要恢复 Android/APK/Capacitor 作为主线
-- 不要提交 `.env`、日志、截图、APK、`node_modules`
-- 不要在小程序页面里使用浏览器 DOM API
-- 不要直接改线上支付、订单、信用分状态语义，除非团队已经确认
+```text
+.env
+.env.server
+miniprogram/project.private.config.json
+node_modules/
+*.log
+*.png
+*.apk
+```
 
-## 合并建议
+这些已经在 `.gitignore` 中，但提交前仍要看 `git status`。
 
-1. 先拉最新代码。
-2. 跑 `npm ci` 和 `npm run check`。
-3. 在微信开发者工具里打开 `miniprogram/`。
-4. 自测自己负责的 tab。
-5. 如果改了接口，同时说明新增或变更的 API 路径和字段。
+## 微信开发者工具
+
+导入目录必须是：
+
+```text
+pwzr-nyq/miniprogram
+```
+
+不要导入：
+
+```text
+pwzr-nyq
+pwzr-nyq/site
+pwzr-nyq/android
+```
+
+没有正式 AppID 时：
+
+```text
+AppID: touristappid
+后端服务: 不使用云服务
+```
+
+## 当前优先级
+
+P0 已完成并持续维护：
+
+- API 配置
+- 统一请求
+- 本地模拟登录
+- 首页、订场、球局、消息、我的接真实接口
+- loading/error/empty 基础状态
+- 主流程检查
+
+下一阶段优先级：
+
+- 场馆端账号和权限
+- 真实微信登录
+- 真实支付和退款回调
+- 生产服务器、HTTPS 域名和微信合法域名配置
+- UI polish 和一致性设计
+

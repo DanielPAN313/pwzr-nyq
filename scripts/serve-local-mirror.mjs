@@ -828,14 +828,25 @@ const sportsVenueAdminDashboard = async (pool, user) => {
     ],
     scope: hasOwnedVenues ? 'owned' : 'demo',
     venues: demoVenues.map(serializeVenue),
-    orders: orders.map(serializeOrder),
+    orders: orders.map((order) => {
+      const serialized = serializeOrder(order)
+      return {
+        ...serialized,
+        can_checkin: hasOwnedVenues && serialized.can_checkin,
+      }
+    }),
   }
 }
 
-const venueAdminCheckinOrder = async (pool, order) => {
+const venueAdminCheckinOrder = async (pool, user, order) => {
   if (!order) {
     const error = new Error('order not found')
     error.statusCode = 404
+    throw error
+  }
+  if (Number(order.manager_user_id || 0) !== Number(user.id)) {
+    const error = new Error('only the venue owner can check in this order')
+    error.statusCode = 403
     throw error
   }
   if (order.status === 'checked_in') {
@@ -1808,15 +1819,16 @@ const handleSportsApi = async (req, res, requestUrl) => {
     if (venueAdminCheckinMatch && req.method === 'POST') {
       const orderId = Number(venueAdminCheckinMatch[1])
       const [[order]] = await pool.execute(
-        `SELECT o.*, g.start_time, g.end_time
+        `SELECT o.*, g.start_time, g.end_time, v.manager_user_id
          FROM sports_order o
          LEFT JOIN sports_game g ON g.id = o.game_id
+         JOIN sports_venue v ON v.id = o.venue_id
          WHERE o.id = ?
          LIMIT 1`,
         [orderId],
       )
       try {
-        return json(res, await venueAdminCheckinOrder(pool, order))
+        return json(res, await venueAdminCheckinOrder(pool, user, order))
       } catch (error) {
         return json(res, { ok: false, error: error.message || '核销失败' }, error.statusCode || 500)
       }
@@ -1828,16 +1840,17 @@ const handleSportsApi = async (req, res, requestUrl) => {
       if (!code) return json(res, { ok: false, error: '请输入核销码' }, 400)
 
       const [[order]] = await pool.execute(
-        `SELECT o.*, g.start_time, g.end_time
+        `SELECT o.*, g.start_time, g.end_time, v.manager_user_id
          FROM sports_order o
          LEFT JOIN sports_game g ON g.id = o.game_id
+         JOIN sports_venue v ON v.id = o.venue_id
          WHERE o.checkin_code = ?
          ORDER BY o.create_time DESC
          LIMIT 1`,
         [code],
       )
       try {
-        return json(res, await venueAdminCheckinOrder(pool, order))
+        return json(res, await venueAdminCheckinOrder(pool, user, order))
       } catch (error) {
         return json(res, { ok: false, error: error.message || '核销失败' }, error.statusCode || 500)
       }

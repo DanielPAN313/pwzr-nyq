@@ -80,7 +80,7 @@ function mapOrder(order, highlightedOrderId) {
     amountText: money(order.amount),
     timeText: formatTime(order.start_time || order.booking_start_time || order.create_time),
     checkinCode: order.checkin_code || "------",
-    canCheckin: status === "paid",
+    canCheckin: status === "paid" && Boolean(order.can_checkin),
     highlighted: highlightedOrderId && String(order.id) === String(highlightedOrderId)
   };
 }

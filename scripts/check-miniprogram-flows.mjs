@@ -56,6 +56,7 @@ requireIncludes("miniprogram/pages/venue-admin/venue-admin.js", [
   "/api/sports-app/venue-admin/orders/",
   "/api/sports-app/venues",
   "/api/sports-app/venue-admin/venues/",
+  "Boolean(order.can_checkin)",
   "submitVenueApplication",
   "saveVenueMaintenance",
   "checkinByCode",
@@ -90,6 +91,8 @@ requireIncludes("scripts/serve-local-mirror.mjs", [
   "venueAdminUpdateMatch",
   "venueAdminCheckinOrder",
   "manager_user_id",
+  "only the venue owner can check in this order",
+  "can_checkin: hasOwnedVenues && serialized.can_checkin",
   "gameReviewMatch",
   "review_submitted",
 ]);

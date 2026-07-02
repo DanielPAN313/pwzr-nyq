@@ -11,6 +11,13 @@
 - 产品与协作文档：`docs/`
 - 历史 Android 壳参考：`android/`
 
+常用文档：
+
+- MacBook 复现与修改：`docs/macbook-repro.md`
+- 团队协作计划：`docs/collaboration-plan.md`
+- 服务器与域名上线：`docs/server-deploy.md`
+- UI 设计系统：`docs/ui-design-system.md`
+
 不要把 `android/`、APK、Capacitor、安卓模拟器当成当前开发方向。当前方向是微信小程序；在小程序未注册前，用 `site/` 的 H5 小程序预览模拟微信运行环境，方便浏览器开发、同伴改 UI 和本地演示。
 
 ## MacBook 复现步骤

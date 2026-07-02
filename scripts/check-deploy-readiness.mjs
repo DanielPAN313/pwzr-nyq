@@ -106,6 +106,13 @@ requireIncludes("docs/legal/compliance-checklist.md", [
   "request 合法域名",
 ]);
 
+requireIncludes("docs/project-roadmap.md", [
+  "宁约球小程序当前进度与路线图",
+  "当前主线",
+  "下一步执行顺序",
+  "关键文档入口",
+]);
+
 requireIncludes("miniprogram/utils/config.js", [
   "apiBaseUrl: \"http://localhost:4174\"",
   "useMockAuth: true",

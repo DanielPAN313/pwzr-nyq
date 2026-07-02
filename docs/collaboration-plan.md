@@ -2,6 +2,8 @@
 
 当前项目只按微信小程序方向推进。历史 Android、APK、Capacitor、旧 H5 手机壳不作为当前主线。
 
+总路线图和当前进度看：`docs/project-roadmap.md`。
+
 ## 分支规则
 
 - `main`：稳定基线。

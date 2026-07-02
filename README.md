@@ -13,6 +13,7 @@
 
 常用文档：
 
+- 项目路线图与当前进度：`docs/project-roadmap.md`
 - MacBook 复现与修改：`docs/macbook-repro.md`
 - 团队协作计划：`docs/collaboration-plan.md`
 - 服务器与域名上线：`docs/server-deploy.md`

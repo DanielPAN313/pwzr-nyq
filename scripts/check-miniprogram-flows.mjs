@@ -23,6 +23,32 @@ requireIncludes("miniprogram/pages/messages/messages.js", [
   "/api/sports-app/notifications/",
 ]);
 
+requireIncludes("miniprogram/pages/venues/venues.js", [
+  "sportFilters",
+  "applyFilters",
+  "onSearchInput",
+  "changeSport",
+]);
+
+requireIncludes("miniprogram/pages/venues/venues.wxml", [
+  "搜索场馆、区域或运动",
+  "bindinput=\"onSearchInput\"",
+  "bindtap=\"changeSport\"",
+]);
+
+requireIncludes("miniprogram/pages/games/games.js", [
+  "sportFilters",
+  "applyFilters",
+  "onSearchInput",
+  "changeSport",
+]);
+
+requireIncludes("miniprogram/pages/games/games.wxml", [
+  "搜索球局或场馆",
+  "bindinput=\"onSearchInput\"",
+  "bindtap=\"changeSport\"",
+]);
+
 requireIncludes("miniprogram/pages/orders/orders.js", [
   "highlightedOrderId",
   "wx.pageScrollTo",

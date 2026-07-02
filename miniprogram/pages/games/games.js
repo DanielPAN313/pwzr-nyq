@@ -5,6 +5,12 @@ const fallbackGames = [
   { title: "大学城 3v3 篮球局", time: "明天 20:00", status: "缺 1 人", venueName: "江宁大学城篮球馆", fee: "AA", canJoin: false, actionText: "待同步" }
 ];
 
+const sportFilters = [
+  { label: "全部", value: "all" },
+  { label: "足球", value: "football" },
+  { label: "篮球", value: "basketball" }
+];
+
 const statusText = {
   forming: "待成局",
   open: "可报名",
@@ -40,6 +46,7 @@ function mapGame(game) {
   return {
     id: game.id,
     title: game.title || "未命名球局",
+    sport: game.sport || "",
     time: formatGameTime(game.start_time),
     status: statusText[game.status] || missing,
     venueName: game.venue_name || game.area || "场地待定",
@@ -53,8 +60,12 @@ Page({
   data: {
     loading: false,
     joiningId: "",
+    query: "",
+    activeSport: "all",
+    sportFilters,
     error: "",
     empty: false,
+    allGames: [],
     games: fallbackGames
   },
 
@@ -79,18 +90,53 @@ Page({
 
         this.setData({
           loading: false,
-          games: list.length ? list : [],
-          empty: list.length === 0
+          allGames: list
         });
+
+        this.applyFilters();
       })
       .catch((error) => {
         this.setData({
           loading: false,
           error: error.message || "球局数据加载失败",
           empty: false,
+          allGames: fallbackGames,
           games: fallbackGames
         });
       });
+  },
+
+  applyFilters() {
+    const query = String(this.data.query || "").trim().toLowerCase();
+    const activeSport = this.data.activeSport || "all";
+    const allGames = Array.isArray(this.data.allGames) ? this.data.allGames : [];
+
+    const games = allGames.filter((game) => {
+      const text = `${game.title || ""} ${game.venueName || ""} ${game.status || ""}`.toLowerCase();
+      const matchesQuery = !query || text.includes(query);
+      const matchesSport = activeSport === "all" || game.sport === activeSport;
+
+      return matchesQuery && matchesSport;
+    });
+
+    this.setData({
+      games,
+      empty: !this.data.loading && games.length === 0
+    });
+  },
+
+  onSearchInput(event) {
+    this.setData({
+      query: event.detail.value || ""
+    });
+    this.applyFilters();
+  },
+
+  changeSport(event) {
+    this.setData({
+      activeSport: event.currentTarget.dataset.value || "all"
+    });
+    this.applyFilters();
   },
 
   joinGame(event) {

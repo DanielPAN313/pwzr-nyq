@@ -3,8 +3,25 @@
     <view class="page-title">附近可订场馆</view>
     <text wx:if="{{loading}}" class="muted">正在加载场馆...</text>
     <text wx:elif="{{error}}" class="muted">{{error}}，已显示本地兜底场馆。</text>
-    <text wx:elif="{{empty}}" class="muted">暂时没有可订场馆。</text>
-    <text wx:else class="muted">已接入真实场馆列表，后续继续补筛选和预订支付。</text>
+    <text wx:elif="{{empty}}" class="muted">没有找到匹配场馆，可以换个关键词或运动类型。</text>
+    <text wx:else class="muted">按区域、场馆名或运动类型快速找场。</text>
+    <input
+      class="search-input"
+      placeholder="搜索场馆、区域或运动"
+      value="{{query}}"
+      bindinput="onSearchInput"
+    />
+    <view class="filter-row">
+      <button
+        wx:for="{{sportFilters}}"
+        wx:key="value"
+        class="filter-chip {{activeSport === item.value ? 'is-active' : ''}}"
+        data-value="{{item.value}}"
+        bindtap="changeSport"
+      >
+        {{item.label}}
+      </button>
+    </view>
   </view>
 
   <view wx:for="{{venues}}" wx:key="name" class="section venue-card" bindtap="openVenue" data-id="{{item.id}}">

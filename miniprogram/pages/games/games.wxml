@@ -3,8 +3,25 @@
     <view class="page-title">附近球局</view>
     <text wx:if="{{loading}}" class="muted">正在加载球局...</text>
     <text wx:elif="{{error}}" class="muted">{{error}}，已显示本地兜底球局。</text>
-    <text wx:elif="{{empty}}" class="muted">暂时没有可报名球局。</text>
-    <text wx:else class="muted">已接入真实球局列表，后续继续补报名和支付。</text>
+    <text wx:elif="{{empty}}" class="muted">没有找到匹配球局，可以换个关键词或运动类型。</text>
+    <text wx:else class="muted">按球局、场馆或运动类型快速找人。</text>
+    <input
+      class="search-input"
+      placeholder="搜索球局或场馆"
+      value="{{query}}"
+      bindinput="onSearchInput"
+    />
+    <view class="filter-row">
+      <button
+        wx:for="{{sportFilters}}"
+        wx:key="value"
+        class="filter-chip {{activeSport === item.value ? 'is-active' : ''}}"
+        data-value="{{item.value}}"
+        bindtap="changeSport"
+      >
+        {{item.label}}
+      </button>
+    </view>
     <button class="primary small create-button" bindtap="createGame">发起球局</button>
   </view>
 

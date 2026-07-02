@@ -5,6 +5,12 @@ const fallbackVenues = [
   { name: "未来科技城五人制足球馆", area: "江宁开发区", price: "260/小时", sportsText: "足球", canBook: false, actionText: "待同步" }
 ];
 
+const sportFilters = [
+  { label: "全部", value: "all" },
+  { label: "足球", value: "football" },
+  { label: "篮球", value: "basketball" }
+];
+
 function pad2(value) {
   return String(value).padStart(2, "0");
 }
@@ -30,6 +36,9 @@ function defaultSlot(venue) {
 function mapVenue(venue) {
   const price = venue.price_per_hour || venue.price || 0;
   const sports = Array.isArray(venue.sports) ? venue.sports.join(" / ") : venue.sports;
+  const sportsList = Array.isArray(venue.sports)
+    ? venue.sports
+    : String(venue.sports || "").split(",").map((item) => item.trim()).filter(Boolean);
   const slot = defaultSlot(venue);
 
   return {
@@ -38,6 +47,7 @@ function mapVenue(venue) {
     area: venue.area || venue.address || "附近",
     price: `${price}/小时`,
     sportsText: sports || "综合运动",
+    sportsList,
     bookingDate: slot.date,
     bookingStartTime: slot.start,
     bookingEndTime: slot.end,
@@ -51,8 +61,12 @@ Page({
   data: {
     loading: false,
     bookingVenueId: "",
+    query: "",
+    activeSport: "all",
+    sportFilters,
     error: "",
     empty: false,
+    allVenues: [],
     venues: fallbackVenues
   },
 
@@ -73,18 +87,54 @@ Page({
 
         this.setData({
           loading: false,
-          venues: list.length ? list : [],
-          empty: list.length === 0
+          allVenues: list
         });
+
+        this.applyFilters();
       })
       .catch((error) => {
         this.setData({
           loading: false,
           error: error.message || "场馆数据加载失败",
           empty: false,
+          allVenues: fallbackVenues,
           venues: fallbackVenues
         });
       });
+  },
+
+  applyFilters() {
+    const query = String(this.data.query || "").trim().toLowerCase();
+    const activeSport = this.data.activeSport || "all";
+    const allVenues = Array.isArray(this.data.allVenues) ? this.data.allVenues : [];
+
+    const venues = allVenues.filter((venue) => {
+      const text = `${venue.name || ""} ${venue.area || ""} ${venue.sportsText || ""}`.toLowerCase();
+      const matchesQuery = !query || text.includes(query);
+      const sportsList = Array.isArray(venue.sportsList) ? venue.sportsList : [];
+      const matchesSport = activeSport === "all" || sportsList.includes(activeSport) || String(venue.sportsText || "").toLowerCase().includes(activeSport);
+
+      return matchesQuery && matchesSport;
+    });
+
+    this.setData({
+      venues,
+      empty: !this.data.loading && venues.length === 0
+    });
+  },
+
+  onSearchInput(event) {
+    this.setData({
+      query: event.detail.value || ""
+    });
+    this.applyFilters();
+  },
+
+  changeSport(event) {
+    this.setData({
+      activeSport: event.currentTarget.dataset.value || "all"
+    });
+    this.applyFilters();
   },
 
   bookVenue(event) {

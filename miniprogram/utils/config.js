@@ -20,7 +20,7 @@ function readAppConfig() {
 
     return {
       ...(app.globalData.config || {}),
-      apiBaseUrl: app.globalData.apiBaseUrl || (app.globalData.config && app.globalData.config.apiBaseUrl)
+      apiBaseUrl: (app.globalData.config && app.globalData.config.apiBaseUrl) || app.globalData.apiBaseUrl
     };
   } catch (error) {
     return {};

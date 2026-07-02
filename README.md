@@ -51,6 +51,8 @@ npm run check
 
 它会检查小程序项目配置的两种合法模式：本地开发使用 `touristappid + urlCheck: false`，发布配置使用真实 `wx...` AppID 且不能继续关闭 `urlCheck`。
 
+它会检查 `miniprogram/utils/config.js` 的运行时优先级，确保 `miniprogram/app.js` 的生产 `globalData.config.apiBaseUrl` 能覆盖旧的顶层 `globalData.apiBaseUrl`。
+
 它会检查页面标题和下拉刷新配置，确保页面 JSON 与 `onPullDownRefresh` 处理函数一致，并且刷新后会调用 `wx.stopPullDownRefresh` 收尾。
 
 它会检查小程序页面跳转路径，避免 `wx.navigateTo`、`wx.redirectTo` 或静态 `wx.switchTab` 指向未注册页面。

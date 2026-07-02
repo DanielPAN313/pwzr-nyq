@@ -7,6 +7,7 @@ const selfTestPath = path.join(root, "docs", "miniprogram-self-test.md");
 const errors = [];
 
 const pageChecks = {
+  "pages/splash/splash": ["启动页", "自动进入首页"],
   "pages/home/home": ["首页", "快捷入口"],
   "pages/venues/venues": ["订场页", "搜索场馆"],
   "pages/venue-detail/venue-detail": ["场馆详情页", "生成待支付订单"],

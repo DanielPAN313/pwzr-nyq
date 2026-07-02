@@ -1,0 +1,26 @@
+<view class="page splash-page">
+  <view class="section splash-stage">
+    <view class="court-card">
+      <view class="court-line line-top"></view>
+      <view class="court-line line-mid"></view>
+      <view class="court-line line-bottom"></view>
+      <view class="court-axis axis-left"></view>
+      <view class="court-axis axis-right"></view>
+      <view class="motion-ball"></view>
+    </view>
+
+    <view class="brand-mark">
+      <text>宁</text>
+    </view>
+  </view>
+
+  <view class="section brand-copy">
+    <text class="brand-name">宁约球</text>
+    <text class="brand-line">开球，去宁约球</text>
+    <button class="primary small enter-button" bindtap="enterHome">立即进入</button>
+  </view>
+
+  <view class="progress">
+    <view class="progress-fill"></view>
+  </view>
+</view>

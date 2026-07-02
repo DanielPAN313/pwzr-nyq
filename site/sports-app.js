@@ -66,6 +66,7 @@
     'demo',
   ];
   var ROUTE_PATH_VIEWS = {
+    'pages/splash/splash': 'home',
     'pages/home/home': 'home',
     'pages/venues/venues': 'venues',
     'pages/games/games': 'games',

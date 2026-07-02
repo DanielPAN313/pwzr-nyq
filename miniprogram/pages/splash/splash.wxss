@@ -1,0 +1,234 @@
+.splash-page {
+  position: relative;
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  justify-content: center;
+  padding: 72rpx 36rpx 84rpx;
+  color: #f7fbf5;
+  background: #07120d;
+  overflow: hidden;
+}
+
+.splash-stage {
+  position: relative;
+  height: 560rpx;
+  margin-bottom: 28rpx;
+  border-color: rgba(255, 255, 255, 0.14);
+  background: transparent;
+  animation: stage-in 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.court-card {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 52rpx;
+  height: 390rpx;
+  border: 2rpx solid rgba(255, 255, 255, 0.22);
+  border-radius: 36rpx;
+  background: linear-gradient(145deg, #10231a 0%, #0d5e39 58%, #12824f 100%);
+  box-shadow: 0 42rpx 84rpx rgba(0, 0, 0, 0.36);
+  overflow: hidden;
+}
+
+.court-card::before {
+  content: "";
+  position: absolute;
+  inset: 42rpx;
+  border: 3rpx solid rgba(255, 255, 255, 0.38);
+  border-radius: 26rpx;
+  animation: line-reveal 760ms 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.court-line,
+.court-axis {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.38);
+  animation: line-reveal 760ms 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.court-line {
+  left: 42rpx;
+  right: 42rpx;
+  height: 3rpx;
+}
+
+.line-top {
+  top: 136rpx;
+}
+
+.line-mid {
+  top: 194rpx;
+  background: #d8ff3e;
+  box-shadow: 0 0 30rpx rgba(216, 255, 62, 0.38);
+}
+
+.line-bottom {
+  bottom: 104rpx;
+}
+
+.court-axis {
+  top: 42rpx;
+  bottom: 42rpx;
+  width: 3rpx;
+}
+
+.axis-left {
+  left: 38%;
+}
+
+.axis-right {
+  right: 38%;
+}
+
+.motion-ball {
+  position: absolute;
+  left: 82rpx;
+  top: 246rpx;
+  width: 38rpx;
+  height: 38rpx;
+  border-radius: 50%;
+  background: #d8ff3e;
+  box-shadow: 0 0 0 14rpx rgba(216, 255, 62, 0.16), 0 0 38rpx rgba(216, 255, 62, 0.46);
+  animation: ball-travel 1150ms 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.brand-mark {
+  position: absolute;
+  left: 50%;
+  bottom: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 124rpx;
+  height: 124rpx;
+  margin-left: -62rpx;
+  border-radius: 34rpx;
+  color: #10200f;
+  background: #d8ff3e;
+  box-shadow: 0 30rpx 66rpx rgba(216, 255, 62, 0.2);
+  animation: mark-in 760ms 560ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.brand-mark text {
+  font-size: 52rpx;
+  font-weight: 950;
+}
+
+.brand-copy {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  text-align: center;
+  animation: copy-in 760ms 760ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.brand-name {
+  color: #f7fbf5;
+  font-size: 54rpx;
+  font-weight: 950;
+  line-height: 1.12;
+}
+
+.brand-line {
+  margin-top: 14rpx;
+  color: rgba(247, 251, 245, 0.66);
+  font-size: 26rpx;
+  font-weight: 800;
+}
+
+.enter-button {
+  margin-top: 30rpx;
+  background: #d8ff3e;
+  color: #10200f;
+}
+
+.progress {
+  position: absolute;
+  left: 96rpx;
+  right: 96rpx;
+  bottom: 54rpx;
+  height: 6rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.progress-fill {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: #d8ff3e;
+  transform-origin: left center;
+  animation: progress-fill 1400ms 120ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes stage-in {
+  from {
+    opacity: 0;
+    transform: translateY(32rpx) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes line-reveal {
+  from {
+    opacity: 0;
+    transform: scaleX(0.86);
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes ball-travel {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 42rpx, 0) scale(0.72);
+  }
+  28% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(420rpx, -106rpx, 0) scale(1);
+  }
+}
+
+@keyframes mark-in {
+  from {
+    opacity: 0;
+    transform: translateY(24rpx) scale(0.82);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes copy-in {
+  from {
+    opacity: 0;
+    transform: translateY(22rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes progress-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}

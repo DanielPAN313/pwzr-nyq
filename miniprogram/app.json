@@ -6,7 +6,8 @@
     "pages/create-game/create-game",
     "pages/messages/messages",
     "pages/me/me",
-    "pages/orders/orders"
+    "pages/orders/orders",
+    "pages/credit/credit"
   ],
   "window": {
     "navigationBarTitleText": "宁约球",

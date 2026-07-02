@@ -47,6 +47,7 @@ function requirePath(file) {
   ".github/workflows/check.yml",
   ".github/pull_request_template.md",
   "scripts/check-repository-hygiene.mjs",
+  "scripts/check-api-contracts.mjs",
 ].forEach(requirePath);
 
 requireIncludes("README.md", [
@@ -72,9 +73,11 @@ requireIncludes(".gitignore", [
 requireIncludes("package.json", [
   "\"check:demo-readiness\"",
   "\"check:repository-hygiene\"",
+  "\"check:api-contracts\"",
   "\"check\"",
   "check:demo-readiness",
   "check:repository-hygiene",
+  "check:api-contracts",
 ]);
 
 requireIncludes(".github/workflows/check.yml", [

@@ -124,7 +124,7 @@ Page({
 
   navigateByMessage(message) {
     if (message.relatedOrderId) {
-      wx.navigateTo({ url: "/pages/orders/orders" });
+      wx.navigateTo({ url: `/pages/orders/orders?orderId=${message.relatedOrderId}` });
       return;
     }
 

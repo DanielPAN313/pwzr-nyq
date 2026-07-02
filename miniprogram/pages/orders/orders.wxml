@@ -5,9 +5,15 @@
     <text wx:elif="{{error}}" class="muted">{{error}}，已显示本地兜底订单。</text>
     <text wx:elif="{{empty}}" class="muted">暂时没有订单。去球局页报名后会生成待支付订单。</text>
     <text wx:else class="muted">这里展示报名、订场和到场核销相关订单。</text>
+    <text wx:if="{{noticeText}}" class="notice-text">{{noticeText}}</text>
   </view>
 
-  <view wx:for="{{orders}}" wx:key="title" class="section order-card">
+  <view
+    wx:for="{{orders}}"
+    wx:key="id"
+    id="{{item.anchorId}}"
+    class="section order-card {{item.highlighted ? 'is-highlighted' : ''}}"
+  >
     <text class="card-title">{{item.title}}</text>
     <text class="muted">{{item.venueName}} · {{item.timeText}}</text>
     <view class="card-row">

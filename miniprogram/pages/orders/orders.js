@@ -11,7 +11,8 @@ const fallbackOrders = [
     canPay: false,
     canCancel: false,
     canCheckin: false,
-    showCheckin: false
+    showCheckin: false,
+    highlighted: false
   }
 ];
 
@@ -37,7 +38,7 @@ function formatTime(value) {
   return `${month}/${day} ${hour}:${minute}`;
 }
 
-function mapOrder(order) {
+function mapOrder(order, highlightedOrderId) {
   const amount = Number(order.amount || 0);
   const status = order.status || "";
   const canPay = Boolean(order.can_pay);
@@ -47,9 +48,10 @@ function mapOrder(order) {
 
   return {
     id: order.id,
-    title: order.title || "场馆预订订单",
+    anchorId: `order-${order.id}`,
+    title: order.title || "场馆预约订单",
     venueName: order.venue_name || "场馆待定",
-    amountText: `¥${amount}`,
+    amountText: `¥${amount.toFixed(0)}`,
     status,
     statusText: statusText[status] || status || "未知状态",
     checkinCode: order.checkin_code || "------",
@@ -58,7 +60,8 @@ function mapOrder(order) {
     canPay,
     canCancel,
     canCheckin,
-    showCheckin
+    showCheckin,
+    highlighted: highlightedOrderId && String(order.id) === String(highlightedOrderId)
   };
 }
 
@@ -66,12 +69,19 @@ Page({
   data: {
     loading: false,
     actionOrderId: "",
+    highlightedOrderId: "",
+    noticeText: "",
     error: "",
     empty: false,
     orders: fallbackOrders
   },
 
-  onLoad() {
+  onLoad(query) {
+    const highlightedOrderId = query && query.orderId ? String(query.orderId) : "";
+    this.setData({
+      highlightedOrderId,
+      noticeText: highlightedOrderId ? "已定位到消息关联订单。" : ""
+    });
     this.loadOrders();
   },
 
@@ -84,13 +94,24 @@ Page({
 
     return get("/api/sports-app/orders", { showLoading: false })
       .then((orders) => {
-        const list = Array.isArray(orders) ? orders.map(mapOrder) : [];
+        const highlightedOrderId = this.data.highlightedOrderId;
+        const list = Array.isArray(orders) ? orders.map((order) => mapOrder(order, highlightedOrderId)) : [];
+        const hasHighlightedOrder = highlightedOrderId && list.some((order) => order.highlighted);
 
         this.setData({
           loading: false,
           orders: list.length ? list : [],
-          empty: list.length === 0
+          empty: list.length === 0,
+          noticeText: hasHighlightedOrder
+            ? "已定位到消息关联订单。"
+            : highlightedOrderId
+              ? "这条消息关联的订单暂时不在当前列表中。"
+              : ""
         });
+
+        if (hasHighlightedOrder) {
+          this.scrollToOrder(highlightedOrderId);
+        }
       })
       .catch((error) => {
         this.setData({
@@ -102,11 +123,20 @@ Page({
       });
   },
 
+  scrollToOrder(id) {
+    setTimeout(() => {
+      wx.pageScrollTo({
+        selector: `#order-${id}`,
+        duration: 260
+      });
+    }, 120);
+  },
+
   payOrder(event) {
     const id = event.currentTarget.dataset.id;
     if (!id || this.data.actionOrderId) return;
 
-    this.setData({ actionOrderId: id });
+    this.setData({ actionOrderId: id, highlightedOrderId: String(id) });
 
     post(`/api/sports-app/orders/${id}/pay`, {}, { loadingTitle: "支付中" })
       .then(() => {
@@ -132,7 +162,7 @@ Page({
     const id = event.currentTarget.dataset.id;
     if (!id || this.data.actionOrderId) return;
 
-    this.setData({ actionOrderId: id });
+    this.setData({ actionOrderId: id, highlightedOrderId: String(id) });
 
     post(`/api/sports-app/orders/${id}/cancel`, {}, { loadingTitle: "取消中" })
       .then((result) => {
@@ -158,7 +188,7 @@ Page({
     const id = event.currentTarget.dataset.id;
     if (!id || this.data.actionOrderId) return;
 
-    this.setData({ actionOrderId: id });
+    this.setData({ actionOrderId: id, highlightedOrderId: String(id) });
 
     post(`/api/sports-app/orders/${id}/checkin`, {}, { loadingTitle: "核销中" })
       .then(() => {

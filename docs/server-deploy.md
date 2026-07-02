@@ -66,12 +66,17 @@ cp .env.server.example .env.server
 编辑 `.env.server`：
 
 ```text
+NODE_ENV=production
 PORT=4174
 MYSQL_DATABASE=nyq
 MYSQL_USER=nyq
 MYSQL_PASSWORD=replace_with_a_strong_app_password
 MYSQL_ROOT_PASSWORD=replace_with_a_strong_root_password
 MYSQL_PUBLIC_PORT=3306
+WECHAT_APP_ID=replace_with_wechat_mini_program_appid
+WECHAT_APP_SECRET=replace_with_wechat_mini_program_appsecret
+WECHAT_PAY_MCH_ID=replace_with_merchant_id
+PUBLIC_API_BASE_URL=https://api.your-domain.com
 ```
 
 真实服务器必须使用强密码，不要提交或分享 `.env.server`。
@@ -174,6 +179,7 @@ globalData: {
 ```bash
 npm ci
 npm run check
+npm run check:deploy
 ```
 
 服务器检查：
@@ -203,4 +209,3 @@ curl https://api.your-domain.com/api/sports-app/bootstrap
 ### 为什么本地能请求，真机不行？
 
 真机和正式小程序不能请求 `localhost`。必须换成 HTTPS 域名，并在微信公众平台配置合法请求域名。
-

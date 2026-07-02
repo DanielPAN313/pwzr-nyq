@@ -17,7 +17,8 @@
     "check:h5-http-preview": "node scripts/check-h5-http-preview.mjs",
     "check:h5-bridge": "node scripts/check-h5-bridge-runtime.mjs",
     "check:h5-bridge-coverage": "node scripts/check-h5-bridge-coverage.mjs",
-    "check": "npm run check:miniprogram && npm run check:miniprogram-flows && npm run check:miniprogram-runtime && npm run check:h5-preview && npm run check:h5-http-preview && npm run check:h5-bridge && npm run check:h5-bridge-coverage"
+    "check:deploy": "node scripts/check-deploy-readiness.mjs",
+    "check": "npm run check:miniprogram && npm run check:miniprogram-flows && npm run check:miniprogram-runtime && npm run check:h5-preview && npm run check:h5-http-preview && npm run check:h5-bridge && npm run check:h5-bridge-coverage && npm run check:deploy"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",

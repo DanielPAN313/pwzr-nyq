@@ -56,6 +56,7 @@ function mapVenue(venue) {
     id: venue.id,
     name: venue.name || "未命名场馆",
     area: venue.area || "区域待定",
+    status: venue.status || "",
     statusText: venue.status === "approved" ? "营业中" : "待审核"
   };
 }
@@ -105,8 +106,16 @@ Page({
     highlightedOrderId: "",
     checkinCode: "",
     checkinResultText: "",
+    application: {
+      name: "",
+      area: "",
+      address: "",
+      contact: ""
+    },
+    submittingVenue: false,
     error: "",
     empty: false,
+    scopeText: "演示场馆",
     metrics: fallbackDashboard.metrics,
     venues: fallbackDashboard.venues,
     orders: fallbackDashboard.orders
@@ -129,6 +138,7 @@ Page({
 
         this.setData({
           loading: false,
+          scopeText: data && data.scope === "owned" ? "我的场馆" : "演示场馆",
           metrics: dashboard.metrics,
           venues: dashboard.venues,
           orders: dashboard.orders,
@@ -148,6 +158,65 @@ Page({
           venues: fallbackDashboard.venues,
           orders: fallbackDashboard.orders
         });
+      });
+  },
+
+  onApplicationInput(event) {
+    const field = event.currentTarget.dataset.field;
+    if (!field) return;
+
+    this.setData({
+      [`application.${field}`]: String(event.detail.value || "").trim()
+    });
+  },
+
+  submitVenueApplication() {
+    const application = this.data.application;
+    if (!application.name || !application.address || this.data.submittingVenue) {
+      wx.showToast({
+        title: "请填写场馆名和地址",
+        icon: "none"
+      });
+      return;
+    }
+
+    this.setData({ submittingVenue: true });
+
+    post("/api/sports-app/venues", {
+      name: application.name,
+      area: application.area || "区域待定",
+      address: application.address,
+      contact: application.contact,
+      sports: ["football", "basketball"],
+      indoor: true,
+      price_per_hour: 0,
+      open_slots: []
+    }, { loadingTitle: "提交中" })
+      .then(() => {
+        wx.showToast({
+          title: "已提交入驻",
+          icon: "success"
+        });
+
+        this.setData({
+          application: {
+            name: "",
+            area: "",
+            address: "",
+            contact: ""
+          }
+        });
+
+        return this.loadDashboard();
+      })
+      .catch((error) => {
+        wx.showToast({
+          title: error.message || "提交失败",
+          icon: "none"
+        });
+      })
+      .finally(() => {
+        this.setData({ submittingVenue: false });
       });
   },
 

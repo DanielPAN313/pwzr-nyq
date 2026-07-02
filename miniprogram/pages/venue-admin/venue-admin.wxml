@@ -3,7 +3,47 @@
     <view class="page-title">场馆管理</view>
     <text wx:if="{{loading}}" class="muted">正在加载场馆数据...</text>
     <text wx:elif="{{error}}" class="muted">{{error}}，已显示本地兜底数据。</text>
-    <text wx:else class="muted">查看预约、支付和到场核销状态。</text>
+    <text wx:else class="muted">当前范围：{{scopeText}}。查看预约、支付和到场核销状态。</text>
+  </view>
+
+  <view class="section application-panel">
+    <view class="section-title">申请入驻场馆</view>
+    <input
+      class="form-input"
+      placeholder="场馆名称"
+      value="{{application.name}}"
+      data-field="name"
+      bindinput="onApplicationInput"
+    />
+    <input
+      class="form-input"
+      placeholder="区域，例如江宁大学城"
+      value="{{application.area}}"
+      data-field="area"
+      bindinput="onApplicationInput"
+    />
+    <input
+      class="form-input"
+      placeholder="详细地址"
+      value="{{application.address}}"
+      data-field="address"
+      bindinput="onApplicationInput"
+    />
+    <input
+      class="form-input"
+      placeholder="联系方式"
+      value="{{application.contact}}"
+      data-field="contact"
+      bindinput="onApplicationInput"
+    />
+    <button
+      class="primary"
+      disabled="{{submittingVenue}}"
+      bindtap="submitVenueApplication"
+    >
+      {{submittingVenue ? "提交中" : "提交入驻申请"}}
+    </button>
+    <text class="muted">提交后会先进入待审核状态，本地开发阶段可用于演示场馆端账号绑定。</text>
   </view>
 
   <view class="section checkin-panel">

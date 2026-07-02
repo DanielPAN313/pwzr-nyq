@@ -764,20 +764,31 @@ const canCancelOrder = (order) => {
   return { ok: true, nextStatus: 'refunded', penalty: 0, note: '订单已取消' }
 }
 
-const sportsVenueAdminDashboard = async (pool) => {
-  const [venues] = await pool.execute(
+const sportsVenueAdminDashboard = async (pool, user) => {
+  const [ownedVenues] = await pool.execute(
+    `SELECT *
+     FROM sports_venue
+     WHERE manager_user_id = ?
+     ORDER BY create_time DESC
+     LIMIT 20`,
+    [user.id],
+  )
+  const hasOwnedVenues = ownedVenues.length > 0
+  const [demoVenues] = hasOwnedVenues ? [ownedVenues] : await pool.execute(
     `SELECT *
      FROM sports_venue
      WHERE status = 'approved'
      ORDER BY create_time DESC
      LIMIT 20`,
   )
+  const venueWhere = hasOwnedVenues ? 'v.manager_user_id = ?' : 'v.status = "approved"'
+  const venueParams = hasOwnedVenues ? [user.id] : []
   const [orders] = await pool.execute(
     `SELECT o.*, g.title, g.start_time, g.end_time, v.name AS venue_name, v.area
      FROM sports_order o
      LEFT JOIN sports_game g ON g.id = o.game_id
      JOIN sports_venue v ON v.id = o.venue_id
-     WHERE v.status = 'approved'
+     WHERE ${venueWhere}
      ORDER BY
        CASE o.status
          WHEN 'paid' THEN 0
@@ -787,6 +798,7 @@ const sportsVenueAdminDashboard = async (pool) => {
        END,
        o.create_time DESC
      LIMIT 100`,
+    venueParams,
   )
   const [[summary]] = await pool.execute(
     `SELECT
@@ -796,7 +808,8 @@ const sportsVenueAdminDashboard = async (pool) => {
        COALESCE(SUM(CASE WHEN o.status IN ('paid', 'checked_in') THEN o.amount ELSE 0 END), 0) AS revenue
      FROM sports_order o
      JOIN sports_venue v ON v.id = o.venue_id
-     WHERE v.status = 'approved'`,
+     WHERE ${venueWhere}`,
+    venueParams,
   )
   const normalizedSummary = {
     today_orders: Number(summary.today_orders || 0),
@@ -813,7 +826,8 @@ const sportsVenueAdminDashboard = async (pool) => {
       { label: '已核销', value: normalizedSummary.checked_in_orders },
       { label: '收入', value: `¥${normalizedSummary.revenue.toFixed(0)}` },
     ],
-    venues: venues.map(serializeVenue),
+    scope: hasOwnedVenues ? 'owned' : 'demo',
+    venues: demoVenues.map(serializeVenue),
     orders: orders.map(serializeOrder),
   }
 }
@@ -1787,7 +1801,7 @@ const handleSportsApi = async (req, res, requestUrl) => {
     }
 
     if (pathName === '/api/sports-app/venue-admin' && req.method === 'GET') {
-      return json(res, await sportsVenueAdminDashboard(pool))
+      return json(res, await sportsVenueAdminDashboard(pool, user))
     }
 
     const venueAdminCheckinMatch = pathName.match(/^\/api\/sports-app\/venue-admin\/orders\/(\d+)\/checkin$/)

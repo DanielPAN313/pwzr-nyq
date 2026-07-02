@@ -40,11 +40,15 @@ requireIncludes("miniprogram/pages/orders/orders.wxml", [
 requireIncludes("miniprogram/pages/venue-admin/venue-admin.js", [
   "/api/sports-app/venue-admin/checkin-code",
   "/api/sports-app/venue-admin/orders/",
+  "/api/sports-app/venues",
+  "submitVenueApplication",
   "checkinByCode",
   "wx.pageScrollTo",
 ]);
 
 requireIncludes("miniprogram/pages/venue-admin/venue-admin.wxml", [
+  "申请入驻场馆",
+  "bindtap=\"submitVenueApplication\"",
   "核销码核销",
   "bindinput=\"onCodeInput\"",
   "bindtap=\"checkinByCode\"",
@@ -66,6 +70,7 @@ requireIncludes("miniprogram/pages/game-detail/game-detail.wxml", [
 requireIncludes("scripts/serve-local-mirror.mjs", [
   "/api/sports-app/venue-admin/checkin-code",
   "venueAdminCheckinOrder",
+  "manager_user_id",
   "gameReviewMatch",
   "review_submitted",
 ]);

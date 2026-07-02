@@ -234,6 +234,8 @@ git push origin ui-polish
 ui-polish
 ```
 
+推送后去 GitHub 仓库的 `Actions` 页面看 `Check` 工作流。`ui-polish` 分支会自动跑 Ubuntu 和 macOS 两套 `npm run check`；两个都变成绿色勾后，再创建 Pull Request 或把分支名发给团队。如果失败，点进失败的 job，把报错截图或日志发回来。
+
 ## 9. 当前主流程自测
 
 建议每次大改后走一遍：

@@ -44,6 +44,8 @@ requireIncludes("docs/ui-merge-checklist.md", [
   "docs/ui-design-system.md",
   "不能删的关键绑定",
   "npm run check",
+  "GitHub 的 `Actions` 页面",
+  "macOS",
   "docs/miniprogram-self-test.md",
   "git merge origin/ui-polish",
 ]);
@@ -80,6 +82,10 @@ function requireCurrentPageCount(file) {
 }
 
 requireCurrentPageCount("docs/macbook-repro.md");
+requireIncludes("docs/macbook-repro.md", [
+  "GitHub 仓库的 `Actions` 页面",
+  "`ui-polish` 分支会自动跑 Ubuntu 和 macOS",
+]);
 
 if (errors.length > 0) {
   console.error("Collaboration docs check failed:");

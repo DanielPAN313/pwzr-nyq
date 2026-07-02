@@ -91,6 +91,8 @@ git commit -m "Polish miniprogram UI"
 git push origin ui-polish
 ```
 
+推送后先去 GitHub 的 `Actions` 页面确认 `ui-polish` 分支的 `Check` 工作流通过。它会在 Ubuntu 和 macOS 上运行 `npm run check`。如果失败，先不要合并，打开失败 job 查看日志。
+
 ## 5. 人工验收
 
 按 `docs/miniprogram-self-test.md` 走一遍。

@@ -104,6 +104,7 @@
 - 合规材料草案已放在 `docs/legal/`。
 - 微信开发者工具自测清单已放在 `docs/miniprogram-self-test.md`。
 - UI 分支合并检查清单已放在 `docs/ui-merge-checklist.md`。
+- GitHub PR 模板已放在 `.github/pull_request_template.md`，Actions 会在 `main`、`feature-miniprogram-flow` 和 PR 上运行检查。
 
 ## 当前还不是正式上线版的原因
 

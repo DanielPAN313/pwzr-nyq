@@ -154,6 +154,8 @@ db/schema.sql
 
 GitHub Actions 已经配置在 Ubuntu 和 macOS 上执行 `npm ci` 与 `npm run check`。同伴在 MacBook 上遇到问题时，可以先对照 Actions 结果判断是本机环境问题还是仓库问题。
 
+UI 同伴或功能同伴提交 PR 时，GitHub 会自动套用 `.github/pull_request_template.md`。按模板勾选检查项，能减少合并前遗漏页面自测或误提交本机文件。
+
 ## 上线前重点
 
 - 微信登录：`wx.login` + 后端换取 openid/session，接口已预留

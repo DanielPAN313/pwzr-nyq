@@ -33,6 +33,8 @@ git commit -m "Polish miniprogram UI"
 git push origin ui-polish
 ```
 
+推到 GitHub 后建议创建 Pull Request。PR 页面会自动带出 `.github/pull_request_template.md`，按模板勾选 `npm run check`、自测清单和 UI 合并清单即可。
+
 ## 当前功能范围
 
 小程序当前已覆盖这些主流程：
@@ -129,6 +131,7 @@ npm run check
 - 主流程契约：订单定位、场馆入驻、场馆资料维护、场馆核销权限、赛后互评等
 - 协作文档：自测清单和 UI 合并清单是否存在并覆盖关键步骤
 - 演示准备：README、关键文档、环境模板和忽略规则是否齐全
+- GitHub 协作：PR 模板和 Actions 是否覆盖功能分支与 UI 分支协作
 
 ## 不要提交
 

@@ -2,7 +2,7 @@ name: Check
 
 on:
   push:
-    branches: [main]
+    branches: [main, feature-miniprogram-flow]
   pull_request:
   workflow_dispatch:
 

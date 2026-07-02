@@ -44,6 +44,8 @@ function requirePath(file) {
   ".env.server.example",
   "project.config.json",
   "miniprogram/project.config.json",
+  ".github/workflows/check.yml",
+  ".github/pull_request_template.md",
 ].forEach(requirePath);
 
 requireIncludes("README.md", [
@@ -70,6 +72,21 @@ requireIncludes("package.json", [
   "\"check:demo-readiness\"",
   "\"check\"",
   "check:demo-readiness",
+]);
+
+requireIncludes(".github/workflows/check.yml", [
+  "ubuntu-latest",
+  "macos-latest",
+  "feature-miniprogram-flow",
+  "npm run check",
+]);
+
+requireIncludes(".github/pull_request_template.md", [
+  "npm run check",
+  "docs/ui-merge-checklist.md",
+  "docs/miniprogram-self-test.md",
+  "微信开发者工具",
+  "场馆管理页",
 ]);
 
 requireIncludes("docs/project-roadmap.md", [

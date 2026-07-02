@@ -44,20 +44,20 @@ function booleanValuesFor(source, key) {
   return values;
 }
 
-function hasProductionApiBaseUrl(sources) {
-  const values = sources.flatMap((source) => quotedValuesFor(source, "apiBaseUrl"));
+function hasProductionApiBaseUrl(source) {
+  const values = quotedValuesFor(source, "apiBaseUrl");
   return values.some((value) => (
     /^https:\/\//i.test(value)
     && !/localhost|127\.0\.0\.1|0\.0\.0\.0|your-domain\.com/i.test(value)
   ));
 }
 
-function hasProductionEnv(sources) {
-  return sources.flatMap((source) => quotedValuesFor(source, "env")).some((value) => value === "production");
+function hasProductionEnv(source) {
+  return quotedValuesFor(source, "env").some((value) => value === "production");
 }
 
-function hasRealWechatLogin(sources) {
-  return sources.flatMap((source) => booleanValuesFor(source, "useMockAuth")).some((value) => value === false);
+function hasRealWechatLogin(source) {
+  return booleanValuesFor(source, "useMockAuth").some((value) => value === false);
 }
 
 function validateAppId(file) {
@@ -78,18 +78,21 @@ validateAppId("miniprogram/project.config.json");
 
 const configSource = read("miniprogram/utils/config.js");
 const appSource = read("miniprogram/app.js");
-const releaseSources = [configSource, appSource];
 
-if (!hasProductionEnv(releaseSources)) {
-  errors.push("Release config must set env: \"production\" in miniprogram/utils/config.js or miniprogram/app.js.");
+if (!configSource.includes('apiBaseUrl: "http://localhost:4174"') || !configSource.includes("useMockAuth: true")) {
+  errors.push("Keep miniprogram/utils/config.js as the local development default; put release overrides in miniprogram/app.js.");
 }
 
-if (!hasProductionApiBaseUrl(releaseSources)) {
-  errors.push("Release config must set apiBaseUrl to a real HTTPS domain, not localhost or api.your-domain.com.");
+if (!hasProductionEnv(appSource)) {
+  errors.push("Release config must set env: \"production\" in miniprogram/app.js globalData.config.");
 }
 
-if (!hasRealWechatLogin(releaseSources)) {
-  errors.push("Release config must set useMockAuth: false so wx.login is used.");
+if (!hasProductionApiBaseUrl(appSource)) {
+  errors.push("Release config must set apiBaseUrl in miniprogram/app.js to a real HTTPS domain, not localhost or api.your-domain.com.");
+}
+
+if (!hasRealWechatLogin(appSource)) {
+  errors.push("Release config must set useMockAuth: false in miniprogram/app.js so wx.login is used.");
 }
 
 if (errors.length > 0) {

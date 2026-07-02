@@ -104,6 +104,8 @@ requireIncludes("docs/server-deploy.md", [
   "开发管理 -> 开发设置 -> 服务器域名 -> request 合法域名",
   "useMockAuth: false",
   "release-wechat-config",
+  "不要直接改 `DEFAULT_CONFIG` 的本地默认值",
+  "在 `miniprogram/app.js` 覆盖",
   "生产配置改动不要混进 UI 分支",
   "WECHAT_PAY_SERIAL_NO",
   "WECHAT_PAY_API_V3_KEY",

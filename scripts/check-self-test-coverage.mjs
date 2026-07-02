@@ -56,6 +56,8 @@ for (const snippet of [
   "npm run check:deploy",
   "npm run check:release-config",
   "release-wechat-config",
+  "miniprogram/utils/config.js",
+  "miniprogram/app.js",
   "setting.urlCheck",
   "useMockAuth",
   "当前本地开发分支运行 `npm run check:release-config` 会失败，这是正常的",

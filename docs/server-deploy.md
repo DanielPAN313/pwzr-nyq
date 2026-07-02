@@ -166,13 +166,7 @@ miniprogram/utils/config.js
 apiBaseUrl: "http://localhost:4174"
 ```
 
-上线前改成：
-
-```js
-apiBaseUrl: "https://api.your-domain.com"
-```
-
-也可以在 `miniprogram/app.js` 的 `globalData` 中覆盖：
+上线前不要直接改 `DEFAULT_CONFIG` 的本地默认值。推荐在 `miniprogram/app.js` 的 `globalData` 中覆盖生产配置：
 
 ```js
 globalData: {
@@ -190,7 +184,7 @@ globalData: {
 推荐做法：
 
 - `feature-miniprogram-flow` 和 `ui-polish` 保持 `apiBaseUrl: "http://localhost:4174"`，方便 Windows 和 MacBook 本地开发。
-- 真正准备体验版或审核时，从最新功能分支切一个单独的生产配置提交/分支，把 `apiBaseUrl` 改成 HTTPS 域名，并把 `useMockAuth` 改成 `false`。
+- 真正准备体验版或审核时，从最新功能分支切一个单独的生产配置提交/分支，在 `miniprogram/app.js` 覆盖 `apiBaseUrl` 为 HTTPS 域名，并把 `useMockAuth` 改成 `false`。
 - 生产配置改动不要混进 UI 分支；UI 同伴只需要本地 `localhost` 和 `touristappid`。
 
 示例：
@@ -213,9 +207,10 @@ npm run check:release-config
 
 - 根目录和 `miniprogram/` 下的 `project.config.json` 都不能继续使用 `touristappid`。
 - `setting.urlCheck` 不能继续保持 `false`。
-- 小程序配置必须切到 `env: "production"`。
-- `apiBaseUrl` 必须是真实 HTTPS 域名，不能是 `localhost` 或 `api.your-domain.com`。
-- `useMockAuth` 必须是 `false`，确保走真实 `wx.login`。
+- `miniprogram/utils/config.js` 必须继续保留本地开发默认值。
+- `miniprogram/app.js` 必须覆盖 `env: "production"`。
+- `miniprogram/app.js` 必须覆盖 `apiBaseUrl` 为真实 HTTPS 域名，不能是 `localhost` 或 `api.your-domain.com`。
+- `miniprogram/app.js` 必须覆盖 `useMockAuth` 为 `false`，确保走真实 `wx.login`。
 
 注意：在当前本地开发分支运行 `npm run check:release-config` 会失败，这是正常的；它只用于 `release-wechat-config` 这类体验版/审核前配置分支。
 

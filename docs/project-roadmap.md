@@ -187,8 +187,9 @@ git push origin ui-polish
 1. 替换正式 AppID。
 2. 配置 `WECHAT_APP_ID` 和 `WECHAT_APP_SECRET`。
 3. 把 `useMockAuth` 切到 `false`。
-4. 跑 `npm run check:release-config`，确认 AppID、HTTPS API、`useMockAuth: false` 和 `urlCheck` 已切换。
-5. 用真实 `wx.login` 验证登录。
+4. 在 `miniprogram/app.js` 覆盖生产配置，不改 `miniprogram/utils/config.js` 的本地默认值。
+5. 跑 `npm run check:release-config`，确认 AppID、HTTPS API、`useMockAuth: false` 和 `urlCheck` 已切换。
+6. 用真实 `wx.login` 验证登录。
 
 ### P2：准备体验版或审核前做
 
@@ -197,7 +198,7 @@ git push origin ui-polish
 3. 在服务器本地放置 `secrets/wechat_pay_private_key.pem`，容器读取 `/run/secrets/wechat_pay_private_key.pem`。
 4. 配置 HTTPS 反向代理。
 5. 在微信公众平台配置 request 合法域名。
-6. 把小程序 `apiBaseUrl` 改成 HTTPS 域名。
+6. 在 `miniprogram/app.js` 把小程序 `apiBaseUrl` 覆盖成 HTTPS 域名。
 7. 跑 `npm run check:deploy` 和 `npm run check:release-config`。
 
 ### P3：真实交易前做

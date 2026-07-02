@@ -151,7 +151,7 @@ npm run check:release-config
 
 `check:deploy` 会检查服务器环境模板、微信登录配置、微信支付证书/API v3 key/通知地址、商户私钥 `secrets/` 只读挂载、HTTPS 合法域名和合规文档入口。
 
-`check:release-config` 只在体验版/审核前的 `release-wechat-config` 分支运行，用来确认正式 AppID、HTTPS API、`useMockAuth: false` 和 `urlCheck` 已经切好；当前本地开发分支运行失败是正常的。
+`check:release-config` 只在体验版/审核前的 `release-wechat-config` 分支运行，用来确认正式 AppID、`miniprogram/app.js` 生产覆盖、HTTPS API、`useMockAuth: false` 和 `urlCheck` 已经切好；当前本地开发分支运行失败是正常的。
 
 小程序页面放在：
 
@@ -181,7 +181,7 @@ GitHub Actions 已经配置在 Ubuntu 和 macOS 上执行 `npm ci` 与 `npm run 
 
 UI 同伴推送 `ui-polish` 或 `ui-polish-refresh` 后，也要去 GitHub 的 `Actions` 页面确认 `Check` 工作流是绿色勾；失败时先看 job 日志，不要直接合并。
 
-生产配置分支 `release-wechat-config` 会额外跑 `npm run check:release-config`，确认正式 AppID、HTTPS API、`useMockAuth: false` 和 `urlCheck` 已切好。
+生产配置分支 `release-wechat-config` 会额外跑 `npm run check:release-config`，确认正式 AppID、`miniprogram/app.js` 生产覆盖、HTTPS API、`useMockAuth: false` 和 `urlCheck` 已切好。
 
 合并 UI 分支前先运行 `npm run check:ui-branch-scope`。如果它提示大量删除或危险改动，不要整支合并，按 `docs/ui-merge-checklist.md` 只挑安全 UI 文件。
 

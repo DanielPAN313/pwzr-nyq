@@ -200,8 +200,10 @@ npm run check:release-config
 
 - 正式 AppID 已替换，不再是 `touristappid`。
 - `setting.urlCheck` 不再是 `false`。
-- `apiBaseUrl` 已经切到真实 HTTPS 域名。
-- `useMockAuth` 已经切到 `false`。
+- `miniprogram/utils/config.js` 仍保留本地开发默认值。
+- `miniprogram/app.js` 已覆盖 `env: "production"`。
+- `miniprogram/app.js` 已覆盖 `apiBaseUrl` 为真实 HTTPS 域名。
+- `miniprogram/app.js` 已覆盖 `useMockAuth` 为 `false`。
 - 微信公众平台已经配置 request 合法域名。
 
 注意：当前本地开发分支运行 `npm run check:release-config` 会失败，这是正常的；它只用于体验版/审核前的生产配置分支。

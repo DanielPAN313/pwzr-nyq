@@ -6,6 +6,15 @@
     <text wx:else class="muted">选择日期和开放时段，生成待支付订单。</text>
   </view>
 
+  <view wx:if="{{error && !venue}}" class="state-panel warning">
+    <text class="state-title">场馆详情暂时不可用</text>
+    <text class="state-text">{{error}} 可以重新加载当前日期，或者返回订场页换一个场馆。</text>
+    <view class="state-actions">
+      <button class="primary small" bindtap="retryLoadAvailability">重试加载</button>
+      <button class="secondary small" bindtap="goVenues">返回订场</button>
+    </view>
+  </view>
+
   <block wx:if="{{venue}}">
     <view class="venue-hero">
       <text class="venue-title">{{venue.name}}</text>
@@ -37,7 +46,14 @@
 
     <view class="section">
       <view class="section-title">开放时段</view>
-      <view wx:if="{{slots.length === 0}}" class="muted">暂无可选时段。</view>
+      <view wx:if="{{slots.length === 0}}" class="state-panel empty">
+        <text class="state-title">当天暂无可选时段</text>
+        <text class="state-text">可以切换日期重新查看，或返回订场页选择其他场馆。</text>
+        <view class="state-actions">
+          <button class="primary small" bindtap="retryLoadAvailability">重新加载</button>
+          <button class="secondary small" bindtap="goVenues">换个场馆</button>
+        </view>
+      </view>
       <view
         wx:for="{{slots}}"
         wx:key="id"

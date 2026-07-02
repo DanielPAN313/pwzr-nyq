@@ -6,6 +6,15 @@
     <text wx:else class="muted">查看场馆、时间、人数和到场状态。</text>
   </view>
 
+  <view wx:if="{{error}}" class="state-panel warning">
+    <text class="state-title">球局详情暂时不可用</text>
+    <text class="state-text">{{error}} 可以重试加载，或者返回球局列表重新选择。</text>
+    <view class="state-actions">
+      <button class="primary small" bindtap="retryLoadDetail">重试加载</button>
+      <button class="secondary small" bindtap="goGames">返回球局</button>
+    </view>
+  </view>
+
   <block wx:if="{{detail}}">
     <view class="detail-hero">
       <text class="detail-title">{{detail.title}}</text>
@@ -56,11 +65,19 @@
         {{submittingReview ? "提交中" : "给到场队友好评"}}
       </button>
       <text wx:elif="{{detail.reviewOpen}}" class="muted">当前没有可评价的队友，或你已经评价过了。</text>
+      <button wx:if="{{detail.reviewOpen}}" class="secondary" bindtap="goOrders">查看订单</button>
     </view>
 
     <view class="section">
       <view class="section-title">参与球友</view>
-      <view wx:if="{{detail.players.length === 0}}" class="muted">暂无已支付报名球友。</view>
+      <view wx:if="{{detail.players.length === 0}}" class="state-panel empty">
+        <text class="state-title">暂无已支付报名球友</text>
+        <text class="state-text">可以返回球局列表报名其他场次，或把这场球局分享给同伴后再回来查看。</text>
+        <view class="state-actions">
+          <button class="primary small" bindtap="goGames">返回球局</button>
+          <button class="secondary small" bindtap="retryLoadDetail">重新加载</button>
+        </view>
+      </view>
       <view wx:for="{{detail.players}}" wx:key="userId" class="player-row">
         <view>
           <text class="player-name">{{item.username}}</text>

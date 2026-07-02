@@ -23,6 +23,11 @@ function tomorrowDateText() {
   return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
 }
 
+function todayDateText() {
+  const date = new Date();
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+}
+
 function addHours(time, hours) {
   const [hourText, minuteText] = String(time || "19:00").split(":");
   const date = new Date();
@@ -55,7 +60,16 @@ function buildFormSummary(data) {
   const capacity = Number(data.capacity || 0);
   const fee = Number(data.fee || 0);
   const title = String(data.title || "").trim();
-  const canSubmit = Boolean(venue && title && capacity >= 2 && !data.loading && !data.submitting);
+  const validationItems = buildValidationItems({
+    venue,
+    title,
+    capacity,
+    fee,
+    date: data.date,
+    startTime: data.startTime,
+    loading: data.loading
+  });
+  const canSubmit = validationItems.every((item) => item.ok) && !data.submitting;
 
   return {
     selectedVenueText: venue ? `${venue.name} · ${venue.area}` : "请选择场馆",
@@ -64,12 +78,46 @@ function buildFormSummary(data) {
       ? "发布后会进入球局详情，其他用户报名后生成待支付订单。"
       : "请补齐标题、场馆和至少 2 人的名额。",
     canSubmit,
+    validationItems,
     summaryCards: [
       { label: "运动", value: sport.label },
       { label: "人数", value: capacity ? `${capacity} 人` : "待填写" },
       { label: "费用", value: fee ? `¥${fee}/人` : "免费/AA" }
     ]
   };
+}
+
+function buildValidationItems({ venue, title, capacity, fee, date, startTime, loading }) {
+  const startAt = new Date(dateTimeText(date, startTime)).getTime();
+  const isFuture = !Number.isNaN(startAt) && startAt > Date.now();
+
+  return [
+    {
+      key: "title",
+      text: title ? "标题已填写" : "填写球局标题",
+      ok: Boolean(title)
+    },
+    {
+      key: "venue",
+      text: venue ? "场馆已选择" : loading ? "正在加载场馆" : "选择可用场馆",
+      ok: Boolean(venue)
+    },
+    {
+      key: "capacity",
+      text: capacity >= 2 ? "人数不少于 2 人" : "人数至少 2 人",
+      ok: capacity >= 2
+    },
+    {
+      key: "time",
+      text: isFuture ? "开始时间有效" : "开始时间需要晚于当前时间",
+      ok: isFuture
+    },
+    {
+      key: "fee",
+      text: fee >= 0 ? "费用有效" : "费用不能为负数",
+      ok: fee >= 0
+    }
+  ];
 }
 
 Page({
@@ -82,6 +130,7 @@ Page({
     capacity: 10,
     fee: 0,
     date: tomorrowDateText(),
+    minDate: todayDateText(),
     startTime: "19:00",
     sportOptions,
     sportIndex: 0,
@@ -93,6 +142,7 @@ Page({
     timeRangeText: "",
     submitHint: "请补齐标题、场馆和至少 2 人的名额。",
     canSubmit: false,
+    validationItems: [],
     summaryCards: []
   },
 
@@ -132,6 +182,14 @@ Page({
           error: error.message || "场馆加载失败"
         });
       });
+  },
+
+  retryLoadVenues() {
+    this.loadVenues();
+  },
+
+  goVenues() {
+    wx.switchTab({ url: "/pages/venues/venues" });
   },
 
   updateTitle(event) {

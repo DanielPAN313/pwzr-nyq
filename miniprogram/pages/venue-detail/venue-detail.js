@@ -96,6 +96,14 @@ Page({
     this.loadAvailability().finally(() => wx.stopPullDownRefresh());
   },
 
+  retryLoadAvailability() {
+    this.loadAvailability();
+  },
+
+  goVenues() {
+    wx.switchTab({ url: "/pages/venues/venues" });
+  },
+
   loadAvailability() {
     const id = this.data.id;
     if (!id) {

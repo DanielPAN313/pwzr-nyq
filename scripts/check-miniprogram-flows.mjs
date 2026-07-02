@@ -91,8 +91,11 @@ requireIncludes("miniprogram/pages/games/games.wxml", [
 
 requireIncludes("miniprogram/pages/create-game/create-game.js", [
   "buildFormSummary",
+  "buildValidationItems",
   "syncSummary",
   "selectedVenueText",
+  "validationItems",
+  "retryLoadVenues",
   "wx.redirectTo",
   "/pages/game-detail/game-detail?id=",
 ]);
@@ -100,6 +103,9 @@ requireIncludes("miniprogram/pages/create-game/create-game.js", [
 requireIncludes("miniprogram/pages/create-game/create-game.wxml", [
   "发布预览",
   "summaryCards",
+  "validation-list",
+  "validationItems",
+  "retryLoadVenues",
   "submitHint",
   "disabled=\"{{!canSubmit}}\"",
 ]);
@@ -191,6 +197,8 @@ requireIncludes("miniprogram/pages/venue-detail/venue-detail.js", [
   "/availability?date=",
   "/book",
   "/pages/orders/orders?orderId=",
+  "retryLoadAvailability",
+  "goVenues",
   "openSlotsText",
   "detailCards",
   "bookingState",
@@ -200,6 +208,8 @@ requireIncludes("miniprogram/pages/venue-detail/venue-detail.js", [
 requireIncludes("miniprogram/pages/venue-detail/venue-detail.wxml", [
   "slot-summary-title",
   "{{venue.openSlotsText}}",
+  "state-panel",
+  "retryLoadAvailability",
   "bindtap=\"bookSelectedSlot\"",
   "生成待支付订单",
   "detail-grid",
@@ -238,6 +248,8 @@ requireIncludes("miniprogram/pages/game-detail/game-detail.js", [
   "submitPraiseReviews",
   "/api/sports-app/games/",
   "/reviews",
+  "retryLoadDetail",
+  "goGames",
   "reviewablePlayers",
   "gameStep",
   "progressPercent",
@@ -247,6 +259,8 @@ requireIncludes("miniprogram/pages/game-detail/game-detail.js", [
 requireIncludes("miniprogram/pages/game-detail/game-detail.wxml", [
   "赛后互评",
   "bindtap=\"submitPraiseReviews\"",
+  "state-panel",
+  "retryLoadDetail",
   "detail.reviewOpen",
   "step-panel",
   "progress-track",

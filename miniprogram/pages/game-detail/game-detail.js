@@ -174,6 +174,18 @@ Page({
     this.loadDetail().finally(() => wx.stopPullDownRefresh());
   },
 
+  retryLoadDetail() {
+    this.loadDetail();
+  },
+
+  goGames() {
+    wx.switchTab({ url: "/pages/games/games" });
+  },
+
+  goOrders() {
+    wx.navigateTo({ url: "/pages/orders/orders" });
+  },
+
   loadDetail() {
     const id = this.data.id;
     if (!id) {

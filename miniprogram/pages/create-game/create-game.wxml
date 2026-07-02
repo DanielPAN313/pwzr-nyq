@@ -6,6 +6,15 @@
     <text wx:else class="muted">创建后会出现在球局列表，报名和支付沿用现有订单流程。</text>
   </view>
 
+  <view wx:if="{{error}}" class="state-panel warning">
+    <text class="state-title">场馆数据暂时不可用</text>
+    <text class="state-text">{{error}} 可以重新加载场馆，或者先去订场页确认场馆数据。</text>
+    <view class="state-actions">
+      <button class="primary small" bindtap="retryLoadVenues">重试加载</button>
+      <button class="secondary small" bindtap="goVenues">去订场页</button>
+    </view>
+  </view>
+
   <view class="section summary-panel">
     <view class="section-title">发布预览</view>
     <text class="summary-title">{{title || "未命名球局"}}</text>
@@ -18,6 +27,12 @@
       </view>
     </view>
     <text class="submit-hint">{{submitHint}}</text>
+    <view class="validation-list">
+      <view wx:for="{{validationItems}}" wx:key="key" class="validation-item {{item.ok ? 'is-ok' : 'is-pending'}}">
+        <text class="validation-dot">{{item.ok ? "✓" : "!"}}</text>
+        <text class="validation-text">{{item.text}}</text>
+      </view>
+    </view>
   </view>
 
   <view class="section form-panel">
@@ -42,7 +57,7 @@
 
     <label class="field">
       <text class="field-label">日期</text>
-      <picker mode="date" value="{{date}}" bindchange="changeDate">
+      <picker mode="date" value="{{date}}" start="{{minDate}}" bindchange="changeDate">
         <view class="picker-value">{{date}}</view>
       </picker>
     </label>

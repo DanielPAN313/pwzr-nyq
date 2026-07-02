@@ -35,6 +35,7 @@ function requirePath(file) {
   "scripts/serve-local-mirror.mjs",
   "db/schema.sql",
   "docs/project-roadmap.md",
+  "docs/current-handoff.md",
   "docs/macbook-repro.md",
   "docs/collaboration-plan.md",
   "docs/miniprogram-self-test.md",
@@ -57,6 +58,7 @@ requireIncludes("README.md", [
   "miniprogram/",
   "touristappid",
   "docs/project-roadmap.md",
+  "docs/current-handoff.md",
   "docs/miniprogram-self-test.md",
   "docs/ui-merge-checklist.md",
   "npm run check",
@@ -108,6 +110,16 @@ requireIncludes("docs/project-roadmap.md", [
   "touristappid",
   "docs/miniprogram-self-test.md",
   "docs/ui-merge-checklist.md",
+]);
+
+requireIncludes("docs/current-handoff.md", [
+  "feature-miniprogram-flow",
+  "ui-polish",
+  "touristappid",
+  "npm run check",
+  "微信开发者工具",
+  "当前自动检查",
+  "下一步建议",
 ]);
 
 if (errors.length > 0) {

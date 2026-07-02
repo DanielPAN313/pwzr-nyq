@@ -232,6 +232,7 @@ git push origin feature-miniprogram-flow
 
 - MacBook 复现：`docs/macbook-repro.md`
 - 协作说明：`docs/collaboration-plan.md`
+- 当前交接：`docs/current-handoff.md`
 - 小程序自测：`docs/miniprogram-self-test.md`
 - UI 合并检查：`docs/ui-merge-checklist.md`
 - 服务器上线：`docs/server-deploy.md`

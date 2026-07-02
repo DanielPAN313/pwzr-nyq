@@ -4,6 +4,8 @@
 
 总路线图和当前进度看：`docs/project-roadmap.md`。
 
+快速交接当前状态看：`docs/current-handoff.md`。
+
 自测和 UI 合并看：
 
 - `docs/miniprogram-self-test.md`

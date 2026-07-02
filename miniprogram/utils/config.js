@@ -2,6 +2,7 @@ const DEFAULT_CONFIG = {
   env: "development",
   apiBaseUrl: "http://localhost:4174",
   requestTimeout: 10000,
+  requestRetryCount: 1,
   useMockAuth: true,
   wechatLoginPath: "/api/sports-app/auth/wechat-login",
   storageKeys: {

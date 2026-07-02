@@ -283,6 +283,21 @@ requireIncludes("miniprogram/utils/auth.js", [
   "wechatLoginPath",
 ]);
 
+requireIncludes("miniprogram/utils/config.js", [
+  "requestRetryCount",
+  "requestTimeout",
+  "apiBaseUrl",
+]);
+
+requireIncludes("miniprogram/utils/api.js", [
+  "statusMessages",
+  "networkMessage",
+  "shouldRetry",
+  "requestRetryCount",
+  "networkError",
+  "retryable",
+]);
+
 requireIncludes("scripts/serve-local-mirror.mjs", [
   "/api/sports-app/auth/wechat-login",
   "resolveWechatOpenid",

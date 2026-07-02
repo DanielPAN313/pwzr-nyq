@@ -32,6 +32,7 @@
 - `project.config.json` 和 `miniprogram/project.config.json` 保持 `touristappid`。
 - `utils/config.js` 统一管理 API 地址、登录模式和存储 key。
 - `utils/api.js` 统一请求、loading、错误、token 和用户 header。
+- `utils/api.js` 支持请求超时、弱网错误文案、HTTP 状态文案和 GET/HEAD 轻量重试。
 - `utils/auth.js` 支持本地模拟登录，也预留 `wx.login` 真实登录。
 
 ### 用户端主流程
@@ -159,7 +160,7 @@ git push origin ui-polish
 1. UI polish：统一视觉、间距、按钮、状态标签和空状态。
 2. 真机前自测：微信开发者工具打开 `miniprogram/`，逐页检查不报错。
 3. 合并 UI 分支前跑 `npm run check`。
-4. 继续补齐弱网体验、页面视觉统一和真机自测清单。
+4. 继续补齐页面视觉统一、真机自测清单和 UI 分支合并检查。
 
 ### P1：注册小程序后做
 

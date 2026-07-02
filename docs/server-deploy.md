@@ -165,6 +165,22 @@ globalData: {
 
 注意：改成线上域名后，本地同伴可能无法直接连本地服务。开发分支默认仍建议保留 `localhost`，上线前再单独切生产配置。
 
+推荐做法：
+
+- `feature-miniprogram-flow` 和 `ui-polish` 保持 `apiBaseUrl: "http://localhost:4174"`，方便 Windows 和 MacBook 本地开发。
+- 真正准备体验版或审核时，从最新功能分支切一个单独的生产配置提交/分支，把 `apiBaseUrl` 改成 HTTPS 域名，并把 `useMockAuth` 改成 `false`。
+- 生产配置改动不要混进 UI 分支；UI 同伴只需要本地 `localhost` 和 `touristappid`。
+
+示例：
+
+```bash
+git checkout feature-miniprogram-flow
+git pull origin feature-miniprogram-flow
+git checkout -b release-wechat-config
+```
+
+在 `release-wechat-config` 上完成 AppID、HTTPS API 地址、真实登录和支付配置验证，通过后再用于体验版/审核准备。
+
 ## 上线前必须补齐
 
 当前项目已经有开发版模拟登录和模拟支付。真正上线前还需要：

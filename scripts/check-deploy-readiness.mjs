@@ -72,6 +72,8 @@ requireIncludes("docs/server-deploy.md", [
   "https://api.your-domain.com/api/sports-app/bootstrap",
   "开发管理 -> 开发设置 -> 服务器域名 -> request 合法域名",
   "useMockAuth: false",
+  "release-wechat-config",
+  "生产配置改动不要混进 UI 分支",
   "WECHAT_PAY_SERIAL_NO",
   "WECHAT_PAY_API_V3_KEY",
   "WECHAT_PAY_PRIVATE_KEY_PATH",

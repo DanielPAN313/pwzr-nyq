@@ -49,6 +49,8 @@ npm run check
 
 `npm run check` 会检查小程序工程是否可打开：`app.json`、页面四件套、tabBar 路由、JSON 语法、UTF-8 编码和浏览器 API 误用。
 
+它会检查页面标题和下拉刷新配置，确保页面 JSON 与 `onPullDownRefresh` 处理函数一致。
+
 它会检查小程序页面跳转路径，避免 `wx.navigateTo`、`wx.redirectTo` 或静态 `wx.switchTab` 指向未注册页面。
 
 它还会检查 WXML 事件绑定和 `data-*` 参数，避免 UI 改动后出现按钮绑定到不存在 JS 函数、或点击时拿不到 `data-id` 的问题。

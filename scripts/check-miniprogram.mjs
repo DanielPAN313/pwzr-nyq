@@ -132,11 +132,28 @@ if (appJson) {
     for (const ext of ["js", "json", "wxml", "wxss"]) {
       const file = path.join(miniRoot, `${page}.${ext}`);
       mustExist(file, `page ${ext}`);
-      if (ext === "json" && fs.existsSync(file)) parseJson(file);
     }
 
+    const jsonFile = path.join(miniRoot, `${page}.json`);
     const jsFile = path.join(miniRoot, `${page}.js`);
     const wxmlFile = path.join(miniRoot, `${page}.wxml`);
+    const pageJson = fs.existsSync(jsonFile) ? parseJson(jsonFile) : null;
+
+    if (pageJson) {
+      if (typeof pageJson.navigationBarTitleText !== "string" || !pageJson.navigationBarTitleText.trim()) {
+        errors.push(`${rel(jsonFile)} navigationBarTitleText is required for clear WeChat DevTools page testing.`);
+      }
+
+      const jsSource = fs.existsSync(jsFile) ? readUtf8(jsFile) : "";
+      const hasPullDownHandler = /\bonPullDownRefresh\s*\(/.test(jsSource);
+      if (pageJson.enablePullDownRefresh === true && !hasPullDownHandler) {
+        errors.push(`${rel(jsonFile)} enables pull-down refresh but ${rel(jsFile)} has no onPullDownRefresh handler.`);
+      }
+      if (hasPullDownHandler && pageJson.enablePullDownRefresh !== true) {
+        errors.push(`${rel(jsFile)} defines onPullDownRefresh but ${rel(jsonFile)} does not enable pull-down refresh.`);
+      }
+    }
+
     if (fs.existsSync(jsFile) && fs.existsSync(wxmlFile)) {
       const methods = pageMethodNames(readUtf8(jsFile));
       for (const handler of wxmlEventHandlers(readUtf8(wxmlFile))) {

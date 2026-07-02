@@ -96,6 +96,7 @@
 - 部署检查已覆盖微信登录、微信支付证书/API v3 key/通知地址、HTTPS 合法域名和合规材料入口。
 - `npm run check` 已覆盖：
   - 小程序结构检查
+  - 页面标题和下拉刷新配置检查，确保页面 JSON 与 `onPullDownRefresh` 保持一致
   - 主流程契约检查
   - WXML 事件绑定和 `data-*` 参数检查，避免 UI 改动后按钮绑定到不存在的 JS 函数或拿不到 `data-id`
   - 小程序路由检查，避免 `wx.navigateTo`、`wx.redirectTo` 或静态 `wx.switchTab` 指向未注册页面

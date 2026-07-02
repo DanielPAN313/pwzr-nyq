@@ -32,6 +32,7 @@ requireIncludes("docs/miniprogram-self-test.md", [
   "订单流程",
   "消息流程",
   "场馆端",
+  "下拉刷新",
   "通过标准",
 ]);
 

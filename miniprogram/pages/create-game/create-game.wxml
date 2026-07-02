@@ -1,0 +1,69 @@
+<view class="page">
+  <view class="section">
+    <view class="page-title">发起球局</view>
+    <text wx:if="{{loading}}" class="muted">正在加载场馆...</text>
+    <text wx:elif="{{error}}" class="muted">{{error}}</text>
+    <text wx:else class="muted">创建后会出现在球局列表，报名和支付沿用现有订单流程。</text>
+  </view>
+
+  <view class="section form-panel">
+    <label class="field">
+      <text class="field-label">标题</text>
+      <input class="field-input" value="{{title}}" bindinput="updateTitle" placeholder="例如：周五晚五人制足球" />
+    </label>
+
+    <label class="field">
+      <text class="field-label">运动</text>
+      <picker range="{{sportOptions}}" range-key="label" value="{{sportIndex}}" bindchange="changeSport">
+        <view class="picker-value">{{sportOptions[sportIndex].label}}</view>
+      </picker>
+    </label>
+
+    <label class="field">
+      <text class="field-label">场馆</text>
+      <picker range="{{venues}}" range-key="name" value="{{venueIndex}}" bindchange="changeVenue">
+        <view class="picker-value">{{venues[venueIndex].name || "请选择场馆"}}</view>
+      </picker>
+    </label>
+
+    <label class="field">
+      <text class="field-label">日期</text>
+      <picker mode="date" value="{{date}}" bindchange="changeDate">
+        <view class="picker-value">{{date}}</view>
+      </picker>
+    </label>
+
+    <label class="field">
+      <text class="field-label">开始时间</text>
+      <picker mode="time" value="{{startTime}}" bindchange="changeStartTime">
+        <view class="picker-value">{{startTime}}</view>
+      </picker>
+    </label>
+
+    <label class="field">
+      <text class="field-label">时长</text>
+      <picker range="{{durationOptions}}" range-key="label" value="{{durationIndex}}" bindchange="changeDuration">
+        <view class="picker-value">{{durationOptions[durationIndex].label}}</view>
+      </picker>
+    </label>
+
+    <label class="field">
+      <text class="field-label">人数</text>
+      <input class="field-input" type="number" value="{{capacity}}" bindinput="updateCapacity" />
+    </label>
+
+    <label class="field">
+      <text class="field-label">人均费用</text>
+      <input class="field-input" type="digit" value="{{fee}}" bindinput="updateFee" />
+    </label>
+
+    <label class="field">
+      <text class="field-label">备注</text>
+      <textarea class="field-textarea" value="{{notes}}" bindinput="updateNotes" placeholder="补充水平、装备、集合方式等信息" />
+    </label>
+  </view>
+
+  <button class="primary submit-button" disabled="{{submitting || loading || venues.length === 0}}" bindtap="submitGame">
+    {{submitting ? "发布中" : "发布球局"}}
+  </button>
+</view>

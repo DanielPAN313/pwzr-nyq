@@ -1,0 +1,49 @@
+.page-title {
+  display: block;
+  margin-bottom: 10rpx;
+  font-size: 34rpx;
+  font-weight: 850;
+}
+
+.form-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 22rpx;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+
+.field-label {
+  color: #102016;
+  font-size: 26rpx;
+  font-weight: 800;
+}
+
+.field-input,
+.picker-value,
+.field-textarea {
+  min-height: 78rpx;
+  padding: 18rpx;
+  border-radius: 16rpx;
+  background: #eef6ed;
+  color: #102016;
+  font-size: 28rpx;
+  box-sizing: border-box;
+}
+
+.field-textarea {
+  width: 100%;
+  min-height: 150rpx;
+}
+
+.submit-button {
+  margin-top: 8rpx;
+  min-height: 88rpx;
+  border-radius: 18rpx;
+  font-size: 30rpx;
+  font-weight: 850;
+}

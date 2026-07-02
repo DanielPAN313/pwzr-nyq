@@ -5,6 +5,7 @@
     <text wx:elif="{{error}}" class="muted">{{error}}，已显示本地兜底球局。</text>
     <text wx:elif="{{empty}}" class="muted">暂时没有可报名球局。</text>
     <text wx:else class="muted">已接入真实球局列表，后续继续补报名和支付。</text>
+    <button class="primary small create-button" bindtap="createGame">发起球局</button>
   </view>
 
   <view wx:for="{{games}}" wx:key="title" class="section game-card">

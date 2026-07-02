@@ -62,6 +62,10 @@ Page({
     this.loadGames();
   },
 
+  onShow() {
+    this.loadGames();
+  },
+
   onPullDownRefresh() {
     this.loadGames().finally(() => wx.stopPullDownRefresh());
   },
@@ -113,5 +117,11 @@ Page({
       .finally(() => {
         this.setData({ joiningId: "" });
       });
+  },
+
+  createGame() {
+    wx.navigateTo({
+      url: "/pages/create-game/create-game"
+    });
   }
 });

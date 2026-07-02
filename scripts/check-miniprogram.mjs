@@ -76,8 +76,8 @@ function validateProjectConfig(config, file, expectedRoots) {
   if (config.compileType !== "miniprogram") {
     errors.push(`${label} compileType must be "miniprogram".`);
   }
-  if (appid !== "touristappid" && !/^wx[a-f0-9]{16}$/i.test(appid)) {
-    errors.push(`${label} appid must be "touristappid" or a valid wx Mini Program test/real AppID.`);
+  if (appid !== "touristappid") {
+    errors.push(`${label} appid must stay "touristappid" before Mini Program registration and production config split.`);
   }
   if (!expectedRoots.includes(config.miniprogramRoot)) {
     errors.push(`${label} miniprogramRoot must be one of: ${expectedRoots.join(", ")}.`);
@@ -89,6 +89,10 @@ function validateProjectConfig(config, file, expectedRoots) {
 
 validateProjectConfig(rootProjectConfig, path.join(root, "project.config.json"), ["miniprogram/", "miniprogram"]);
 validateProjectConfig(miniProjectConfig, path.join(miniRoot, "project.config.json"), ["./", "."]);
+
+if (rootProjectConfig && miniProjectConfig && rootProjectConfig.appid !== miniProjectConfig.appid) {
+  errors.push("project.config.json and miniprogram/project.config.json must use the same appid.");
+}
 
 if (sitemapJson) {
   if (!Array.isArray(sitemapJson.rules) || sitemapJson.rules.length === 0) {

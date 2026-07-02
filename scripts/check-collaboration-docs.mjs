@@ -46,6 +46,7 @@ requireIncludes("docs/ui-merge-checklist.md", [
   "不能删的关键绑定",
   "不要直接整支合并",
   "Safe UI candidates",
+  "从最新 `feature-miniprogram-flow` 重建或更新分支",
   "只挑安全的 `.wxml`、`.wxss`、`app.wxss`",
   "npm run check",
   "GitHub 的 `Actions` 页面",

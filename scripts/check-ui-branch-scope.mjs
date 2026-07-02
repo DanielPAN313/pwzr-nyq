@@ -89,6 +89,8 @@ for (const row of rows) {
 if (deletions.length || dangerous.length) {
   console.error("UI branch scope check failed.");
   console.error(`Compared ${baseRef}..${uiRef}`);
+  console.error("If this output shows many deleted pages, docs, or scripts, the UI branch is probably stale.");
+  console.error(`Ask the UI teammate to rebuild or update ${uiRef} from the latest ${baseRef}, then rerun this command.`);
 
   if (deletions.length) {
     console.error("\nDeleted files are not safe for direct UI merge:");

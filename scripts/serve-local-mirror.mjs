@@ -818,6 +818,89 @@ const canCancelOrder = (order) => {
   return { ok: true, nextStatus: 'refunded', penalty: 0, note: '订单已取消' }
 }
 
+const createMockPrepay = (order) => ({
+  ok: true,
+  provider: 'mock',
+  order_id: Number(order.id),
+  amount: Number(order.amount || 0),
+  out_trade_no: `NYQ${order.id}-${Date.now()}`,
+  pay_params: {
+    timeStamp: String(Math.floor(Date.now() / 1000)),
+    nonceStr: crypto.randomUUID().replaceAll('-', ''),
+    package: `prepay_id=mock_${order.id}`,
+    signType: 'RSA',
+    paySign: 'mock-signature',
+  },
+})
+
+const markSportsOrderPaid = async (pool, user, order, source = 'mock') => {
+  if (!order) {
+    const error = new Error('order not found')
+    error.statusCode = 404
+    throw error
+  }
+  if (Number(order.user_id) !== Number(user.id)) {
+    const error = new Error('只能支付自己的订单')
+    error.statusCode = 403
+    throw error
+  }
+  if (order.status !== 'pending_payment') {
+    const error = new Error('订单当前状态不能支付')
+    error.statusCode = 409
+    throw error
+  }
+  if (order.game_id) {
+    await requirePublicJoinCredit(pool, user)
+  } else {
+    await requireAllActionCredit(pool, user, '订场支付')
+  }
+  if (order.game_id) {
+    const [[game]] = await pool.execute(
+      `SELECT g.*, SUM(CASE WHEN s.payment_status = 'paid' THEN 1 ELSE 0 END) AS paid_count
+       FROM sports_game g
+       LEFT JOIN sports_signup s ON s.game_id = g.id
+       WHERE g.id = ?
+       GROUP BY g.id
+       LIMIT 1`,
+      [order.game_id],
+    )
+    if (!game || game.status === 'cancelled') {
+      const error = new Error('球局已取消')
+      error.statusCode = 409
+      throw error
+    }
+    if (Number(game.paid_count || 0) >= Number(game.capacity || 0)) {
+      const error = new Error('球局已满员，支付失败')
+      error.statusCode = 409
+      throw error
+    }
+    await pool.execute(
+      `INSERT INTO sports_signup (game_id, user_id, username, paid_amount, payment_status)
+       VALUES (?, ?, ?, ?, 'paid')
+       ON DUPLICATE KEY UPDATE paid_amount = VALUES(paid_amount), payment_status = 'paid'`,
+      [order.game_id, order.user_id, order.username, Number(order.amount || 0)],
+    )
+    await pool.execute(
+      'INSERT INTO sports_credit_event (user_id, username, event_type, score_delta, note, related_game_id) VALUES (?, ?, "paid_signup", 0, "报名并完成支付", ?)',
+      [order.user_id, order.username, order.game_id],
+    )
+  }
+  await pool.execute('UPDATE sports_order SET status = "paid", paid_at = NOW() WHERE id = ?', [order.id])
+  await trackEvent(pool, user, 'payment_success', {
+    entity_type: order.game_id ? 'game' : 'venue',
+    entity_id: order.game_id || order.venue_id,
+    metadata: { order_id: order.id, amount: Number(order.amount || 0), source },
+  })
+  await createNotification(pool, user, {
+    type: 'payment_success',
+    title: '支付成功',
+    body: `订单 #${order.id} 已支付成功，请到场后使用核销码 ${order.checkin_code}。`,
+    order_id: order.id,
+    game_id: order.game_id,
+  })
+  return { ok: true, order_id: order.id, checkin_code: order.checkin_code, status: 'paid' }
+}
+
 const sportsVenueAdminDashboard = async (pool, user) => {
   const [ownedVenues] = await pool.execute(
     `SELECT *
@@ -1971,51 +2054,43 @@ const handleSportsApi = async (req, res, requestUrl) => {
       return json(res, { ok: true })
     }
 
-    const payMatch = pathName.match(/^\/api\/sports-app\/orders\/(\d+)\/pay$/)
-    if (payMatch && req.method === 'POST') {
-      const orderId = Number(payMatch[1])
+    const prepayMatch = pathName.match(/^\/api\/sports-app\/orders\/(\d+)\/prepay$/)
+    if (prepayMatch && req.method === 'POST') {
+      const orderId = Number(prepayMatch[1])
       const [[order]] = await pool.execute('SELECT * FROM sports_order WHERE id = ? LIMIT 1', [orderId])
       if (!order) return json(res, { ok: false, error: 'order not found' }, 404)
       if (Number(order.user_id) !== Number(user.id)) return json(res, { ok: false, error: '只能支付自己的订单' }, 403)
       if (order.status !== 'pending_payment') return json(res, { ok: false, error: '订单当前状态不能支付' }, 409)
-      if (order.game_id) {
-        await requirePublicJoinCredit(pool, user)
-      } else {
-        await requireAllActionCredit(pool, user, '订场支付')
+      return json(res, createMockPrepay(order))
+    }
+
+    const confirmPayMatch = pathName.match(/^\/api\/sports-app\/orders\/(\d+)\/pay\/confirm$/)
+    if (confirmPayMatch && req.method === 'POST') {
+      const orderId = Number(confirmPayMatch[1])
+      const [[order]] = await pool.execute('SELECT * FROM sports_order WHERE id = ? LIMIT 1', [orderId])
+      try {
+        return json(res, await markSportsOrderPaid(pool, user, order, 'mock_confirm'))
+      } catch (error) {
+        return json(res, { ok: false, error: error.message || '支付失败' }, error.statusCode || 500)
       }
-      if (order.game_id) {
-        const [[game]] = await pool.execute(
-          `SELECT g.*, SUM(CASE WHEN s.payment_status = 'paid' THEN 1 ELSE 0 END) AS paid_count
-           FROM sports_game g
-           LEFT JOIN sports_signup s ON s.game_id = g.id
-           WHERE g.id = ?
-           GROUP BY g.id
-           LIMIT 1`,
-          [order.game_id],
-        )
-        if (!game || game.status === 'cancelled') return json(res, { ok: false, error: '球局已取消' }, 409)
-        if (Number(game.paid_count || 0) >= Number(game.capacity || 0)) return json(res, { ok: false, error: '球局已满员，支付失败' }, 409)
-        await pool.execute(
-          `INSERT INTO sports_signup (game_id, user_id, username, paid_amount, payment_status)
-           VALUES (?, ?, ?, ?, 'paid')
-           ON DUPLICATE KEY UPDATE paid_amount = VALUES(paid_amount), payment_status = 'paid'`,
-          [order.game_id, order.user_id, order.username, Number(order.amount || 0)],
-        )
-        await pool.execute(
-          'INSERT INTO sports_credit_event (user_id, username, event_type, score_delta, note, related_game_id) VALUES (?, ?, "paid_signup", 0, "报名并完成支付", ?)',
-          [order.user_id, order.username, order.game_id],
-        )
+    }
+
+    const payMatch = pathName.match(/^\/api\/sports-app\/orders\/(\d+)\/pay$/)
+    if (payMatch && req.method === 'POST') {
+      const orderId = Number(payMatch[1])
+      const [[order]] = await pool.execute('SELECT * FROM sports_order WHERE id = ? LIMIT 1', [orderId])
+      try {
+        return json(res, await markSportsOrderPaid(pool, user, order, 'legacy_mock'))
+      } catch (error) {
+        return json(res, { ok: false, error: error.message || '支付失败' }, error.statusCode || 500)
       }
-      await pool.execute('UPDATE sports_order SET status = "paid", paid_at = NOW() WHERE id = ?', [orderId])
-      await trackEvent(pool, user, 'payment_success', { entity_type: order.game_id ? 'game' : 'venue', entity_id: order.game_id || order.venue_id, metadata: { order_id: orderId, amount: Number(order.amount || 0) } })
-      await createNotification(pool, user, {
-        type: 'payment_success',
-        title: '支付成功',
-        body: `订单 #${orderId} 已支付成功，请到场后使用核销码 ${order.checkin_code}。`,
-        order_id: orderId,
-        game_id: order.game_id,
-      })
-      return json(res, { ok: true, order_id: orderId, checkin_code: order.checkin_code, status: 'paid' })
+    }
+
+    if (pathName === '/api/sports-app/payment/wechat/notify' && req.method === 'POST') {
+      return json(res, {
+        ok: false,
+        error: 'wechat payment notify is reserved; configure merchant keys and signature verification before enabling',
+      }, 501)
     }
 
     const cancelOrderMatch = pathName.match(/^\/api\/sports-app\/orders\/(\d+)\/cancel$/)

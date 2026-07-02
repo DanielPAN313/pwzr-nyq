@@ -136,13 +136,36 @@ Page({
     }, 120);
   },
 
+  requestWxPayment(payParams) {
+    return new Promise((resolve, reject) => {
+      wx.requestPayment({
+        ...(payParams || {}),
+        success: resolve,
+        fail(error) {
+          reject(new Error((error && error.errMsg) || "支付取消或失败"));
+        }
+      });
+    });
+  },
+
+  confirmOrderPayment(id, source) {
+    return post(`/api/sports-app/orders/${id}/pay/confirm`, { source }, { loadingTitle: "确认支付中" });
+  },
+
   payOrder(event) {
     const id = event.currentTarget.dataset.id;
     if (!id || this.data.actionOrderId) return;
 
     this.setData({ actionOrderId: id, highlightedOrderId: String(id) });
 
-    post(`/api/sports-app/orders/${id}/pay`, {}, { loadingTitle: "支付中" })
+    post(`/api/sports-app/orders/${id}/prepay`, {}, { loadingTitle: "支付中" })
+      .then((prepay) => {
+        if (!prepay || prepay.provider === "mock") {
+          return this.confirmOrderPayment(id, "mock");
+        }
+
+        return this.requestWxPayment(prepay.pay_params).then(() => this.confirmOrderPayment(id, "wechat"));
+      })
       .then(() => {
         wx.showToast({
           title: "支付成功",

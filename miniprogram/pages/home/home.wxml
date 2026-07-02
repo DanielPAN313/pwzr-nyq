@@ -1,27 +1,63 @@
 <view class="page">
-  <view class="hero">
-    <text class="eyebrow">南京样板区</text>
-    <text class="title">开球，去宁约球</text>
-    <text class="subtitle">找附近球局、抢黄金场地、报名支付、到场核销。</text>
-  </view>
-
-  <view class="section">
-    <view class="section-title">常用入口</view>
-    <view class="quick-grid">
-      <button
-        wx:for="{{quickActions}}"
-        wx:key="label"
-        class="quick-card"
-        bindtap="switchTab"
-        data-target="{{item.target}}"
-      >
-        {{item.label}}
-      </button>
+  <view class="topbar">
+    <view>
+      <text class="location">南京 · Jiangning</text>
     </view>
   </view>
 
-  <view class="section">
-    <view class="section-title">下一步开发</view>
+  <view class="search-bar">
+    <text class="search-icon">⌕</text>
+    <text class="search-text">搜索场馆、球局、运动类型</text>
+    <text class="search-filter">筛选</text>
+  </view>
+
+  <view class="hero">
+    <view class="court-panel">
+      <view class="court-glow"></view>
+      <view class="court-line court-line-top"></view>
+      <view class="court-net"></view>
+      <view class="court-line court-line-bottom"></view>
+      <view class="court-ball"></view>
+      <view class="court-copy">
+        <text class="page-kicker">南京样板区</text>
+        <text class="title">Book your court</text>
+        <text class="subtitle">订场、组局、报名、核销，一次完成。</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="date-strip">
+    <text class="date-pill active">今天</text>
+    <text class="date-pill">明天</text>
+    <text class="date-pill">周末</text>
+    <text class="date-pill">附近</text>
+  </view>
+
+  <view class="section feature-card">
+    <view class="feature-head">
+      <view>
+        <text class="page-title">今晚推荐</text>
+        <text class="muted">热门场地和可报名球局</text>
+      </view>
+      <text class="pill dark">LIVE</text>
+    </view>
+    <view class="venue-card">
+      <view class="venue-image">
+        <view class="mini-court"></view>
+      </view>
+      <view class="venue-info">
+        <text class="card-title">未来科技城五人制足球馆</text>
+        <text class="muted">江宁开发区 · 20:00-22:00</text>
+        <view class="venue-bottom">
+          <text class="price">¥260/小时</text>
+          <button class="book-button" bindtap="switchTab" data-target="/pages/venues/venues">订场</button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section update-card">
+    <text class="page-title">今日状态</text>
     <text wx:if="{{loading}}" class="muted">正在加载首页数据...</text>
     <text wx:elif="{{error}}" class="muted">{{error}}，已显示本地兜底内容。</text>
     <text wx:else class="muted">{{summary}}</text>

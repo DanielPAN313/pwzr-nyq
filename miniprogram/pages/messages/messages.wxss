@@ -1,7 +1,42 @@
-.page-title,
-.card-title {
-  display: block;
-  margin-bottom: 10rpx;
-  font-size: 34rpx;
-  font-weight: 850;
+.page-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+  color: #ffffff;
+  background: linear-gradient(145deg, #10231a, #0b6f41);
+}
+
+.page-hero .page-title {
+  color: #ffffff;
+  margin-bottom: 0;
+}
+
+.page-hero .muted {
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.message-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+}
+
+.message-head,
+.message-foot {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.message-foot {
+  justify-content: space-between;
+}
+
+.message-dot {
+  flex-shrink: 0;
+  width: 18rpx;
+  height: 18rpx;
+  border-radius: 50%;
+  background: #d9f76e;
+  box-shadow: 0 0 0 8rpx rgba(217, 247, 110, 0.18);
 }

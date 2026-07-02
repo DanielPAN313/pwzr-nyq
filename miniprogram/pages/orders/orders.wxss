@@ -1,47 +1,115 @@
-.page-title,
-.card-title {
-  display: block;
-  margin-bottom: 10rpx;
-  font-size: 34rpx;
-  font-weight: 850;
-}
-
-.order-card {
+.page-hero {
   display: flex;
   flex-direction: column;
   gap: 14rpx;
+  color: #ffffff;
+  background: linear-gradient(145deg, #092b1b, #116f43);
+}
+
+.page-hero .page-title {
+  color: #ffffff;
+  margin-bottom: 0;
+}
+
+.page-hero .muted {
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.order-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  overflow: hidden;
+}
+
+.order-card::before,
+.order-card::after {
+  content: "";
+  position: absolute;
+  top: 176rpx;
+  width: 28rpx;
+  height: 28rpx;
+  border-radius: 50%;
+  background: #f1f5ef;
+}
+
+.order-card::before {
+  left: -14rpx;
+}
+
+.order-card::after {
+  right: -14rpx;
+}
+
+.order-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18rpx;
 }
 
 .card-row {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
+  gap: 20rpx;
+  padding-bottom: 18rpx;
+  border-bottom: 1rpx dashed rgba(151, 169, 157, 0.6);
 }
 
 .price {
+  display: block;
   color: #12824f;
-  font-size: 34rpx;
+  font-size: 42rpx;
   font-weight: 900;
+  line-height: 1.15;
 }
 
-.status {
-  color: #102016;
-  font-size: 26rpx;
-  font-weight: 800;
+.ticket-label {
+  padding: 12rpx 18rpx;
+  border-radius: 14rpx;
+  color: #d9f76e;
+  background: #17231d;
+  font-size: 24rpx;
+  font-weight: 900;
 }
 
 .checkin-box {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18rpx;
+  gap: 18rpx;
+  padding: 22rpx;
   border-radius: 16rpx;
-  background: #eef6ed;
+  background: #edf6ee;
 }
 
 .checkin-code {
+  display: block;
+  margin-top: 6rpx;
   color: #102016;
   font-size: 34rpx;
   font-weight: 900;
   letter-spacing: 2rpx;
+}
+
+.code-mark {
+  display: flex;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  gap: 6rpx;
+  width: 58rpx;
+}
+
+.code-mark view {
+  width: 24rpx;
+  height: 24rpx;
+  border-radius: 6rpx;
+  background: #0b6f41;
+}
+
+.code-mark view:nth-child(2),
+.code-mark view:nth-child(3) {
+  background: #d9f76e;
 }

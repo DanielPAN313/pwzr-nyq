@@ -48,6 +48,7 @@
 
   var app = document.getElementById('app');
   var ROUTABLE_USER_VIEWS = [
+    'splash',
     'home',
     'venues',
     'games',
@@ -64,6 +65,7 @@
     'demo',
   ];
   var ROUTE_PATH_VIEWS = {
+    'pages/splash/splash': 'splash',
     'pages/home/home': 'home',
     'pages/venues/venues': 'venues',
     'pages/games/games': 'games',
@@ -101,6 +103,7 @@
   function routeLabel(view) {
     return {
       home: 'Home',
+      splash: 'Splash',
       venues: 'Venues',
       games: 'Games',
       messages: 'Messages',

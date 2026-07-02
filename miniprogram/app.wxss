@@ -1,29 +1,113 @@
 page {
   min-height: 100vh;
-  color: #102016;
-  background: #f4f7f2;
+  color: #f7fbf5;
+  background: #07120d;
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 
 .page {
   min-height: 100vh;
-  padding: 24rpx;
+  padding: 28rpx 24rpx 48rpx;
   box-sizing: border-box;
 }
 
 .section {
   margin-bottom: 24rpx;
-  padding: 24rpx;
-  border: 1rpx solid rgba(219, 228, 216, 0.9);
-  border-radius: 20rpx;
-  background: #ffffff;
+  padding: 26rpx;
+  border: 1rpx solid rgba(205, 255, 94, 0.1);
+  border-radius: 26rpx;
+  background: #101b15;
+  box-shadow: 0 18rpx 44rpx rgba(0, 0, 0, 0.22);
+  box-sizing: border-box;
+}
+
+.page-kicker {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  min-height: 38rpx;
+  padding: 0 16rpx;
+  border-radius: 999rpx;
+  color: #10200f;
+  background: #d8ff3e;
+  font-size: 22rpx;
+  font-weight: 900;
+  line-height: 38rpx;
+}
+
+.page-title,
+.card-title {
+  display: block;
+  color: #f7fbf5;
+  font-size: 34rpx;
+  font-weight: 900;
+  line-height: 1.22;
+}
+
+.page-title {
+  margin-bottom: 10rpx;
+}
+
+.card-title {
+  margin-bottom: 8rpx;
 }
 
 .muted {
-  color: #6f7c72;
+  color: rgba(247, 251, 245, 0.62);
+  font-size: 25rpx;
+  line-height: 1.55;
 }
 
 .primary {
-  color: #ffffff;
-  background: #12824f;
+  color: #10200f;
+  background: #d8ff3e;
+}
+
+button {
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+  font: inherit;
+  line-height: normal;
+}
+
+button::after {
+  border: 0;
+}
+
+button[disabled] {
+  color: rgba(247, 251, 245, 0.58);
+  background: #38443d;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42rpx;
+  padding: 0 18rpx;
+  border-radius: 999rpx;
+  color: rgba(247, 251, 245, 0.82);
+  background: #17231c;
+  font-size: 23rpx;
+  font-weight: 800;
+  line-height: 42rpx;
+}
+
+.pill.dark {
+  color: #10200f;
+  background: #d8ff3e;
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44rpx;
+  padding: 0 18rpx;
+  border-radius: 999rpx;
+  color: #10200f;
+  background: #d8ff3e;
+  font-size: 24rpx;
+  font-weight: 900;
+  line-height: 44rpx;
 }

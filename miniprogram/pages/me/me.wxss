@@ -1,12 +1,35 @@
 .profile {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 12rpx;
+  gap: 16rpx;
   margin-bottom: 24rpx;
   padding: 30rpx;
-  border-radius: 28rpx;
+  border-radius: 22rpx;
   color: #ffffff;
-  background: #064327;
+  background: linear-gradient(145deg, #10231a, #0b6f41);
+  box-shadow: 0 22rpx 44rpx rgba(7, 94, 52, 0.2);
+  overflow: hidden;
+}
+
+.profile::after {
+  content: "";
+  position: absolute;
+  right: -72rpx;
+  bottom: -86rpx;
+  width: 240rpx;
+  height: 240rpx;
+  border: 2rpx solid rgba(217, 247, 110, 0.18);
+  border-radius: 50%;
+}
+
+.profile-top {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
 }
 
 .avatar {
@@ -15,7 +38,7 @@
   justify-content: center;
   width: 96rpx;
   height: 96rpx;
-  border-radius: 28rpx;
+  border-radius: 26rpx;
   color: #083923;
   background: #d7f36a;
   font-size: 28rpx;
@@ -23,20 +46,77 @@
 }
 
 .name {
+  position: relative;
+  z-index: 1;
   font-size: 36rpx;
-  font-weight: 850;
+  font-weight: 900;
+}
+
+.profile-hint {
+  position: relative;
+  z-index: 1;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 25rpx;
+  line-height: 1.55;
+}
+
+.profile-stats {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 12rpx;
+  margin-top: 8rpx;
+}
+
+.profile-stats view {
+  flex: 1;
+  padding: 18rpx 14rpx;
+  border-radius: 16rpx;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.stat-value,
+.stat-label {
+  display: block;
+}
+
+.stat-value {
+  color: #d9f76e;
+  font-size: 32rpx;
+  font-weight: 900;
+}
+
+.stat-label {
+  margin-top: 4rpx;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 22rpx;
+  font-weight: 800;
 }
 
 .menu-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 88rpx;
+  min-height: 104rpx;
   border-bottom: 1rpx solid rgba(219, 228, 216, 0.9);
-  font-size: 30rpx;
-  font-weight: 700;
+  gap: 18rpx;
 }
 
 .menu-row:last-child {
   border-bottom: 0;
+}
+
+.menu-label {
+  display: block;
+  margin-bottom: 4rpx;
+  color: #17231d;
+  font-size: 30rpx;
+  font-weight: 900;
+}
+
+.menu-value {
+  flex-shrink: 0;
+  color: #0b6f41;
+  font-size: 28rpx;
+  font-weight: 900;
 }

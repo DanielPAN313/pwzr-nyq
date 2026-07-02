@@ -1,5 +1,6 @@
 <view class="page">
-  <view class="section">
+  <view class="section page-hero">
+    <text class="page-kicker">NOTIFICATIONS</text>
     <view class="page-title">消息中心</view>
     <text wx:if="{{loading}}" class="muted">正在加载消息...</text>
     <text wx:elif="{{error}}" class="muted">{{error}}，已显示本地兜底消息。</text>
@@ -10,12 +11,18 @@
   <view
     wx:for="{{messages}}"
     wx:key="title"
-    class="section"
+    class="section message-card"
     bindtap="markRead"
     data-id="{{item.id}}"
   >
-    <text class="card-title">{{item.title}}</text>
+    <view class="message-head">
+      <text class="message-dot"></text>
+      <text class="card-title">{{item.title}}</text>
+    </view>
     <text class="muted">{{item.body}}</text>
-    <text class="muted">{{item.statusText}} {{item.timeText}}</text>
+    <view class="message-foot">
+      <text class="pill">{{item.statusText}}</text>
+      <text class="muted">{{item.timeText}}</text>
+    </view>
   </view>
 </view>

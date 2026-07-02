@@ -10,6 +10,7 @@
   };
 
   var ROUTE_PAGES = Object.assign({}, TAB_PAGES, {
+    'pages/splash/splash': 'splash',
     'pages/orders/orders': 'orders',
     'pages/credit/credit': 'credit',
     'pages/my-games/my-games': 'my-games',

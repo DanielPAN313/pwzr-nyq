@@ -1,0 +1,261 @@
+.splash {
+  position: relative;
+  min-height: 100vh;
+  padding: 120rpx 48rpx 84rpx;
+  background: #07120d;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.ambient {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.34;
+}
+
+.ambient-one {
+  right: -160rpx;
+  top: -170rpx;
+  width: 420rpx;
+  height: 420rpx;
+  background: rgba(216, 255, 62, 0.2);
+  animation: ambientIn 1800ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.ambient-two {
+  left: -180rpx;
+  bottom: 120rpx;
+  width: 360rpx;
+  height: 360rpx;
+  background: rgba(15, 138, 79, 0.24);
+  animation: ambientIn 1800ms 120ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.motion-stage {
+  position: relative;
+  height: 610rpx;
+  animation: stageIn 1100ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.court-card {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 64rpx;
+  height: 430rpx;
+  border: 2rpx solid rgba(255, 255, 255, 0.2);
+  border-radius: 44rpx;
+  background: linear-gradient(145deg, #10231a 0%, #0d5e39 58%, #0f8a4f 100%);
+  box-shadow: 0 44rpx 90rpx rgba(0, 0, 0, 0.38);
+  overflow: hidden;
+}
+
+.court-card::before {
+  content: "";
+  position: absolute;
+  inset: 48rpx;
+  border: 3rpx solid rgba(255, 255, 255, 0.42);
+  border-radius: 28rpx;
+  opacity: 0;
+  animation: lineReveal 900ms 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.court-line,
+.court-axis {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.42);
+  opacity: 0;
+  animation: lineReveal 900ms 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.court-line {
+  left: 48rpx;
+  right: 48rpx;
+  height: 3rpx;
+}
+
+.line-top {
+  top: 150rpx;
+}
+
+.line-mid {
+  top: 214rpx;
+  background: #d8ff3e;
+  box-shadow: 0 0 32rpx rgba(216, 255, 62, 0.42);
+}
+
+.line-bottom {
+  bottom: 116rpx;
+}
+
+.court-axis {
+  top: 48rpx;
+  bottom: 48rpx;
+  width: 3rpx;
+}
+
+.axis-left {
+  left: 38%;
+}
+
+.axis-right {
+  right: 38%;
+}
+
+.motion-ball {
+  position: absolute;
+  left: 88rpx;
+  top: 272rpx;
+  width: 38rpx;
+  height: 38rpx;
+  border-radius: 50%;
+  background: #d8ff3e;
+  box-shadow: 0 0 0 14rpx rgba(216, 255, 62, 0.16), 0 0 42rpx rgba(216, 255, 62, 0.5);
+  animation: ballTravel 1400ms 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.brand-mark {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 132rpx;
+  height: 132rpx;
+  margin-left: -66rpx;
+  border-radius: 38rpx;
+  color: #10200f;
+  background: #d8ff3e;
+  box-shadow: 0 34rpx 70rpx rgba(216, 255, 62, 0.2);
+  animation: markIn 900ms 760ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.brand-mark text {
+  font-size: 54rpx;
+  font-weight: 950;
+}
+
+.brand-copy {
+  margin-top: 74rpx;
+  text-align: center;
+  animation: copyIn 900ms 980ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.brand-name,
+.brand-line {
+  display: block;
+}
+
+.brand-name {
+  color: #f7fbf5;
+  font-size: 52rpx;
+  font-weight: 950;
+  line-height: 1.12;
+}
+
+.brand-line {
+  margin-top: 14rpx;
+  color: rgba(247, 251, 245, 0.58);
+  font-size: 25rpx;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.progress {
+  position: absolute;
+  left: 120rpx;
+  right: 120rpx;
+  bottom: 84rpx;
+  height: 6rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.progress-fill {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: #d8ff3e;
+  transform-origin: left center;
+  animation: progressFill 1700ms 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes stageIn {
+  from {
+    opacity: 0;
+    transform: translateY(36rpx) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes lineReveal {
+  from {
+    opacity: 0;
+    transform: scaleX(0.86);
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes ballTravel {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 44rpx, 0) scale(0.72);
+  }
+  28% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(460rpx, -118rpx, 0) scale(1);
+  }
+}
+
+@keyframes markIn {
+  from {
+    opacity: 0;
+    transform: translateY(26rpx) scale(0.82);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes copyIn {
+  from {
+    opacity: 0;
+    transform: translateY(24rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes progressFill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes ambientIn {
+  from {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+  to {
+    opacity: 0.34;
+    transform: scale(1);
+  }
+}

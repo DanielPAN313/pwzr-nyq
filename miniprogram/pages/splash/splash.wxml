@@ -1,0 +1,28 @@
+<view class="splash">
+  <view class="ambient ambient-one"></view>
+  <view class="ambient ambient-two"></view>
+
+  <view class="motion-stage">
+    <view class="court-card">
+      <view class="court-line line-top"></view>
+      <view class="court-line line-mid"></view>
+      <view class="court-line line-bottom"></view>
+      <view class="court-axis axis-left"></view>
+      <view class="court-axis axis-right"></view>
+      <view class="motion-ball"></view>
+    </view>
+
+    <view class="brand-mark">
+      <text>宁</text>
+    </view>
+  </view>
+
+  <view class="brand-copy">
+    <text class="brand-name">宁约球</text>
+    <text class="brand-line">Play begins here.</text>
+  </view>
+
+  <view class="progress">
+    <view class="progress-fill"></view>
+  </view>
+</view>

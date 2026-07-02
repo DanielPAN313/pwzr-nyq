@@ -1,32 +1,126 @@
-.page-title,
-.card-title {
-  display: block;
-  margin-bottom: 10rpx;
-  font-size: 34rpx;
-  font-weight: 850;
+.page-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+  color: #ffffff;
+  background: linear-gradient(145deg, #13241a, #0b3d27 52%, #0f8a4f);
+  border-radius: 34rpx;
+}
+
+.page-hero .page-title {
+  color: #ffffff;
+  margin-bottom: 0;
+}
+
+.page-hero .muted {
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 8rpx;
 }
 
 .venue-card {
   display: flex;
   flex-direction: column;
-  gap: 12rpx;
+  gap: 18rpx;
+  overflow: hidden;
+  background: #101b15;
+  border-radius: 30rpx;
+}
+
+.venue-visual {
+  position: relative;
+  height: 176rpx;
+  margin: -8rpx -8rpx 0;
+  border-radius: 26rpx;
+  background: linear-gradient(135deg, #0f8a4f, #15251b);
+  overflow: hidden;
+}
+
+.court-grid {
+  position: absolute;
+  inset: 22rpx;
+  border: 2rpx solid rgba(255, 255, 255, 0.44);
+}
+
+.court-grid::before,
+.court-grid::after {
+  content: "";
+  position: absolute;
+  background: #d8ff3e;
+}
+
+.court-grid::before {
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2rpx;
+}
+
+.court-grid::after {
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2rpx;
+}
+
+.visual-tag {
+  position: absolute;
+  left: 22rpx;
+  bottom: 18rpx;
+  padding: 8rpx 16rpx;
+  border-radius: 999rpx;
+  color: #10200f;
+  background: #d8ff3e;
+  font-size: 22rpx;
+  font-weight: 900;
+}
+
+.card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 66rpx;
+  height: 46rpx;
+  border-radius: 999rpx;
+  color: #10200f;
+  background: #d8ff3e;
+  font-size: 23rpx;
+  font-weight: 900;
 }
 
 .card-row {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
-  margin-top: 8rpx;
+  gap: 20rpx;
 }
 
 .price {
-  color: #ff7b33;
-  font-size: 34rpx;
+  display: block;
+  color: #d8ff3e;
+  font-size: 36rpx;
   font-weight: 900;
+  line-height: 1.2;
 }
 
 .small {
-  min-width: 150rpx;
+  min-width: 154rpx;
+  min-height: 72rpx;
   border-radius: 999rpx;
-  font-size: 26rpx;
+  color: #10200f;
+  background: #d8ff3e;
+  font-size: 27rpx;
+  font-weight: 900;
 }

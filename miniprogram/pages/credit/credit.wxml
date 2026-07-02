@@ -1,36 +1,56 @@
 <view class="page">
-  <view class="credit-hero">
+  <view class="credit-hero {{levelTone}}">
     <text class="hero-label">当前信用分</text>
     <text class="score">{{score}}</text>
     <text wx:if="{{loading}}" class="hero-hint">正在加载信用账户...</text>
     <text wx:elif="{{error}}" class="hero-hint">{{error}}，已显示本地兜底数据。</text>
     <text wx:else class="hero-hint">{{level}}</text>
+    <view class="score-track">
+      <view class="score-fill" style="width: {{scorePercent}}%;"></view>
+    </view>
+    <text class="hero-hint">{{progressHint}}</text>
   </view>
 
   <view class="section metric-grid">
-    <view class="metric">
-      <text class="metric-value">{{played}}</text>
-      <text class="muted">参与场次</text>
+    <view wx:for="{{scoreCards}}" wx:key="label" class="metric">
+      <text class="metric-value">{{item.value}}</text>
+      <text class="muted">{{item.label}}</text>
+      <text class="metric-hint">{{item.hint}}</text>
     </view>
-    <view class="metric">
-      <text class="metric-value">{{checkedIn}}</text>
-      <text class="muted">到场核销</text>
+  </view>
+
+  <view class="section">
+    <view class="section-title">下一步建议</view>
+    <view class="action-row">
+      <button class="primary small" bindtap="goOrders">查看订单</button>
+      <button class="secondary small" bindtap="goMyGames">我的球局</button>
     </view>
-    <view class="metric">
-      <text class="metric-value">{{noShows}}</text>
-      <text class="muted">爽约次数</text>
+    <view wx:for="{{recoveryTips}}" wx:key="*this" class="tip-row">
+      <text class="tip-index">{{index + 1}}</text>
+      <text class="tip-text">{{item}}</text>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">信用规则</view>
+    <view wx:for="{{creditRules}}" wx:key="title" class="rule-card">
+      <text class="event-title">{{item.title}}</text>
+      <text class="muted">{{item.text}}</text>
     </view>
   </view>
 
   <view class="section">
     <view class="section-title">信用记录</view>
-    <view wx:for="{{events}}" wx:key="title" class="credit-row">
-      <view>
-        <text class="event-title">{{item.title}}</text>
-        <text class="muted">{{item.note}}</text>
-        <text class="muted">{{item.timeText}}</text>
+    <view wx:for="{{eventSections}}" wx:key="title" class="event-section">
+      <text class="event-section-title">{{item.title}}</text>
+      <view wx:for="{{item.events}}" wx:for-item="event" wx:key="id" class="credit-row">
+        <view>
+          <text class="event-title">{{event.title}}</text>
+          <text class="muted">{{event.note}}</text>
+          <text class="muted">{{event.timeText}}</text>
+        </view>
+        <text class="score-delta {{event.tone}}">{{event.scoreText}}</text>
       </view>
-      <text class="score-delta">{{item.scoreText}}</text>
     </view>
   </view>
 </view>

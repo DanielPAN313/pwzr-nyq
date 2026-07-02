@@ -4,19 +4,70 @@
     <text wx:if="{{loading}}" class="muted">正在加载我的球局...</text>
     <text wx:elif="{{error}}" class="muted">{{error}}，已显示本地兜底内容。</text>
     <text wx:elif="{{empty}}" class="muted">暂时没有报名或发起的球局。</text>
-    <text wx:else class="muted">这里展示我报名和我发起的球局。</text>
+    <text wx:else class="muted">这里汇总我报名、我发起、待核销和待评价的球局。</text>
     <view class="action-row">
       <button class="primary small" bindtap="goGames">去报名</button>
       <button class="secondary small" bindtap="createGame">发起球局</button>
     </view>
   </view>
 
-  <view wx:for="{{games}}" wx:key="title" class="section my-game-card" bindtap="openGame" data-id="{{item.id}}">
-    <text class="card-title">{{item.title}}</text>
-    <text class="muted">{{item.time}} · {{item.venueName}} · {{item.fee}}</text>
-    <view class="card-row">
-      <text class="role">{{item.roleText}}</text>
-      <text class="status">{{item.statusText}}</text>
+  <view class="stat-grid">
+    <view wx:for="{{stats}}" wx:key="label" class="stat-card">
+      <text class="stat-value">{{item.value}}</text>
+      <text class="muted">{{item.label}}</text>
+    </view>
+  </view>
+
+  <scroll-view class="tabs" scroll-x enable-flex>
+    <view
+      wx:for="{{tabs}}"
+      wx:key="key"
+      class="tab {{activeTab === item.key ? 'active' : ''}}"
+      bindtap="changeTab"
+      data-key="{{item.key}}"
+    >
+      {{item.label}}
+    </view>
+  </scroll-view>
+
+  <view wx:if="{{visibleGames.length === 0}}" class="section empty-panel">
+    <text class="card-title">这个分类暂时没有球局</text>
+    <text class="muted">可以去球局列表报名，或者自己发起一场。</text>
+    <view class="action-row">
+      <button class="primary small" bindtap="goGames">去报名</button>
+      <button class="secondary small" bindtap="createGame">发起球局</button>
+    </view>
+  </view>
+
+  <view wx:for="{{gameSections}}" wx:key="title" class="game-section">
+    <view class="section-heading">{{item.title}}</view>
+    <view wx:for="{{item.games}}" wx:for-item="game" wx:key="id" class="section my-game-card" bindtap="openGame" data-id="{{game.id}}">
+      <view class="card-head">
+        <text class="card-title">{{game.title}}</text>
+        <text class="status {{game.actionTone}}">{{game.statusText}}</text>
+      </view>
+      <text class="muted">{{game.time}} · {{game.venueName}} · {{game.fee}}</text>
+      <view class="progress-row">
+        <view class="progress-track">
+          <view class="progress-fill" style="width: {{game.progressPercent}}%;"></view>
+        </view>
+        <text class="joined">{{game.joinedText}}</text>
+      </view>
+      <view class="step-box {{game.actionTone}}">
+        <text class="step-title">{{game.nextStepTitle}}</text>
+        <text class="step-text">{{game.nextStepText}}</text>
+      </view>
+      <view class="card-row">
+        <text class="role">{{game.roleText}}</text>
+        <button
+          class="secondary mini-action"
+          catchtap="openGameAction"
+          data-id="{{game.id}}"
+          data-status="{{game.status}}"
+        >
+          {{game.actionText}}
+        </button>
+      </view>
     </view>
   </view>
 </view>

@@ -104,6 +104,40 @@ requireIncludes("miniprogram/pages/me/me.wxml", [
   "openMenu",
 ]);
 
+requireIncludes("miniprogram/pages/my-games/my-games.js", [
+  "buildStatCards",
+  "filterGames",
+  "buildGameSections",
+  "buildNextStep",
+  "openGameAction",
+  "/pages/game-detail/game-detail?id=",
+]);
+
+requireIncludes("miniprogram/pages/my-games/my-games.wxml", [
+  "stat-grid",
+  "tabs",
+  "gameSections",
+  "nextStepTitle",
+  "openGameAction",
+]);
+
+requireIncludes("miniprogram/pages/credit/credit.js", [
+  "creditRules",
+  "recoveryTips",
+  "buildEventSections",
+  "buildScoreCards",
+  "goOrders",
+  "goMyGames",
+]);
+
+requireIncludes("miniprogram/pages/credit/credit.wxml", [
+  "score-track",
+  "scoreCards",
+  "下一步建议",
+  "信用规则",
+  "eventSections",
+]);
+
 requireIncludes("miniprogram/pages/orders/orders.js", [
   "highlightedOrderId",
   "wx.pageScrollTo",

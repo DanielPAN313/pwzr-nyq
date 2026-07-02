@@ -108,6 +108,8 @@ requireIncludes("README.md", [
   "微信小程序",
   "miniprogram/",
   "touristappid",
+  "ui-polish",
+  "GitHub 的 `Actions` 页面",
   "docs/project-roadmap.md",
   "docs/current-handoff.md",
   "docs/miniprogram-self-test.md",

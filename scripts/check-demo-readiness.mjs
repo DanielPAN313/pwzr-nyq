@@ -29,6 +29,52 @@ function requirePath(file) {
   }
 }
 
+function readJson(file) {
+  try {
+    return JSON.parse(read(file));
+  } catch (error) {
+    errors.push(`${file} is not valid JSON: ${error.message}`);
+    return null;
+  }
+}
+
+function expectedPrPageLabel(pagePath) {
+  const explicitLabels = {
+    "pages/splash/splash": "启动页",
+    "pages/home/home": "首页",
+    "pages/orders/orders": "订单页",
+  };
+  if (explicitLabels[pagePath]) return explicitLabels[pagePath];
+
+  const pageJson = readJson(`miniprogram/${pagePath}.json`);
+  const title = pageJson?.navigationBarTitleText;
+  if (!title) return pagePath;
+
+  const suffixByPath = {
+    "pages/venues/venues": "页",
+    "pages/games/games": "页",
+    "pages/orders/orders": "页",
+    "pages/messages/messages": "页",
+    "pages/me/me": "页",
+    "pages/credit/credit": "页",
+    "pages/legal/legal": "页",
+  };
+
+  return `${title}${suffixByPath[pagePath] || ""}`;
+}
+
+function requirePrTemplatePageCoverage() {
+  const appJson = readJson("miniprogram/app.json");
+  const template = read(".github/pull_request_template.md");
+  const pages = Array.isArray(appJson?.pages) ? appJson.pages : [];
+  for (const pagePath of pages) {
+    const label = expectedPrPageLabel(pagePath);
+    if (!template.includes(label)) {
+      errors.push(`.github/pull_request_template.md should include page checklist label for ${pagePath}: ${label}`);
+    }
+  }
+}
+
 [
   "miniprogram/app.json",
   "miniprogram/app.js",
@@ -116,10 +162,8 @@ requireIncludes(".github/pull_request_template.md", [
   "docs/ui-design-system.md",
   "docs/miniprogram-self-test.md",
   "微信开发者工具",
-  "启动页",
-  "场馆管理页",
-  "合规说明页",
 ]);
+requirePrTemplatePageCoverage();
 
 requireIncludes("docs/project-roadmap.md", [
   "当前项目主线是微信小程序",

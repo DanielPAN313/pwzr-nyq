@@ -86,6 +86,28 @@ PUBLIC_API_BASE_URL=https://api.your-domain.com
 
 真实服务器必须使用强密码，不要提交或分享 `.env.server`。
 
+如果后面启用真实微信支付，把微信商户平台下载的商户私钥只放在服务器本地：
+
+```bash
+mkdir -p secrets
+cp /path/to/apiclient_key.pem secrets/wechat_pay_private_key.pem
+chmod 600 secrets/wechat_pay_private_key.pem
+```
+
+`docker-compose.yml` 会把项目根目录的 `secrets/` 只读挂载到容器内：
+
+```text
+./secrets -> /run/secrets
+```
+
+所以 `.env.server` 里保持：
+
+```text
+WECHAT_PAY_PRIVATE_KEY_PATH=/run/secrets/wechat_pay_private_key.pem
+```
+
+注意：`secrets/`、`.env.server`、`.pem`、证书文件都已经被 Git 和 Docker build context 忽略，不要把 AppSecret、API v3 key、商户私钥发给别人或提交到仓库。
+
 启动：
 
 ```bash

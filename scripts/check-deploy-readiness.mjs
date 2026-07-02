@@ -26,6 +26,21 @@ function requireIncludes(file, snippets) {
 requireIncludes(".gitignore", [
   ".env",
   ".env.server",
+  ".env.*",
+  "secrets/",
+  "*.pem",
+  "*.key",
+]);
+
+requireIncludes(".dockerignore", [
+  ".env",
+  ".env.server",
+  ".env.*",
+  "secrets",
+  "*.pem",
+  "*.key",
+  "*.crt",
+  "miniprogram/project.private.config.json",
 ]);
 
 requireIncludes(".env.example", [
@@ -47,6 +62,7 @@ requireIncludes(".env.server.example", [
   "WECHAT_PAY_MCH_ID=replace_with_merchant_id",
   "WECHAT_PAY_SERIAL_NO=replace_with_merchant_certificate_serial_no",
   "WECHAT_PAY_API_V3_KEY=replace_with_api_v3_key",
+  "Put the merchant private key on the server at ./secrets/wechat_pay_private_key.pem.",
   "WECHAT_PAY_PRIVATE_KEY_PATH=/run/secrets/wechat_pay_private_key.pem",
   "PUBLIC_API_BASE_URL=https://api.your-domain.com",
 ]);
@@ -66,6 +82,7 @@ requireIncludes("docker-compose.yml", [
   "WECHAT_PAY_API_V3_KEY: ${WECHAT_PAY_API_V3_KEY",
   "WECHAT_PAY_PRIVATE_KEY_PATH: ${WECHAT_PAY_PRIVATE_KEY_PATH",
   "PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL",
+  "./secrets:/run/secrets:ro",
 ]);
 
 requireIncludes("Dockerfile", [
@@ -85,6 +102,9 @@ requireIncludes("docs/server-deploy.md", [
   "WECHAT_PAY_SERIAL_NO",
   "WECHAT_PAY_API_V3_KEY",
   "WECHAT_PAY_PRIVATE_KEY_PATH",
+  "mkdir -p secrets",
+  "secrets/wechat_pay_private_key.pem",
+  "./secrets -> /run/secrets",
   "支付通知验签",
   "退款通知验签",
 ]);

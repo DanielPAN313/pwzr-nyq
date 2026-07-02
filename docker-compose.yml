@@ -45,6 +45,8 @@ services:
       PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-}
     ports:
       - "${PORT:-4174}:${PORT:-4174}"
+    volumes:
+      - ./secrets:/run/secrets:ro
 
 volumes:
   mysql_data:

@@ -103,6 +103,7 @@ function requirePrTemplatePageCoverage() {
   "scripts/check-ui-structure.mjs",
   "scripts/check-self-test-coverage.mjs",
   "scripts/check-wechat-release-config.mjs",
+  "scripts/check-wechat-release-config-self-test.mjs",
 ].forEach(requirePath);
 
 requireIncludes("README.md", [
@@ -145,6 +146,7 @@ requireIncludes("package.json", [
   "\"check:self-test-coverage\"",
   "\"check:ui-branch-scope\"",
   "\"check:release-config\"",
+  "\"check:release-config-self-test\"",
   "\"check\"",
   "check:demo-readiness",
   "check:repository-hygiene",
@@ -157,6 +159,7 @@ requireIncludes("package.json", [
   "check:self-test-coverage",
   "check:ui-branch-scope",
   "check:release-config",
+  "check:release-config-self-test",
 ]);
 
 requireIncludes(".github/workflows/check.yml", [

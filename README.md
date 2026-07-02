@@ -153,6 +153,8 @@ npm run check:release-config
 
 `check:release-config` 只在体验版/审核前的 `release-wechat-config` 分支运行，用来确认正式 AppID、`miniprogram/app.js` 生产覆盖、HTTPS API、`useMockAuth: false` 和 `urlCheck` 已经切好；当前本地开发分支运行失败是正常的。
 
+日常 `npm run check` 会运行 `check:release-config-self-test`，只验证这个 release 检查工具本身的正反用例，不会要求当前开发分支切成生产配置。
+
 小程序页面放在：
 
 ```text

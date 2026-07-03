@@ -5,7 +5,7 @@ const fallbackOrders = [
     title: "报名后会在这里生成订单",
     venueName: "宁约球",
     amountText: "¥0",
-    statusText: "待同步",
+    statusText: "演示订单",
     checkinCode: "------",
     hint: "当前显示本地兜底订单。",
     gameId: "",
@@ -15,7 +15,7 @@ const fallbackOrders = [
     canReview: false,
     showCheckin: false,
     statusTone: "neutral",
-    stepTitle: "等待同步",
+    stepTitle: "演示订单状态",
     stepText: "订单数据同步后会显示下一步动作。",
     highlighted: false
   }

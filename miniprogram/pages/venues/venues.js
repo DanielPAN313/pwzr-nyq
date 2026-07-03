@@ -1,8 +1,8 @@
 const { get, post } = require("../../utils/api");
 
 const fallbackVenues = [
-  { name: "江宁大学城篮球馆", area: "江宁大学城", price: "180/小时", sportsText: "篮球", canBook: false, actionText: "待同步" },
-  { name: "未来科技城五人制足球馆", area: "江宁开发区", price: "260/小时", sportsText: "足球", canBook: false, actionText: "待同步" }
+  { name: "江宁大学城篮球馆", area: "江宁大学城", price: "180/小时", sportsText: "篮球", canBook: false, actionText: "演示场馆" },
+  { name: "未来科技城五人制足球馆", area: "江宁开发区", price: "260/小时", sportsText: "足球", canBook: false, actionText: "演示场馆" }
 ];
 
 const sportFilters = [

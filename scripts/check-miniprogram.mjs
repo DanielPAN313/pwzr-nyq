@@ -223,6 +223,9 @@ for (const file of walk(miniRoot)) {
   if (source.includes("\uFFFD")) {
     errors.push(`Replacement character found in ${rel(file)}; check UTF-8 encoding.`);
   }
+  if (source.includes("待同步")) {
+    errors.push(`Placeholder text "待同步" found in ${rel(file)}; use polished demo or empty-state wording.`);
+  }
   for (const fragment of mojibakeFragments) {
     if (source.includes(fragment)) {
       errors.push(`Possible mojibake text "${fragment}" found in ${rel(file)}; check UTF-8 Chinese text.`);

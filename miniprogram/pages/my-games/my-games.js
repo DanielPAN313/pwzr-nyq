@@ -5,10 +5,10 @@ const fallbackGames = [
   {
     id: "",
     title: "报名或发起球局后会显示在这里",
-    time: "待同步",
+    time: "演示数据",
     venueName: "宁约球",
     roleText: "暂无",
-    statusText: "待同步",
+    statusText: "演示球局",
     fee: "AA",
     nextStepTitle: "先去报名或发起一场球局",
     nextStepText: "这里会自动汇总你参与、发起、待核销和待评价的球局。",

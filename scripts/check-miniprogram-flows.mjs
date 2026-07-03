@@ -233,6 +233,10 @@ requireIncludes("miniprogram/pages/venue-detail/venue-detail.js", [
   "goVenues",
   "openSlotsText",
   "detailCards",
+  "openVenueLocation",
+  "wx.openLocation",
+  "copyVenueAddress",
+  "wx.setClipboardData",
   "bookingState",
   "canSubmitBooking",
 ]);
@@ -245,6 +249,10 @@ requireIncludes("miniprogram/pages/venue-detail/venue-detail.wxml", [
   "bindtap=\"bookSelectedSlot\"",
   "生成待支付订单",
   "detail-grid",
+  "导航",
+  "复制地址",
+  "bindtap=\"openVenueLocation\"",
+  "bindtap=\"copyVenueAddress\"",
   "booking-summary",
   "selectedSlotLabel",
 ]);

@@ -27,6 +27,8 @@ function mapVenue(venue) {
     name: venue.name || "未命名场馆",
     area: venue.area || "附近",
     address: venue.address || "暂无详细地址",
+    lat: Number(venue.lat || 0),
+    lng: Number(venue.lng || 0),
     priceText,
     sportsText: sports || "综合运动",
     indoorText: venue.indoor ? "室内" : "室外",
@@ -102,6 +104,52 @@ Page({
 
   goVenues() {
     wx.switchTab({ url: "/pages/venues/venues" });
+  },
+
+  openVenueLocation() {
+    const venue = this.data.venue;
+    if (!venue) return;
+
+    if (!venue.lat || !venue.lng) {
+      this.copyVenueAddress();
+      return;
+    }
+
+    wx.openLocation({
+      latitude: venue.lat,
+      longitude: venue.lng,
+      name: venue.name,
+      address: venue.address,
+      scale: 16
+    });
+  },
+
+  copyVenueAddress() {
+    const venue = this.data.venue;
+    const address = venue && venue.address ? venue.address : "";
+    if (!address || address === "暂无详细地址") {
+      wx.showToast({
+        title: "暂无可复制地址",
+        icon: "none"
+      });
+      return;
+    }
+
+    wx.setClipboardData({
+      data: address,
+      success() {
+        wx.showToast({
+          title: "地址已复制",
+          icon: "success"
+        });
+      },
+      fail() {
+        wx.showToast({
+          title: "复制失败",
+          icon: "none"
+        });
+      }
+    });
   },
 
   loadAvailability() {

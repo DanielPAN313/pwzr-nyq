@@ -31,6 +31,10 @@
         </view>
       </view>
       <text class="muted">{{venue.address}}</text>
+      <view class="venue-actions">
+        <button class="primary small" bindtap="openVenueLocation">导航</button>
+        <button class="secondary small" bindtap="copyVenueAddress">复制地址</button>
+      </view>
       <view class="slot-summary">
         <text class="slot-summary-title">开放时段</text>
         <text class="slot-summary-text">{{venue.openSlotsText}}</text>

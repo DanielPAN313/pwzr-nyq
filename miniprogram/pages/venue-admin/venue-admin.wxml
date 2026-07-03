@@ -122,6 +122,13 @@
         bindinput="onCodeInput"
       />
       <button
+        class="secondary code-button"
+        disabled="{{!!actionOrderId}}"
+        bindtap="scanCheckinCode"
+      >
+        扫码
+      </button>
+      <button
         class="primary code-button"
         disabled="{{actionOrderId === 'code'}}"
         bindtap="checkinByCode"

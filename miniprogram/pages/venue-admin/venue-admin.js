@@ -446,6 +446,38 @@ Page({
     });
   },
 
+  scanCheckinCode() {
+    if (this.data.actionOrderId) return;
+
+    wx.scanCode({
+      onlyFromCamera: false,
+      scanType: ["qrCode", "barCode"],
+      success: (result) => {
+        const code = String(result.result || "").trim();
+        if (!code) {
+          wx.showToast({
+            title: "未识别到核销码",
+            icon: "none"
+          });
+          return;
+        }
+
+        this.setData({
+          checkinCode: code,
+          checkinResultText: ""
+        });
+        this.checkinByCode();
+      },
+      fail: (error) => {
+        if (String(error?.errMsg || "").includes("cancel")) return;
+        wx.showToast({
+          title: "扫码失败，请手动输入",
+          icon: "none"
+        });
+      }
+    });
+  },
+
   checkinByCode() {
     const code = this.data.checkinCode;
     if (!code || this.data.actionOrderId) {

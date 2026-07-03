@@ -259,6 +259,8 @@ requireIncludes("miniprogram/pages/venue-admin/venue-admin.js", [
   "stepText",
   "submitVenueApplication",
   "saveVenueMaintenance",
+  "scanCheckinCode",
+  "wx.scanCode",
   "checkinByCode",
   "wx.pageScrollTo",
 ]);
@@ -276,6 +278,8 @@ requireIncludes("miniprogram/pages/venue-admin/venue-admin.wxml", [
   "维护我的场馆",
   "bindtap=\"saveVenueMaintenance\"",
   "核销码核销",
+  "扫码",
+  "bindtap=\"scanCheckinCode\"",
   "bindinput=\"onCodeInput\"",
   "bindtap=\"checkinByCode\"",
 ]);

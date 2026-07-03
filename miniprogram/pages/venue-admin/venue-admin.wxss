@@ -190,12 +190,13 @@
 .code-row {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 16rpx;
 }
 
 .code-button {
   flex-shrink: 0;
-  min-width: 140rpx;
+  min-width: 116rpx;
   min-height: 84rpx;
   border-radius: 18rpx;
   font-size: 27rpx;

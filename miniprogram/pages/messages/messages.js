@@ -90,6 +90,7 @@ Page({
     error: "",
     empty: false,
     unreadCount: 0,
+    markingAllRead: false,
     messageSections: [],
     messages: fallbackMessages
   },
@@ -178,6 +179,42 @@ Page({
           unreadCount: unreadCount(messages),
           messageSections: buildMessageSections(messages),
           empty: messages.length === 0
+        });
+      });
+  },
+
+  markAllRead() {
+    if (this.data.markingAllRead || this.data.unreadCount === 0) return;
+
+    this.setData({ markingAllRead: true });
+
+    post("/api/sports-app/notifications/read-all", {}, { loadingTitle: "处理中" })
+      .then((result) => {
+        const messages = this.data.messages.map((message) => ({
+          ...message,
+          status: "read",
+          statusText: "已读",
+          statusTone: "muted"
+        }));
+
+        this.setData({
+          messages,
+          unreadCount: 0,
+          messageSections: buildMessageSections(messages),
+          empty: messages.length === 0,
+          markingAllRead: false
+        });
+
+        wx.showToast({
+          title: Number(result.updated || 0) > 0 ? "已全部标为已读" : "没有未读消息",
+          icon: "none"
+        });
+      })
+      .catch((error) => {
+        this.setData({ markingAllRead: false });
+        wx.showToast({
+          title: error.message || "操作失败",
+          icon: "none"
         });
       });
   },

@@ -5,6 +5,14 @@
     <text wx:elif="{{error}}" class="muted">{{error}}，已显示本地兜底消息。</text>
     <text wx:elif="{{empty}}" class="muted">暂时没有新消息。</text>
     <text wx:else class="muted">未读 {{unreadCount}} 条。订单、球局和系统通知会在这里汇总。</text>
+    <button
+      wx:if="{{!loading && !empty && !error}}"
+      class="hero-action small"
+      bindtap="markAllRead"
+      disabled="{{unreadCount === 0 || markingAllRead}}"
+    >
+      全部已读
+    </button>
   </view>
 
   <view wx:if="{{error}}" class="state-panel warning">

@@ -39,6 +39,19 @@
   line-height: 1.5;
 }
 
+.hero-action {
+  position: relative;
+  z-index: 1;
+  margin: 22rpx 0 0;
+  color: #10231a;
+  background: #d8ff3e;
+}
+
+.hero-action[disabled] {
+  color: rgba(247, 251, 245, 0.7);
+  background: rgba(255, 255, 255, 0.18);
+}
+
 .message-section {
   padding: 24rpx;
   border-radius: 24rpx;

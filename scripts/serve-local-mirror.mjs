@@ -2059,6 +2059,14 @@ const handleSportsApi = async (req, res, requestUrl) => {
       return json(res, await sportsNotificationsForUser(pool, user))
     }
 
+    if (pathName === '/api/sports-app/notifications/read-all' && req.method === 'POST') {
+      const [result] = await pool.execute(
+        'UPDATE sports_notification SET status = "read", read_at = NOW() WHERE user_id = ? AND status <> "read"',
+        [user.id],
+      )
+      return json(res, { ok: true, updated: Number(result.affectedRows || 0) })
+    }
+
     const readNotificationMatch = pathName.match(/^\/api\/sports-app\/notifications\/(\d+)\/read$/)
     if (readNotificationMatch && req.method === 'POST') {
       await pool.execute(

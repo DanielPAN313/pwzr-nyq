@@ -181,6 +181,9 @@ requireIncludes(".github/workflows/check.yml", [
 
 requireIncludes(".github/pull_request_template.md", [
   "npm run check",
+  "UI branch scope check",
+  "npm run check:ui-branch-scope -- origin/feature-miniprogram-flow HEAD",
+  "ui-polish-refresh",
   "npm run check:release-config",
   "release-wechat-config",
   "docs/ui-merge-checklist.md",

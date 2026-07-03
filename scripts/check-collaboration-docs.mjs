@@ -77,6 +77,13 @@ requireIncludes("docs/collaboration-plan.md", [
   "*.pem",
 ]);
 
+requireIncludes(".github/pull_request_template.md", [
+  "UI branch scope check",
+  "npm run check:ui-branch-scope -- origin/feature-miniprogram-flow HEAD",
+  "ui-polish-refresh",
+  "docs/ui-merge-checklist.md",
+]);
+
 requireIncludes("docs/project-roadmap.md", [
   "docs/miniprogram-self-test.md",
   "docs/ui-merge-checklist.md",

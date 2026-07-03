@@ -113,6 +113,7 @@ requireIncludes("docs/server-deploy.md", [
   "mkdir -p secrets",
   "secrets/wechat_pay_private_key.pem",
   "./secrets -> /run/secrets",
+  "不会携带小程序用户 `X-User-Id`",
   "支付通知验签",
   "退款通知验签",
 ]);

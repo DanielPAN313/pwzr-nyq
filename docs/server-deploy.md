@@ -226,6 +226,7 @@ npm run check:release-config
 - 微信支付通知地址：
   - `https://api.your-domain.com/api/sports-app/payment/wechat/notify`
   - `https://api.your-domain.com/api/sports-app/payment/wechat/refund-notify`
+- 支付和退款通知是微信服务器回调，不会携带小程序用户 `X-User-Id`；实现验签和订单更新时不能依赖用户态 header。
 - 场馆端权限：场馆管理员只能看自己场馆订单
 - 生产数据库：禁止使用弱密码
 - HTTPS：证书自动续期

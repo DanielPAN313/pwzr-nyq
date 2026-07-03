@@ -1482,6 +1482,20 @@ const handleSportsApi = async (req, res, requestUrl) => {
       })
     }
 
+    if (pathName === '/api/sports-app/payment/wechat/notify' && req.method === 'POST') {
+      return json(res, {
+        ok: false,
+        error: 'wechat payment notify is reserved; configure merchant keys and signature verification before enabling',
+      }, 501)
+    }
+
+    if (pathName === '/api/sports-app/payment/wechat/refund-notify' && req.method === 'POST') {
+      return json(res, {
+        ok: false,
+        error: 'wechat refund notify is reserved; configure merchant keys and signature verification before enabling',
+      }, 501)
+    }
+
     const user = requestUser(req)
 
     if (pathName === '/api/sports-app/venues' && req.method === 'GET') {
@@ -2084,20 +2098,6 @@ const handleSportsApi = async (req, res, requestUrl) => {
       } catch (error) {
         return json(res, { ok: false, error: error.message || '支付失败' }, error.statusCode || 500)
       }
-    }
-
-    if (pathName === '/api/sports-app/payment/wechat/notify' && req.method === 'POST') {
-      return json(res, {
-        ok: false,
-        error: 'wechat payment notify is reserved; configure merchant keys and signature verification before enabling',
-      }, 501)
-    }
-
-    if (pathName === '/api/sports-app/payment/wechat/refund-notify' && req.method === 'POST') {
-      return json(res, {
-        ok: false,
-        error: 'wechat refund notify is reserved; configure merchant keys and signature verification before enabling',
-      }, 501)
     }
 
     const cancelOrderMatch = pathName.match(/^\/api\/sports-app\/orders\/(\d+)\/cancel$/)

@@ -63,6 +63,19 @@ requireIncludes(backend, "scripts/serve-local-mirror.mjs", [
   "pathName === '/api/sports-app/payment/wechat/refund-notify' && req.method === 'POST'"
 ]);
 
+const requestUserIndex = backend.indexOf("const user = requestUser(req)");
+for (const callbackPath of [
+  "/api/sports-app/payment/wechat/notify",
+  "/api/sports-app/payment/wechat/refund-notify",
+]) {
+  const callbackIndex = backend.indexOf(`pathName === '${callbackPath}'`);
+  if (callbackIndex < 0) {
+    errors.push(`scripts/serve-local-mirror.mjs is missing API contract: ${callbackPath}`);
+  } else if (requestUserIndex >= 0 && callbackIndex > requestUserIndex) {
+    errors.push(`${callbackPath} must be handled before requestUser(req); WeChat callbacks do not include app user headers.`);
+  }
+}
+
 requireIncludes(frontend, "miniprogram frontend", [
   "/api/sports-app/auth/wechat-login",
   "/api/sports-app/bootstrap",

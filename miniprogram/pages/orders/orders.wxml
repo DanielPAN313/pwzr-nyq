@@ -43,8 +43,17 @@
       <text class="step-text">{{item.stepText}}</text>
     </view>
     <view wx:if="{{item.showCheckin}}" class="checkin-box">
-      <text class="muted">核销码</text>
-      <text class="checkin-code">{{item.checkinCode}}</text>
+      <view class="checkin-main">
+        <text class="muted">核销码</text>
+        <text class="checkin-code">{{item.checkinCode}}</text>
+      </view>
+      <button
+        class="secondary small copy-code"
+        bindtap="copyCheckinCode"
+        data-code="{{item.checkinCode}}"
+      >
+        复制
+      </button>
     </view>
     <text class="muted">{{item.hint}}</text>
     <view wx:if="{{item.canPay || item.canCheckin || item.canCancel || item.canReview}}" class="order-actions">

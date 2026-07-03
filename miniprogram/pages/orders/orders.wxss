@@ -133,10 +133,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 18rpx;
   padding: 22rpx;
   border-radius: 18rpx;
   background: #edf6ee;
+}
+
+.checkin-main {
+  min-width: 0;
+  flex: 1;
 }
 
 .checkin-code {
@@ -145,6 +151,11 @@
   font-size: 34rpx;
   font-weight: 950;
   letter-spacing: 2rpx;
+}
+
+.copy-code {
+  flex-shrink: 0;
+  min-width: 112rpx;
 }
 
 .order-actions {

@@ -305,6 +305,33 @@ Page({
       });
   },
 
+  copyCheckinCode(event) {
+    const code = String(event.currentTarget.dataset.code || "").trim();
+    if (!code || code === "------") {
+      wx.showToast({
+        title: "暂无可复制核销码",
+        icon: "none"
+      });
+      return;
+    }
+
+    wx.setClipboardData({
+      data: code,
+      success() {
+        wx.showToast({
+          title: "核销码已复制",
+          icon: "success"
+        });
+      },
+      fail() {
+        wx.showToast({
+          title: "复制失败",
+          icon: "none"
+        });
+      }
+    });
+  },
+
   openReview(event) {
     const gameId = event.currentTarget.dataset.gameId;
     if (!gameId) return;

@@ -24,6 +24,23 @@ jobs:
       - run: npm ci
       - run: npm run check
 
+  ui-branch-scope:
+    name: UI branch scope check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.ref_name == 'ui-polish' || github.ref_name == 'ui-polish-refresh' || github.head_ref == 'ui-polish' || github.head_ref == 'ui-polish-refresh'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: git fetch origin feature-miniprogram-flow
+      - run: npm run check:ui-branch-scope -- origin/feature-miniprogram-flow HEAD
+
   wechat-release-config:
     name: WeChat release config check
     runs-on: ubuntu-latest

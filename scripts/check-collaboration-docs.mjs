@@ -54,6 +54,7 @@ requireIncludes("docs/ui-merge-checklist.md", [
   "GitHub 的 `Actions` 页面",
   "macOS",
   "`ui-polish` 或 `ui-polish-refresh` 分支的 `Check` 工作流通过",
+  "Files outside safe UI scope require manual review",
   "docs/miniprogram-self-test.md",
   "git merge origin/ui-polish",
 ]);

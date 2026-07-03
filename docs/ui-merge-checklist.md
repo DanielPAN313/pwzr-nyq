@@ -126,7 +126,7 @@ git commit -m "Polish miniprogram UI"
 git push origin ui-polish
 ```
 
-推送后先去 GitHub 的 `Actions` 页面确认 `ui-polish` 或 `ui-polish-refresh` 分支的 `Check` 工作流通过。它会在 Ubuntu 和 macOS 上运行 `npm run check`。如果失败，先不要合并，打开失败 job 查看日志。
+推送后先去 GitHub 的 `Actions` 页面确认 `ui-polish` 或 `ui-polish-refresh` 分支的 `Check` 工作流通过。它会在 Ubuntu 和 macOS 上运行 `npm run check`，并额外运行 UI 分支范围检查。如果日志里出现 `Files outside safe UI scope require manual review`，说明分支改到了 JS、脚本、数据库、package 或其他需要人工审核的文件，先不要直接合并。如果失败，先不要合并，打开失败 job 查看日志。
 
 ## 5. 人工验收
 

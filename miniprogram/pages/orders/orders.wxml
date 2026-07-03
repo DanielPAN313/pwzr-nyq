@@ -42,6 +42,10 @@
       <text class="step-title">{{item.stepTitle}}</text>
       <text class="step-text">{{item.stepText}}</text>
     </view>
+    <view wx:if="{{item.showCancelInfo}}" class="cancel-info">
+      <text class="cancel-title">{{item.cancelInfoTitle}}</text>
+      <text class="cancel-text">{{item.cancelInfoText}}</text>
+    </view>
     <view wx:if="{{item.showCheckin}}" class="checkin-box">
       <view class="checkin-main">
         <text class="muted">核销码</text>
@@ -82,7 +86,7 @@
         bindtap="cancelOrder"
         data-id="{{item.id}}"
       >
-        {{actionOrderId === item.id ? "处理中" : "取消订单"}}
+        {{actionOrderId === item.id ? "处理中" : item.cancelButtonText}}
       </button>
       <button
         wx:if="{{item.canReview}}"

@@ -286,6 +286,9 @@ const ensureSportsSchema = async () => {
         checkin_code VARCHAR(30) NOT NULL,
         booking_start_time DATETIME NULL,
         booking_end_time DATETIME NULL,
+        cancel_note VARCHAR(255) NOT NULL DEFAULT '',
+        cancel_penalty INT NOT NULL DEFAULT 0,
+        refund_source VARCHAR(30) NOT NULL DEFAULT '',
         checked_in_at DATETIME NULL,
         create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (id),
@@ -355,6 +358,15 @@ const ensureSportsSchema = async () => {
       if (error?.code !== 'ER_DUP_FIELDNAME') throw error
     })
     await pool.execute('ALTER TABLE sports_order ADD COLUMN cancelled_at DATETIME NULL').catch((error) => {
+      if (error?.code !== 'ER_DUP_FIELDNAME') throw error
+    })
+    await pool.execute('ALTER TABLE sports_order ADD COLUMN cancel_note VARCHAR(255) NOT NULL DEFAULT ""').catch((error) => {
+      if (error?.code !== 'ER_DUP_FIELDNAME') throw error
+    })
+    await pool.execute('ALTER TABLE sports_order ADD COLUMN cancel_penalty INT NOT NULL DEFAULT 0').catch((error) => {
+      if (error?.code !== 'ER_DUP_FIELDNAME') throw error
+    })
+    await pool.execute('ALTER TABLE sports_order ADD COLUMN refund_source VARCHAR(30) NOT NULL DEFAULT ""').catch((error) => {
       if (error?.code !== 'ER_DUP_FIELDNAME') throw error
     })
     await pool.execute(`
@@ -747,12 +759,20 @@ const serializeGame = (game) => {
 
 const serializeOrder = (order) => {
   const checkinWindow = orderCheckinWindow(order)
+  const cancelRule = ['pending_payment', 'paid'].includes(order.status) ? canCancelOrder(order) : null
   return {
     ...order,
     amount: Number(order.amount || 0),
     can_pay: order.status === 'pending_payment',
     can_checkin: checkinWindow.ok,
     checkin_hint: checkinWindow.reason,
+    can_cancel: Boolean(cancelRule?.ok),
+    cancel_hint: cancelRule?.ok ? cancelRule.note : cancelRule?.error || '',
+    cancel_penalty_preview: Number(cancelRule?.penalty || 0),
+    refund_required: Boolean(cancelRule?.ok && cancelRule.nextStatus === 'refunded'),
+    cancel_penalty: Number(order.cancel_penalty || 0),
+    cancel_note: order.cancel_note || '',
+    refund_source: order.refund_source || '',
   }
 }
 
@@ -2124,25 +2144,34 @@ const handleSportsApi = async (req, res, requestUrl) => {
       const cancelRule = canCancelOrder(order)
       if (!cancelRule.ok) return json(res, { ok: false, error: cancelRule.error }, 409)
       const nextStatus = cancelRule.nextStatus
-      await pool.execute('UPDATE sports_order SET status = ?, cancelled_at = NOW() WHERE id = ?', [nextStatus, orderId])
+      const cancelPenalty = Number(cancelRule.penalty || 0)
+      const refundSource = nextStatus === 'refunded' ? 'mock_refund_reserved' : ''
+      await pool.execute(
+        'UPDATE sports_order SET status = ?, cancelled_at = NOW(), cancel_note = ?, cancel_penalty = ?, refund_source = ? WHERE id = ?',
+        [nextStatus, cancelRule.note, cancelPenalty, refundSource, orderId],
+      )
       if (order.game_id) {
         await pool.execute('UPDATE sports_signup SET payment_status = ? WHERE game_id = ? AND user_id = ?', [nextStatus, order.game_id, order.user_id])
       }
-      if (Number(cancelRule.penalty || 0) !== 0) {
+      if (cancelPenalty !== 0) {
         await pool.execute(
           'INSERT INTO sports_credit_event (user_id, username, event_type, score_delta, note, related_game_id) VALUES (?, ?, "late_cancel", ?, ?, ?)',
-          [order.user_id, order.username, Number(cancelRule.penalty || 0), cancelRule.note, order.game_id || null],
+          [order.user_id, order.username, cancelPenalty, cancelRule.note, order.game_id || null],
         )
       }
-      await trackEvent(pool, user, nextStatus === 'refunded' ? 'refund_success' : 'order_cancelled', { entity_type: order.game_id ? 'game' : 'venue', entity_id: order.game_id || order.venue_id, metadata: { order_id: orderId, penalty: Number(cancelRule.penalty || 0) } })
+      await trackEvent(pool, user, nextStatus === 'refunded' ? 'refund_success' : 'order_cancelled', {
+        entity_type: order.game_id ? 'game' : 'venue',
+        entity_id: order.game_id || order.venue_id,
+        metadata: { order_id: orderId, penalty: cancelPenalty, next_status: nextStatus, refund_source: refundSource },
+      })
       await createNotification(pool, user, {
         type: nextStatus === 'refunded' ? 'refund_success' : 'order_cancelled',
         title: nextStatus === 'refunded' ? '订单已退款' : '订单已取消',
-        body: `订单 #${orderId} 已更新为${nextStatus === 'refunded' ? '已退款' : '已取消'}。${Number(cancelRule.penalty || 0) !== 0 ? ` ${cancelRule.note}` : ''}`,
+        body: `订单 #${orderId} 已更新为${nextStatus === 'refunded' ? '已退款' : '已取消'}。${cancelPenalty !== 0 ? ` ${cancelRule.note}` : ''}`,
         order_id: orderId,
         game_id: order.game_id,
       })
-      return json(res, { ok: true, status: nextStatus, penalty: Number(cancelRule.penalty || 0), note: cancelRule.note })
+      return json(res, { ok: true, status: nextStatus, penalty: cancelPenalty, note: cancelRule.note, refund_source: refundSource })
     }
 
     const checkinMatch = pathName.match(/^\/api\/sports-app\/orders\/(\d+)\/checkin$/)

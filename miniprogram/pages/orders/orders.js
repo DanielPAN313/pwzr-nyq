@@ -14,6 +14,10 @@ const fallbackOrders = [
     canCheckin: false,
     canReview: false,
     showCheckin: false,
+    showCancelInfo: false,
+    cancelInfoTitle: "",
+    cancelInfoText: "",
+    cancelButtonText: "取消订单",
     statusTone: "neutral",
     stepTitle: "演示订单状态",
     stepText: "订单数据同步后会显示下一步动作。",
@@ -91,15 +95,60 @@ function orderStep(status, order, canCheckin, canReview) {
   };
 }
 
+function buildCancelInfo(status, order, canCancel) {
+  const savedNote = order.cancel_note || "";
+  const savedPenalty = Number(order.cancel_penalty || 0);
+  const previewPenalty = Number(order.cancel_penalty_preview || 0);
+  const cancelHint = order.cancel_hint || "";
+
+  if (status === "cancelled") {
+    return {
+      show: true,
+      title: "取消结果",
+      text: savedNote || "未支付订单已关闭，不会占用名额或场地。"
+    };
+  }
+
+  if (status === "refunded") {
+    const penaltyText = savedPenalty !== 0 ? ` 信用分 ${savedPenalty}。` : "";
+    const refundText = order.refund_source ? "本地模拟退款已记录，正式接入微信支付后以支付平台到账为准。" : "退款状态已记录。";
+    return {
+      show: true,
+      title: "退款结果",
+      text: `${savedNote || "订单已取消。"}${penaltyText}${refundText}`
+    };
+  }
+
+  if (!canCancel) {
+    return { show: false, title: "", text: "" };
+  }
+
+  if (order.refund_required) {
+    const penaltyText = previewPenalty !== 0 ? `，预计信用分 ${previewPenalty}` : "";
+    return {
+      show: true,
+      title: "取消与退款规则",
+      text: `${cancelHint || "已支付订单取消后会进入退款预留流程"}${penaltyText}。当前为本地模拟退款，不会真实扣款。`
+    };
+  }
+
+  return {
+    show: true,
+    title: "取消规则",
+    text: cancelHint || "未支付订单可直接取消，不会占用名额或场地。"
+  };
+}
+
 function mapOrder(order, highlightedOrderId) {
   const amount = Number(order.amount || 0);
   const status = order.status || "";
   const canPay = Boolean(order.can_pay);
-  const canCancel = ["pending_payment", "paid"].includes(status);
+  const canCancel = Boolean(order.can_cancel || ["pending_payment", "paid"].includes(status));
   const canCheckin = Boolean(order.can_checkin);
   const showCheckin = ["paid", "checked_in"].includes(status);
   const canReview = Boolean(order.game_id) && status === "checked_in";
   const step = orderStep(status, order, canCheckin, canReview);
+  const cancelInfo = buildCancelInfo(status, order, canCancel);
 
   return {
     id: order.id,
@@ -118,6 +167,10 @@ function mapOrder(order, highlightedOrderId) {
     canCheckin,
     canReview,
     showCheckin,
+    showCancelInfo: cancelInfo.show,
+    cancelInfoTitle: cancelInfo.title,
+    cancelInfoText: cancelInfo.text,
+    cancelButtonText: order.refund_required ? "申请取消退款" : "取消订单",
     statusTone: step.tone,
     stepTitle: step.title,
     stepText: step.text,
@@ -257,12 +310,30 @@ Page({
     const id = event.currentTarget.dataset.id;
     if (!id || this.data.actionOrderId) return;
 
+    const order = this.data.orders.find((item) => String(item.id) === String(id));
+    const modalContent = order && order.cancelInfoText
+      ? order.cancelInfoText
+      : "确认取消这个订单吗？";
+
+    wx.showModal({
+      title: order && order.cancelButtonText === "申请取消退款" ? "确认取消退款" : "确认取消订单",
+      content: modalContent,
+      confirmText: "确认",
+      cancelText: "再想想",
+      success: (modalResult) => {
+        if (!modalResult.confirm) return;
+        this.submitCancelOrder(id);
+      }
+    });
+  },
+
+  submitCancelOrder(id) {
     this.setData({ actionOrderId: id, highlightedOrderId: String(id) });
 
     post(`/api/sports-app/orders/${id}/cancel`, {}, { loadingTitle: "取消中" })
       .then((result) => {
         wx.showToast({
-          title: result.status === "refunded" ? "已退款" : "已取消",
+          title: result.status === "refunded" ? "已记录退款" : "已取消",
           icon: "success"
         });
 

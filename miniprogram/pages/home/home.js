@@ -55,6 +55,65 @@ function mapGame(game) {
   };
 }
 
+function sportName(game) {
+  return game.sport_name || game.sport || game.sport_type || "运动";
+}
+
+function levelText(game) {
+  return game.skill_level || game.level || game.level_text || "新手友好";
+}
+
+function countdownText(value) {
+  if (!value) return "时间待定";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "时间待定";
+
+  const diff = date.getTime() - Date.now();
+  if (diff <= 0) return "即将开场";
+
+  const hours = Math.floor(diff / 3600000);
+  const minutes = Math.floor((diff % 3600000) / 60000);
+  if (hours > 0) return `倒计时 ${hours}h ${minutes}m`;
+  return `倒计时 ${Math.max(1, minutes)}m`;
+}
+
+function mapMatchCard(game, index, mode) {
+  const joined = Number(game.joined_count || 0);
+  const capacity = Number(game.capacity || 0);
+  const missingCount = Math.max(0, capacity - joined);
+  const fee = game.fee_per_person || game.price_per_person || game.price || 0;
+
+  return {
+    id: game.id,
+    title: game.title || (mode === "invite" ? "好友邀请" : "正在组人"),
+    badge: index === 0 ? "NEW" : mode === "invite" ? "INVITE" : "JOIN",
+    sport: sportName(game),
+    format: capacity ? `${capacity}人局` : "约球局",
+    countdown: countdownText(game.start_time),
+    missingText: missingCount > 0 ? `还差 ${missingCount} 人` : "已满员",
+    feeText: Number(fee) > 0 ? `${money(fee)}/人` : "AA/免费",
+    rows: [
+      { label: "强度", value: levelText(game) },
+      { label: "时间", value: formatTime(game.start_time) },
+      { label: "场馆", value: game.venue_name || "场地待定" }
+    ],
+    target: `/pages/game-detail/game-detail?id=${game.id}`,
+    actionText: mode === "invite" ? "接受邀请" : "去报名"
+  };
+}
+
+function buildHomeMatchGroups(games) {
+  const source = Array.isArray(games) ? games : [];
+  const inviteSource = source.slice(0, 2);
+  const formingSource = source.length > 1 ? source.slice(1, 4) : source.slice(0, 2);
+
+  return {
+    featuredInvites: inviteSource.map((game, index) => mapMatchCard(game, index, "invite")),
+    formingGames: formingSource.map((game, index) => mapMatchCard(game, index, "forming"))
+  };
+}
+
 function buildTodoItems(data) {
   const orders = Array.isArray(data.orders) ? data.orders : [];
   const notifications = Array.isArray(data.notifications) ? data.notifications : [];
@@ -107,6 +166,14 @@ Page({
     todoItems: [],
     recommendedVenues: [],
     recommendedGames: [],
+    homeMode: "invite",
+    homeModes: [
+      { label: "好友邀请", value: "invite" },
+      { label: "正在组人", value: "forming" }
+    ],
+    featuredInvites: [],
+    formingGames: [],
+    matchCards: [],
     quickActions: [
       { label: "订场", target: "/pages/venues/venues" },
       { label: "找球局", target: "/pages/games/games" },
@@ -128,7 +195,10 @@ Page({
         const gameCount = Array.isArray(data.games) ? data.games.length : 0;
         const orderCount = Array.isArray(data.orders) ? data.orders.length : 0;
         const venues = Array.isArray(data.venues) ? data.venues.slice(0, 2).map(mapVenue) : [];
-        const games = Array.isArray(data.games) ? data.games.slice(0, 2).map(mapGame) : [];
+        const rawGames = Array.isArray(data.games) ? data.games : [];
+        const games = rawGames.slice(0, 2).map(mapGame);
+        const matchGroups = buildHomeMatchGroups(rawGames);
+        const matchCards = this.data.homeMode === "forming" ? matchGroups.formingGames : matchGroups.featuredInvites;
 
         this.setData({
           loading: false,
@@ -136,7 +206,10 @@ Page({
           statCards: buildStatCards(data),
           todoItems: buildTodoItems(data),
           recommendedVenues: venues,
-          recommendedGames: games
+          recommendedGames: games,
+          featuredInvites: matchGroups.featuredInvites,
+          formingGames: matchGroups.formingGames,
+          matchCards
         });
       })
       .catch((error) => {
@@ -146,7 +219,10 @@ Page({
           summary: fallbackSummary,
           todoItems: [],
           recommendedVenues: [],
-          recommendedGames: []
+          recommendedGames: [],
+          featuredInvites: [],
+          formingGames: [],
+          matchCards: []
         });
       });
   },
@@ -155,9 +231,23 @@ Page({
     this.loadBootstrap().finally(() => wx.stopPullDownRefresh());
   },
 
+  createGame() {
+    wx.navigateTo({ url: "/pages/create-game/create-game" });
+  },
+
   switchTab(event) {
     wx.switchTab({
       url: event.currentTarget.dataset.target
+    });
+  },
+
+  switchHomeMode(event) {
+    const mode = event.currentTarget.dataset.mode;
+    if (!mode || mode === this.data.homeMode) return;
+
+    this.setData({
+      homeMode: mode,
+      matchCards: mode === "forming" ? this.data.formingGames : this.data.featuredInvites
     });
   },
 

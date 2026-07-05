@@ -18,5 +18,16 @@ Page({
     wx.switchTab({
       url: "/pages/home/home"
     });
+  },
+
+  openAuth() {
+    if (this.timer && typeof clearTimeout === "function") {
+      clearTimeout(this.timer);
+      this.timer = null;
+    }
+
+    wx.navigateTo({
+      url: "/pages/auth/auth"
+    });
   }
 });

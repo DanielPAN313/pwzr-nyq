@@ -11,6 +11,7 @@
 
   var ROUTE_PAGES = Object.assign({}, TAB_PAGES, {
     'pages/splash/splash': 'splash',
+    'pages/auth/auth': 'auth',
     'pages/orders/orders': 'orders',
     'pages/venue-detail/venue-detail': 'venue-detail',
     'pages/create-game/create-game': 'create-game',

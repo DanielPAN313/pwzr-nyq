@@ -50,6 +50,7 @@
   var app = document.getElementById('app');
   var ROUTABLE_USER_VIEWS = [
     'splash',
+    'auth',
     'home',
     'venues',
     'games',
@@ -69,6 +70,7 @@
   ];
   var ROUTE_PATH_VIEWS = {
     'pages/splash/splash': 'splash',
+    'pages/auth/auth': 'auth',
     'pages/home/home': 'home',
     'pages/venues/venues': 'venues',
     'pages/games/games': 'games',
@@ -112,6 +114,7 @@
     return {
       home: 'Home',
       splash: 'Splash',
+      auth: 'Account',
       venues: 'Venues',
       games: 'Games',
       messages: 'Messages',
@@ -2408,6 +2411,7 @@
   function userMode() {
     var body = {
       home: function () { return ''; },
+      auth: meView,
       venues: venuesView,
       games: gamesView,
       'my-games': myGamesView,

@@ -2,6 +2,7 @@ const { get } = require("../../utils/api");
 const { getStoredUser } = require("../../utils/auth");
 
 const fallbackItems = [
+  { label: "账号登录", value: "进入", target: "/pages/auth/auth" },
   { label: "我的订单", value: "0", target: "/pages/orders/orders" },
   { label: "我的球局", value: "0", target: "/pages/my-games/my-games" },
   { label: "信用分", value: "100", target: "/pages/credit/credit" },
@@ -40,6 +41,7 @@ function buildMenuSections(profile) {
     {
       title: "用户中心",
       items: [
+        { label: "账号登录", value: "进入", hint: "创建账号、登录账号或切换演示身份", target: "/pages/auth/auth" },
         { label: "我的订单", value: activeOrders ? `${activeOrders} 个进行中` : `${orders.length} 个订单`, hint: pendingPayment ? `${pendingPayment} 个待支付` : "查看支付、核销和退款状态", target: "/pages/orders/orders" },
         { label: "我的球局", value: `${summary.played || 0} 场`, hint: "查看已报名和已完成球局", target: "/pages/my-games/my-games" },
         { label: "信用分", value: String(summary.credit_score || 100), hint: `${summary.no_shows || 0} 次爽约记录`, target: "/pages/credit/credit" }

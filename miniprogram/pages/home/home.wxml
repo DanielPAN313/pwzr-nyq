@@ -35,6 +35,59 @@
     <text class="date-pill">附近</text>
   </view>
 
+  <view class="section feature-card match-hub">
+    <view class="match-tabs">
+      <button
+        wx:for="{{homeModes}}"
+        wx:key="value"
+        class="match-tab {{homeMode === item.value ? 'active' : ''}}"
+        bindtap="switchHomeMode"
+        data-mode="{{item.value}}"
+      >
+        {{item.label}}
+      </button>
+    </view>
+    <text wx:if="{{loading}}" class="muted">正在匹配附近球局...</text>
+    <view wx:elif="{{matchCards.length === 0}}" class="state-panel empty">
+      <text class="state-title">暂时没有可加入球局</text>
+      <text class="state-text">可以先发起一场，把时间、场馆和人数填好后邀请球友。</text>
+      <view class="state-actions">
+        <button class="primary small" bindtap="createGame">发起球局</button>
+        <button class="secondary small" bindtap="switchTab" data-target="/pages/games/games">看全部</button>
+      </view>
+    </view>
+    <view
+      wx:for="{{matchCards}}"
+      wx:key="id"
+      class="match-card"
+      bindtap="openTarget"
+      data-target="{{item.target}}"
+    >
+      <view class="match-thumb">
+        <view class="match-thumb-court"></view>
+        <text class="match-sport">{{item.sport}}</text>
+      </view>
+      <view class="match-main">
+        <view class="match-title-row">
+          <view>
+            <text class="match-title">{{item.title}}</text>
+            <text class="match-format">{{item.format}} · {{item.missingText}}</text>
+          </view>
+          <text class="match-badge">{{item.badge}}</text>
+        </view>
+        <view class="countdown-pill">{{item.countdown}}</view>
+        <view class="match-row" wx:for="{{item.rows}}" wx:for-item="row" wx:key="label">
+          <text class="match-row-label">{{row.label}}</text>
+          <text class="match-row-value">{{row.value}}</text>
+        </view>
+        <view class="match-footer">
+          <text class="match-fee">{{item.feeText}}</text>
+          <text class="match-action">{{item.actionText}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
   <view class="stat-grid">
     <view wx:for="{{statCards}}" wx:key="label" class="stat-card stat-{{item.tone}}">
       <text class="stat-value">{{item.value}}</text>

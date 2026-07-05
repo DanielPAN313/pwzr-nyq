@@ -1,7 +1,7 @@
 Page({
   onLoad() {
     this.timer = setTimeout(() => {
-      this.enterHome();
+      this.openAuth();
     }, 1500);
   },
 

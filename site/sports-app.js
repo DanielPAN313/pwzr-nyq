@@ -753,7 +753,7 @@
     clearSplashTimer();
     state.splashTimer = setTimeout(function () {
       state.splashTimer = null;
-      goToUserView('home', { replace: true, replaceUrl: true });
+      goToUserView('auth', { replace: true, replaceUrl: true });
       render();
     }, 1500);
   }
@@ -2450,8 +2450,8 @@
       '  </section>',
       '  <section class="preview-brand-copy">',
       '    <h1>宁约球</h1>',
-      '    <p>开球，去宁约球</p>',
-      '    <button class="preview-enter-button" type="button" data-enter-splash>立即进入</button>',
+      '    <p>Play begins here.</p>',
+      '    <button class="preview-enter-button" type="button" data-enter-splash>登录 / 注册</button>',
       '  </section>',
       '  <div class="preview-splash-progress" aria-hidden="true"><span></span></div>',
       '</main>',
@@ -2725,7 +2725,7 @@
   function bindEvents() {
     app.querySelectorAll('[data-enter-splash]').forEach(function (button) {
       button.addEventListener('click', function () {
-        goToUserView('home', { replace: true, replaceUrl: true });
+        goToUserView('auth', { replace: true, replaceUrl: true });
         render();
       });
     });

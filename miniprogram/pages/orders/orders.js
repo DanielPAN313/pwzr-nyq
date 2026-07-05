@@ -1,27 +1,13 @@
-const { get, post } = require("../../utils/api");
+const { get } = require("../../utils/api");
 
 const fallbackOrders = [
   {
     title: "报名后会在这里生成订单",
     venueName: "宁约球",
     amountText: "¥0",
-    statusText: "演示订单",
+    statusText: "待同步",
     checkinCode: "------",
-    hint: "当前显示本地兜底订单。",
-    gameId: "",
-    canPay: false,
-    canCancel: false,
-    canCheckin: false,
-    canReview: false,
-    showCheckin: false,
-    showCancelInfo: false,
-    cancelInfoTitle: "",
-    cancelInfoText: "",
-    cancelButtonText: "取消订单",
-    statusTone: "neutral",
-    stepTitle: "演示订单状态",
-    stepText: "订单数据同步后会显示下一步动作。",
-    highlighted: false
+    hint: "当前显示本地兜底订单。"
   }
 ];
 
@@ -47,154 +33,31 @@ function formatTime(value) {
   return `${month}/${day} ${hour}:${minute}`;
 }
 
-function orderStep(status, order, canCheckin, canReview) {
-  if (status === "pending_payment") {
-    return {
-      tone: "warning",
-      title: "下一步：完成支付占位",
-      text: "支付后才会正式锁定名额或场地，可在未支付前直接取消。"
-    };
-  }
-
-  if (status === "paid") {
-    return {
-      tone: canCheckin ? "success" : "info",
-      title: canCheckin ? "下一步：到场后核销" : "下一步：按时到场",
-      text: order.checkin_hint || "请保管核销码，到场后出示给场馆或在可核销时间内完成核销。"
-    };
-  }
-
-  if (status === "checked_in") {
-    return {
-      tone: canReview ? "success" : "neutral",
-      title: canReview ? "下一步：完成赛后互评" : "订单已核销",
-      text: canReview ? "球局已完成到场核销，可以进入球局详情给队友评价。" : "本次订场或活动已完成到场确认。"
-    };
-  }
-
-  if (status === "cancelled") {
-    return {
-      tone: "muted",
-      title: "订单已取消",
-      text: "未支付订单已关闭，不会占用名额或场地。"
-    };
-  }
-
-  if (status === "refunded") {
-    return {
-      tone: "muted",
-      title: "订单已退款",
-      text: "退款状态已记录，如后续接入微信支付，将以支付平台到账结果为准。"
-    };
-  }
-
-  return {
-    tone: "neutral",
-    title: "等待处理",
-    text: order.checkin_hint || "订单状态更新后会显示下一步动作。"
-  };
-}
-
-function buildCancelInfo(status, order, canCancel) {
-  const savedNote = order.cancel_note || "";
-  const savedPenalty = Number(order.cancel_penalty || 0);
-  const previewPenalty = Number(order.cancel_penalty_preview || 0);
-  const cancelHint = order.cancel_hint || "";
-
-  if (status === "cancelled") {
-    return {
-      show: true,
-      title: "取消结果",
-      text: savedNote || "未支付订单已关闭，不会占用名额或场地。"
-    };
-  }
-
-  if (status === "refunded") {
-    const penaltyText = savedPenalty !== 0 ? ` 信用分 ${savedPenalty}。` : "";
-    const refundText = order.refund_source ? "本地模拟退款已记录，正式接入微信支付后以支付平台到账为准。" : "退款状态已记录。";
-    return {
-      show: true,
-      title: "退款结果",
-      text: `${savedNote || "订单已取消。"}${penaltyText}${refundText}`
-    };
-  }
-
-  if (!canCancel) {
-    return { show: false, title: "", text: "" };
-  }
-
-  if (order.refund_required) {
-    const penaltyText = previewPenalty !== 0 ? `，预计信用分 ${previewPenalty}` : "";
-    return {
-      show: true,
-      title: "取消与退款规则",
-      text: `${cancelHint || "已支付订单取消后会进入退款预留流程"}${penaltyText}。当前为本地模拟退款，不会真实扣款。`
-    };
-  }
-
-  return {
-    show: true,
-    title: "取消规则",
-    text: cancelHint || "未支付订单可直接取消，不会占用名额或场地。"
-  };
-}
-
-function mapOrder(order, highlightedOrderId) {
+function mapOrder(order) {
   const amount = Number(order.amount || 0);
-  const status = order.status || "";
-  const canPay = Boolean(order.can_pay);
-  const canCancel = Boolean(order.can_cancel || ["pending_payment", "paid"].includes(status));
-  const canCheckin = Boolean(order.can_checkin);
-  const showCheckin = ["paid", "checked_in"].includes(status);
-  const canReview = Boolean(order.game_id) && status === "checked_in";
-  const step = orderStep(status, order, canCheckin, canReview);
-  const cancelInfo = buildCancelInfo(status, order, canCancel);
 
   return {
     id: order.id,
-    anchorId: `order-${order.id}`,
-    title: order.title || "场馆预约订单",
+    title: order.title || "场馆预订订单",
     venueName: order.venue_name || "场馆待定",
-    amountText: `¥${amount.toFixed(0)}`,
-    status,
-    statusText: statusText[status] || status || "未知状态",
+    amountText: `¥${amount}`,
+    status: order.status,
+    statusText: statusText[order.status] || order.status || "未知状态",
     checkinCode: order.checkin_code || "------",
     hint: order.checkin_hint || (order.can_pay ? "请完成支付后正式占位。" : "请按订单时间到场核销。"),
-    timeText: formatTime(order.start_time || order.booking_start_time || order.create_time),
-    gameId: order.game_id || "",
-    canPay,
-    canCancel,
-    canCheckin,
-    canReview,
-    showCheckin,
-    showCancelInfo: cancelInfo.show,
-    cancelInfoTitle: cancelInfo.title,
-    cancelInfoText: cancelInfo.text,
-    cancelButtonText: order.refund_required ? "申请取消退款" : "取消订单",
-    statusTone: step.tone,
-    stepTitle: step.title,
-    stepText: step.text,
-    highlighted: highlightedOrderId && String(order.id) === String(highlightedOrderId)
+    timeText: formatTime(order.start_time || order.booking_start_time || order.create_time)
   };
 }
 
 Page({
   data: {
     loading: false,
-    actionOrderId: "",
-    highlightedOrderId: "",
-    noticeText: "",
     error: "",
     empty: false,
     orders: fallbackOrders
   },
 
-  onLoad(query) {
-    const highlightedOrderId = query && query.orderId ? String(query.orderId) : "";
-    this.setData({
-      highlightedOrderId,
-      noticeText: highlightedOrderId ? "已定位到消息关联订单。" : ""
-    });
+  onLoad() {
     this.loadOrders();
   },
 
@@ -202,41 +65,18 @@ Page({
     this.loadOrders().finally(() => wx.stopPullDownRefresh());
   },
 
-  retryLoadOrders() {
-    this.loadOrders();
-  },
-
-  goGames() {
-    wx.switchTab({ url: "/pages/games/games" });
-  },
-
-  goVenues() {
-    wx.switchTab({ url: "/pages/venues/venues" });
-  },
-
   loadOrders() {
     this.setData({ loading: true, error: "", empty: false });
 
     return get("/api/sports-app/orders", { showLoading: false })
       .then((orders) => {
-        const highlightedOrderId = this.data.highlightedOrderId;
-        const list = Array.isArray(orders) ? orders.map((order) => mapOrder(order, highlightedOrderId)) : [];
-        const hasHighlightedOrder = highlightedOrderId && list.some((order) => order.highlighted);
+        const list = Array.isArray(orders) ? orders.map(mapOrder) : [];
 
         this.setData({
           loading: false,
           orders: list.length ? list : [],
-          empty: list.length === 0,
-          noticeText: hasHighlightedOrder
-            ? "已定位到消息关联订单。"
-            : highlightedOrderId
-              ? "这条消息关联的订单暂时不在当前列表中。"
-              : ""
+          empty: list.length === 0
         });
-
-        if (hasHighlightedOrder) {
-          this.scrollToOrder(highlightedOrderId);
-        }
       })
       .catch((error) => {
         this.setData({
@@ -246,169 +86,5 @@ Page({
           orders: fallbackOrders
         });
       });
-  },
-
-  scrollToOrder(id) {
-    setTimeout(() => {
-      wx.pageScrollTo({
-        selector: `#order-${id}`,
-        duration: 260
-      });
-    }, 120);
-  },
-
-  requestWxPayment(payParams) {
-    return new Promise((resolve, reject) => {
-      wx.requestPayment({
-        ...(payParams || {}),
-        success: resolve,
-        fail(error) {
-          reject(new Error((error && error.errMsg) || "支付取消或失败"));
-        }
-      });
-    });
-  },
-
-  confirmOrderPayment(id, source) {
-    return post(`/api/sports-app/orders/${id}/pay/confirm`, { source }, { loadingTitle: "确认支付中" });
-  },
-
-  payOrder(event) {
-    const id = event.currentTarget.dataset.id;
-    if (!id || this.data.actionOrderId) return;
-
-    this.setData({ actionOrderId: id, highlightedOrderId: String(id) });
-
-    post(`/api/sports-app/orders/${id}/prepay`, {}, { loadingTitle: "支付中" })
-      .then((prepay) => {
-        if (!prepay || prepay.provider === "mock") {
-          return this.confirmOrderPayment(id, "mock");
-        }
-
-        return this.requestWxPayment(prepay.pay_params).then(() => this.confirmOrderPayment(id, "wechat"));
-      })
-      .then(() => {
-        wx.showToast({
-          title: "支付成功",
-          icon: "success"
-        });
-
-        return this.loadOrders();
-      })
-      .catch((error) => {
-        wx.showToast({
-          title: error.message || "支付失败",
-          icon: "none"
-        });
-      })
-      .finally(() => {
-        this.setData({ actionOrderId: "" });
-      });
-  },
-
-  cancelOrder(event) {
-    const id = event.currentTarget.dataset.id;
-    if (!id || this.data.actionOrderId) return;
-
-    const order = this.data.orders.find((item) => String(item.id) === String(id));
-    const modalContent = order && order.cancelInfoText
-      ? order.cancelInfoText
-      : "确认取消这个订单吗？";
-
-    wx.showModal({
-      title: order && order.cancelButtonText === "申请取消退款" ? "确认取消退款" : "确认取消订单",
-      content: modalContent,
-      confirmText: "确认",
-      cancelText: "再想想",
-      success: (modalResult) => {
-        if (!modalResult.confirm) return;
-        this.submitCancelOrder(id);
-      }
-    });
-  },
-
-  submitCancelOrder(id) {
-    this.setData({ actionOrderId: id, highlightedOrderId: String(id) });
-
-    post(`/api/sports-app/orders/${id}/cancel`, {}, { loadingTitle: "取消中" })
-      .then((result) => {
-        wx.showToast({
-          title: result.status === "refunded" ? "已记录退款" : "已取消",
-          icon: "success"
-        });
-
-        return this.loadOrders();
-      })
-      .catch((error) => {
-        wx.showToast({
-          title: error.message || "取消失败",
-          icon: "none"
-        });
-      })
-      .finally(() => {
-        this.setData({ actionOrderId: "" });
-      });
-  },
-
-  checkinOrder(event) {
-    const id = event.currentTarget.dataset.id;
-    if (!id || this.data.actionOrderId) return;
-
-    this.setData({ actionOrderId: id, highlightedOrderId: String(id) });
-
-    post(`/api/sports-app/orders/${id}/checkin`, {}, { loadingTitle: "核销中" })
-      .then(() => {
-        wx.showToast({
-          title: "核销成功",
-          icon: "success"
-        });
-
-        return this.loadOrders();
-      })
-      .catch((error) => {
-        wx.showToast({
-          title: error.message || "核销失败",
-          icon: "none"
-        });
-      })
-      .finally(() => {
-        this.setData({ actionOrderId: "" });
-      });
-  },
-
-  copyCheckinCode(event) {
-    const code = String(event.currentTarget.dataset.code || "").trim();
-    if (!code || code === "------") {
-      wx.showToast({
-        title: "暂无可复制核销码",
-        icon: "none"
-      });
-      return;
-    }
-
-    wx.setClipboardData({
-      data: code,
-      success() {
-        wx.showToast({
-          title: "核销码已复制",
-          icon: "success"
-        });
-      },
-      fail() {
-        wx.showToast({
-          title: "复制失败",
-          icon: "none"
-        });
-      }
-    });
-  },
-
-  openReview(event) {
-    const gameId = event.currentTarget.dataset.gameId;
-    if (!gameId) return;
-
-    wx.navigateTo({
-      url: `/pages/game-detail/game-detail?id=${gameId}&review=1`
-    });
   }
 });

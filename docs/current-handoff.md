@@ -1,124 +1,47 @@
 # 当前交接快照
 
-更新时间：2026-07-03
-
-这份文档用于快速交接当前小程序状态。详细路线图看 `docs/project-roadmap.md`，逐页自测看 `docs/miniprogram-self-test.md`，UI 标准看 `docs/ui-design-system.md`。
+更新时间：2026-07-06
 
 ## 当前结论
 
-- 当前主线：微信小程序。
-- 当前功能分支：`feature-miniprogram-flow`。
-- UI 同伴分支：从 `feature-miniprogram-flow` 新建 `ui-polish`。
-- 小程序目录：`miniprogram/`。
-- 未注册阶段 AppID：`touristappid`。
-- 本地后端：`http://localhost:4174`。
-- API 配置入口：`miniprogram/utils/config.js`。
-- 浏览器启动页预览：`http://localhost:4174/?page=splash`。
-- 当前仍使用开发版模拟登录和模拟支付。
+- 当前主线仍是微信小程序，主工程是 `miniprogram/`。
+- 当前功能分支是 `feature-miniprogram-flow`。
+- 本轮已按最新要求改成 UI-first：以 `origin/ui-polish` 的小程序界面为准，允许删除旧功能页。
+- 当前小程序注册 7 个页面：启动页、首页、订场、球局、消息、我的、订单。
+- 旧的账号页、场馆详情、球局详情、发起球局、场馆端、信用分、我的球局、合规说明等页面已从小程序注册路径中移除。
+- 本地后端仍默认 `http://localhost:4174`，开发阶段仍使用模拟登录。
 
-## 先跑这些命令
+## 当前保留功能
 
-```bash
-git checkout feature-miniprogram-flow
-git pull origin feature-miniprogram-flow
-npm ci
-npm run check
-npm run dev
-```
+- 启动页：使用 UI 分支动效，自动进入首页。
+- 首页：展示 UI 分支首页视觉，搜索条可跳到订场页。
+- 订场：加载真实场馆列表，点击订场会尝试锁定今天最近可用时段并生成待支付订单。
+- 球局：加载真实球局列表，支持报名并生成订单。
+- 消息：加载通知列表，点击消息可标记已读。
+- 我的：加载个人概览，已有页面可跳转；UI 版暂未开放的入口会提示。
+- 订单：加载订单列表，展示金额、状态和核销码。
 
-微信开发者工具导入：
+## 自动检查
 
-```text
-目录：pwzr-nyq/miniprogram
-AppID：touristappid
-后端服务：不使用云服务
-```
-
-## 当前已覆盖功能
-
-- 首页：统计、快捷入口、待处理事项、推荐场馆、推荐球局。
-- 启动页：品牌动效、登录 / 注册入口、自动打开账号页，保留演示进入首页。
-- 订场：场馆列表、搜索筛选、场馆详情、时段选择、生成待支付订单。
-- 球局：球局列表、搜索筛选、发起球局、报名、球局详情、赛后互评。
-- 订单：支付、取消/退款规则提示、确认弹窗、核销码、核销、评价入口。
-- 消息：未读/已读分组，跳转关联订单或球局。
-- 我的：订单、我的球局、信用分、场馆端、合规说明。
-- 场馆端：入驻申请、资料维护、订单列表、核销码核销。
-- 合规说明：隐私政策、用户协议、支付说明、场馆合作摘要。
-- H5 预览：已支持 `?page=splash` 查看保留光斑的启动页，并会自动打开账号页。
-
-## 当前自动检查
-
-`npm run check` 已覆盖：
-
-- 小程序结构检查。
-- 页面标题和下拉刷新配置检查。
-- 主流程契约检查。
-- 小程序运行时检查。
-- 小程序路由检查。
-- WXML 事件绑定和 `data-*` 参数检查。
-- UI 结构检查。
-- API 契约检查。
-- DB 契约检查。
-- 演示数据契约检查。
-- H5 小程序预览检查。
-- `wx.*` 桥接覆盖检查。
-- 协作文档检查。
-- 自测覆盖检查。
-- 演示准备检查。
-- 仓库卫生检查。
-- 部署准备检查。
-- 服务器密钥检查：`.env.server`、`secrets/`、`.pem`、证书和本机产物不会被提交，微信支付私钥通过 `/run/secrets` 只读挂载。
-- 生产配置检查：`npm run check:release-config` 已预留给 `release-wechat-config` 分支，当前本地开发分支失败是正常的。
-
-## UI 同伴注意
-
-UI 同伴主要改：
-
-```text
-miniprogram/pages/**/*.wxml
-miniprogram/pages/**/*.wxss
-miniprogram/app.wxss
-docs/ui-design-system.md
-```
-
-先不要改：
-
-```text
-miniprogram/pages/**/*.js
-miniprogram/utils/
-scripts/
-db/
-package.json
-```
-
-改完必须跑：
+当前 `npm run check` 使用 UI-first 简化检查集：
 
 ```bash
-npm run check
+npm run check:miniprogram
+npm run check:miniprogram-runtime
+npm run check:h5-preview
+npm run check:h5-http-preview
+npm run check:h5-bridge
+npm run check:h5-bridge-coverage
 ```
 
-如果开 PR，按 `.github/pull_request_template.md` 勾选检查项。
+当前通过时应看到：
 
-## 下一步建议
+```text
+Mini Program runtime check passed: loaded app.js, 7 pages, and home.switchTab.
+```
 
-短期：
+## 注意
 
-- UI 同伴按 `docs/ui-merge-checklist.md` 做视觉统一。
-- UI 同伴按 `docs/ui-design-system.md` 控制颜色、间距、按钮、状态和空态。
-- 你按 `docs/miniprogram-self-test.md` 在微信开发者工具逐页点通。
-- 合并 UI 分支前跑 `npm run check`。
-
-中期：
-
-- 注册小程序后替换正式 AppID。
-- 配置 `WECHAT_APP_ID` 和 `WECHAT_APP_SECRET`。
-- 将登录从模拟模式切到真实 `wx.login`。
-
-上线前：
-
-- 购买服务器和 HTTPS 域名。
-- 配置微信 request 合法域名。
-- 将商户私钥放到服务器本地 `secrets/wechat_pay_private_key.pem`，容器内路径保持 `/run/secrets/wechat_pay_private_key.pem`。
-- 配置微信支付商户号、证书、API v3 key、支付通知验签和退款通知验签。
-- 补齐 `docs/legal/` 中的正式主体、客服电话、生效日期和隐私字段。
+- 这版不是完整业务闭环版，而是 UI 优先版。
+- 如果后续要恢复账号、详情页、场馆端、核销、支付取消退款等旧闭环，需要在这套 UI 上重新设计入口再逐个加回。
+- 不要提交 `.env`、`project.private.config.json`、截图、APK、日志或 `node_modules`。

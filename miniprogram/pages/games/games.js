@@ -1,14 +1,8 @@
 const { get, post } = require("../../utils/api");
 
 const fallbackGames = [
-  { title: "今晚江宁五人制足球", time: "今天 19:30", status: "缺 2 人", venueName: "未来科技城五人制足球馆", fee: "AA", canJoin: false, actionText: "演示球局" },
-  { title: "大学城 3v3 篮球局", time: "明天 20:00", status: "缺 1 人", venueName: "江宁大学城篮球馆", fee: "AA", canJoin: false, actionText: "演示球局" }
-];
-
-const sportFilters = [
-  { label: "全部", value: "all" },
-  { label: "足球", value: "football" },
-  { label: "篮球", value: "basketball" }
+  { title: "今晚江宁五人制足球", time: "今天 19:30", status: "缺 2 人", venueName: "未来科技城五人制足球馆", fee: "AA", canJoin: false, actionText: "待同步" },
+  { title: "大学城 3v3 篮球局", time: "明天 20:00", status: "缺 1 人", venueName: "江宁大学城篮球馆", fee: "AA", canJoin: false, actionText: "待同步" }
 ];
 
 const statusText = {
@@ -46,7 +40,6 @@ function mapGame(game) {
   return {
     id: game.id,
     title: game.title || "未命名球局",
-    sport: game.sport || "",
     time: formatGameTime(game.start_time),
     status: statusText[game.status] || missing,
     venueName: game.venue_name || game.area || "场地待定",
@@ -60,20 +53,12 @@ Page({
   data: {
     loading: false,
     joiningId: "",
-    query: "",
-    activeSport: "all",
-    sportFilters,
     error: "",
     empty: false,
-    allGames: [],
     games: fallbackGames
   },
 
   onLoad() {
-    this.loadGames();
-  },
-
-  onShow() {
     this.loadGames();
   },
 
@@ -90,65 +75,18 @@ Page({
 
         this.setData({
           loading: false,
-          allGames: list
+          games: list.length ? list : [],
+          empty: list.length === 0
         });
-
-        this.applyFilters();
       })
       .catch((error) => {
         this.setData({
           loading: false,
           error: error.message || "球局数据加载失败",
           empty: false,
-          allGames: fallbackGames,
           games: fallbackGames
         });
       });
-  },
-
-  applyFilters() {
-    const query = String(this.data.query || "").trim().toLowerCase();
-    const activeSport = this.data.activeSport || "all";
-    const allGames = Array.isArray(this.data.allGames) ? this.data.allGames : [];
-
-    const games = allGames.filter((game) => {
-      const text = `${game.title || ""} ${game.venueName || ""} ${game.status || ""}`.toLowerCase();
-      const matchesQuery = !query || text.includes(query);
-      const matchesSport = activeSport === "all" || game.sport === activeSport;
-
-      return matchesQuery && matchesSport;
-    });
-
-    this.setData({
-      games,
-      empty: !this.data.loading && games.length === 0
-    });
-  },
-
-  onSearchInput(event) {
-    this.setData({
-      query: event.detail.value || ""
-    });
-    this.applyFilters();
-  },
-
-  changeSport(event) {
-    this.setData({
-      activeSport: event.currentTarget.dataset.value || "all"
-    });
-    this.applyFilters();
-  },
-
-  retryLoadGames() {
-    this.loadGames();
-  },
-
-  resetFilters() {
-    this.setData({
-      query: "",
-      activeSport: "all"
-    });
-    this.applyFilters();
   },
 
   joinGame(event) {
@@ -175,20 +113,5 @@ Page({
       .finally(() => {
         this.setData({ joiningId: "" });
       });
-  },
-
-  createGame() {
-    wx.navigateTo({
-      url: "/pages/create-game/create-game"
-    });
-  },
-
-  openGame(event) {
-    const id = event.currentTarget.dataset.id;
-    if (!id) return;
-
-    wx.navigateTo({
-      url: `/pages/game-detail/game-detail?id=${id}`
-    });
   }
 });

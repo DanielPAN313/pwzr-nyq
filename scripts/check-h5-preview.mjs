@@ -60,10 +60,6 @@ requireIncludes("mobile-preview-lock.css", [
 
 requireIncludes("sports-app.js", [
   "ROUTABLE_USER_VIEWS",
-  "'splash'",
-  "'pages/splash/splash': 'splash'",
-  "function splashView",
-  "preview-light-spot",
   "ROUTE_PATH_VIEWS",
   "readPreviewRoute",
   "url.pathname.replace",
@@ -73,7 +69,6 @@ requireIncludes("sports-app.js", [
 
 requireIncludes("miniapp-bridge.js", [
   "window.wx",
-  "'pages/splash/splash': 'splash'",
   "__isH5MiniProgramBridge",
   "request: function",
   "onHeadersReceived",

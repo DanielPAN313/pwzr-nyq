@@ -2,9 +2,7 @@ const DEFAULT_CONFIG = {
   env: "development",
   apiBaseUrl: "http://localhost:4174",
   requestTimeout: 10000,
-  requestRetryCount: 1,
   useMockAuth: true,
-  wechatLoginPath: "/api/sports-app/auth/wechat-login",
   storageKeys: {
     token: "nyq_token",
     user: "nyq_user"
@@ -20,7 +18,7 @@ function readAppConfig() {
 
     return {
       ...(app.globalData.config || {}),
-      apiBaseUrl: (app.globalData.config && app.globalData.config.apiBaseUrl) || app.globalData.apiBaseUrl
+      apiBaseUrl: app.globalData.apiBaseUrl || (app.globalData.config && app.globalData.config.apiBaseUrl)
     };
   } catch (error) {
     return {};

@@ -1,33 +1,13 @@
 Page({
   onLoad() {
     this.timer = setTimeout(() => {
-      this.openAuth();
-    }, 1500);
+      wx.switchTab({
+        url: "/pages/home/home"
+      });
+    }, 1900);
   },
 
   onUnload() {
-    if (this.timer && typeof clearTimeout === "function") clearTimeout(this.timer);
-  },
-
-  enterHome() {
-    if (this.timer && typeof clearTimeout === "function") {
-      clearTimeout(this.timer);
-      this.timer = null;
-    }
-
-    wx.switchTab({
-      url: "/pages/home/home"
-    });
-  },
-
-  openAuth() {
-    if (this.timer && typeof clearTimeout === "function") {
-      clearTimeout(this.timer);
-      this.timer = null;
-    }
-
-    wx.navigateTo({
-      url: "/pages/auth/auth"
-    });
+    if (this.timer) clearTimeout(this.timer);
   }
 });

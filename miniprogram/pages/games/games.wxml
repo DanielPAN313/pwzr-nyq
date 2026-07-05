@@ -1,72 +1,42 @@
 <view class="page">
   <view class="section page-hero">
-    <text class="page-kicker">MATCHES</text>
+    <text class="page-kicker">OPEN MATCHES</text>
     <view class="page-title">附近球局</view>
     <text wx:if="{{loading}}" class="muted">正在加载球局...</text>
     <text wx:elif="{{error}}" class="muted">{{error}}，已显示本地兜底球局。</text>
-    <text wx:elif="{{empty}}" class="muted">没有找到匹配球局，可以换个关键词或运动类型。</text>
-    <text wx:else class="muted">按球局、场馆或运动类型快速找人。</text>
-    <input
-      class="search-input"
-      placeholder="搜索球局或场馆"
-      value="{{query}}"
-      bindinput="onSearchInput"
-    />
+    <text wx:elif="{{empty}}" class="muted">暂时没有可报名球局。</text>
+    <text wx:else class="muted">已接入真实球局列表，后续继续补报名和支付。</text>
     <view class="filter-row">
-      <button
-        wx:for="{{sportFilters}}"
-        wx:key="value"
-        class="filter-chip {{activeSport === item.value ? 'is-active' : ''}}"
-        data-value="{{item.value}}"
-        bindtap="changeSport"
-      >
-        {{item.label}}
-      </button>
-    </view>
-    <button class="primary small create-button" bindtap="createGame">发起球局</button>
-  </view>
-
-  <view wx:if="{{error}}" class="state-panel warning">
-    <text class="state-title">球局数据暂时没连上</text>
-    <text class="state-text">当前展示的是本地兜底球局。确认后端运行后可以重试，或者先发起一场球局继续开发。</text>
-    <view class="state-actions">
-      <button class="primary small" bindtap="retryLoadGames">重试加载</button>
-      <button class="secondary small" bindtap="createGame">发起球局</button>
+      <text class="pill dark">可报名</text>
+      <text class="pill">今晚</text>
+      <text class="pill">离我近</text>
     </view>
   </view>
 
-  <view wx:elif="{{empty}}" class="state-panel empty">
-    <text class="state-title">没有匹配的球局</text>
-    <text class="state-text">可以清空筛选重新找，或者直接发起一个新球局。</text>
-    <view class="state-actions">
-      <button class="primary small" bindtap="resetFilters">清空筛选</button>
-      <button class="secondary small" bindtap="createGame">发起球局</button>
-    </view>
-  </view>
-
-  <view wx:for="{{games}}" wx:key="title" class="section game-card" bindtap="openGame" data-id="{{item.id}}">
+  <view wx:for="{{games}}" wx:key="title" class="section game-card">
     <view class="match-head">
       <view>
         <text class="card-title">{{item.title}}</text>
         <text class="muted">{{item.time}} · {{item.venueName}}</text>
       </view>
-      <text class="status">{{item.status}}</text>
+      <text class="status-chip">{{item.status}}</text>
     </view>
     <view class="match-meta">
       <text class="meta-item">{{item.fee}}</text>
-      <text class="meta-item">快速报名</text>
+      <text class="meta-item">实名报名</text>
+      <text class="meta-item">到场核销</text>
     </view>
     <view class="card-row">
       <view class="players">
-        <view class="player-dot"></view>
-        <view class="player-dot"></view>
-        <view class="player-dot empty"></view>
+        <text class="player-dot"></text>
+        <text class="player-dot"></text>
+        <text class="player-dot empty"></text>
         <text class="players-text">{{item.status}}</text>
       </view>
       <button
         class="primary small join-button"
         disabled="{{!item.canJoin || joiningId === item.id}}"
-        catchtap="joinGame"
+        bindtap="joinGame"
         data-id="{{item.id}}"
       >
         {{joiningId === item.id ? "报名中" : item.actionText}}

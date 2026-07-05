@@ -38,7 +38,6 @@
     friendAddOpen: false,
     mobileMoreOpen: false,
     addedFriends: loadAddedFriends(),
-    splashTimer: null,
     highlightOrderId: null,
     aiDemoAnalyzed: false,
     toast: '',
@@ -50,17 +49,14 @@
   var app = document.getElementById('app');
   var ROUTABLE_USER_VIEWS = [
     'splash',
-    'auth',
     'home',
     'venues',
     'games',
     'messages',
     'me',
     'orders',
-    'venue-admin',
     'credit',
     'my-games',
-    'legal',
     'create',
     'teams',
     'ai',
@@ -70,20 +66,14 @@
   ];
   var ROUTE_PATH_VIEWS = {
     'pages/splash/splash': 'splash',
-    'pages/auth/auth': 'auth',
     'pages/home/home': 'home',
     'pages/venues/venues': 'venues',
     'pages/games/games': 'games',
     'pages/messages/messages': 'messages',
     'pages/me/me': 'me',
     'pages/orders/orders': 'orders',
-    'pages/venue-admin/venue-admin': 'venue-admin',
-    'pages/venue-detail/venue-detail': 'venues',
-    'pages/create-game/create-game': 'create',
-    'pages/game-detail/game-detail': 'games',
     'pages/credit/credit': 'credit',
     'pages/my-games/my-games': 'my-games',
-    'pages/legal/legal': 'legal',
     'pages/create/create': 'create',
     'pages/teams/teams': 'teams',
     'pages/ai/ai': 'ai',
@@ -114,16 +104,13 @@
     return {
       home: 'Home',
       splash: 'Splash',
-      auth: 'Account',
       venues: 'Venues',
       games: 'Games',
       messages: 'Messages',
       me: 'Me',
       orders: 'Orders',
-      'venue-admin': 'Venue Admin',
       credit: 'Credit',
       'my-games': 'My Games',
-      legal: 'Legal',
       create: 'Create',
       teams: 'Teams',
       ai: 'AI Clips',
@@ -743,24 +730,8 @@
     return true;
   }
 
-  function clearSplashTimer() {
-    if (!state.splashTimer) return;
-    clearTimeout(state.splashTimer);
-    state.splashTimer = null;
-  }
-
-  function scheduleSplashEnter() {
-    clearSplashTimer();
-    state.splashTimer = setTimeout(function () {
-      state.splashTimer = null;
-      goToUserView('auth', { replace: true, replaceUrl: true });
-      render();
-    }, 1500);
-  }
-
   function goToUserView(view, options) {
     var nextView = normalizeRouteView(view || 'home');
-    if (nextView !== 'splash') clearSplashTimer();
     var shouldRemember = !(options && options.replace);
     var before = currentNavSnapshot();
     if (shouldRemember && before.userView !== nextView) pushNavSnapshot(before);
@@ -1673,7 +1644,6 @@
       '  </div>',
       '  <div class="profile-menu-card">',
       profileMenuItem('ball', '我的球局', '已报名和待处理球局', 'my-games'),
-      profileMenuItem('venue', '场馆管理', '订单、核销和收入概览', 'venue-admin'),
       profileMenuItem('team', '球队', '创建或加入固定球队', 'teams'),
       profileMenuItem('shield', '守约账户', '信用分、扣分和恢复记录', 'credit'),
       profileMenuItem('star', '我的球馆', '常用场馆与关注球局', 'favorites'),
@@ -1682,7 +1652,6 @@
       profileMenuItem('ai', 'AI 高光集锦', '黑客松演示入口', 'ai'),
       profileMenuItem('data', '运动数据档案', '预留数据上传', 'data'),
       profileMenuItem('demo', '完整流程', '演示主线与扩展能力', 'demo'),
-      profileMenuItem('shield', '合规说明', '隐私、协议、支付和场馆合作', 'legal'),
       '  </div>',
       '  <div class="profile-menu-card">',
       profileMenuItem('support', '联系客服', '模拟客服窗口', null, 'data-open-support'),
@@ -1700,33 +1669,6 @@
       state.profileEditOpen ? profileEditSheet() : '',
       state.reviewDetail ? reviewPanel(state.reviewDetail) : '',
       state.playerProfile ? playerProfileModal(state.playerProfile) : '',
-    ].join('');
-  }
-
-  function legalView() {
-    var sections = [
-      ['隐私政策', '开发版只展示完成找场、报名、订场、核销和信用记录所需的信息摘要。正式上线前需要补齐微信用户隐私保护指引。'],
-      ['用户协议', '用户需要按时到场、遵守场馆规则，并对报名、订场、支付和互评行为负责。'],
-      ['支付说明', '当前开发版使用模拟支付，不会真实扣款。正式交易前需要接入微信支付商户号、证书、API v3 key 和通知验签。'],
-      ['场馆合作', '场馆端用于入驻申请、资料维护、订单查看和到场核销；正式运营前需要补齐资质审核、结算和争议处理规则。'],
-    ];
-
-    return [
-      '<section class="section">',
-      '  <div class="panel profile-section">',
-      profileBackTitle('合规说明', '开发版摘要'),
-      '    <p class="section-lead">这里是开发版合规摘要，正式提交审核前请以 docs/legal/ 的完整文本为准。</p>',
-      sections.map(function (item, index) {
-        return [
-          '    <article class="profile-menu-item">',
-          '      <div class="profile-menu-icon">' + h(index + 1) + '</div>',
-          '      <div><strong>' + h(item[0]) + '</strong><p>' + h(item[1]) + '</p></div>',
-          '    </article>',
-        ].join('');
-      }).join(''),
-      '    <div class="panel-soft-block warning-block"><strong>上线前必须替换为正式文本</strong><p>请补齐运营主体、客服电话、生效日期、隐私字段和真实支付/退款规则。</p></div>',
-      '  </div>',
-      '</section>',
     ].join('');
   }
 
@@ -1806,42 +1748,6 @@
       '<section class="order-todo-group">',
       '  <div class="panel-title mini"><h3>' + h(title) + '</h3><span>' + h(desc) + '</span></div>',
       myOrderList(orders, emptyText),
-      '</section>',
-    ].join('');
-  }
-
-  function venueAdminView() {
-    var venues = (state.data.venues || []).filter(function (venue) { return venue.status === 'approved'; });
-    var orders = state.data.myOrders || [];
-    var pending = orders.filter(function (order) { return order.status === 'paid'; });
-    var checkedIn = orders.filter(function (order) { return order.status === 'checked_in'; });
-    var revenue = orders.reduce(function (sum, order) {
-      return ['paid', 'checked_in'].includes(order.status) ? sum + Number(order.amount || 0) : sum;
-    }, 0);
-    return [
-      '<section class="section">',
-      '  <div class="panel">',
-      profileBackTitle('场馆管理', '本地演示场馆端：订单、核销和收入概览'),
-      '    <div class="order-todo-summary">',
-      '      <article><span>今日订单</span><strong>' + h(orders.length) + '</strong></article>',
-      '      <article><span>待核销</span><strong>' + h(pending.length) + '</strong></article>',
-      '      <article><span>已核销</span><strong>' + h(checkedIn.length) + '</strong></article>',
-      '      <article><span>收入</span><strong>¥' + h(revenue.toFixed(0)) + '</strong></article>',
-      '    </div>',
-      '    <div class="panel-soft-block"><strong>管理场馆</strong><p>' + h(venues.map(function (venue) { return venue.name; }).slice(0, 3).join('、') || '暂无可管理场馆') + '</p></div>',
-      '  </div>',
-      '  <div class="compact-list">' + (orders.length ? orders.map(function (order) {
-        return [
-          '<article class="compact-order">',
-          '  <div>',
-          '    <strong>' + h(order.title || '场地预约订单') + '</strong>',
-          '    <span>' + h(order.venue_name || '场馆待定') + ' / ' + fmtDate(order.start_time || order.booking_start_time || order.create_time) + '</span>',
-          '    <em>用户 ' + h(order.username || '用户') + ' / 核销码 ' + h(order.checkin_code || '------') + '</em>',
-          '  </div>',
-          '  <span class="tag ' + orderStatusClass(order.status) + '">' + statusLabel(order.status) + '</span>',
-          '</article>',
-        ].join('');
-      }).join('') : empty3d('暂无订单。用户订场或报名后会出现在这里。', 'venue')) + '</div>',
       '</section>',
     ].join('');
   }
@@ -2411,7 +2317,6 @@
   function userMode() {
     var body = {
       home: function () { return ''; },
-      auth: meView,
       venues: venuesView,
       games: gamesView,
       'my-games': myGamesView,
@@ -2423,39 +2328,11 @@
       demo: demoView,
       messages: messagesView,
       orders: myOrdersView,
-      'venue-admin': venueAdminView,
       credit: creditView,
-      legal: legalView,
       me: meView,
     }[state.userView]();
     var isHome = state.userView === 'home';
     return (isHome ? hero() : body) + mobileTabbar();
-  }
-
-  function splashView() {
-    return [
-      '<main class="preview-splash-page" aria-label="宁约球启动页">',
-      '  <div class="preview-light-spot preview-light-spot-top" aria-hidden="true"></div>',
-      '  <div class="preview-light-spot preview-light-spot-bottom" aria-hidden="true"></div>',
-      '  <section class="preview-splash-stage">',
-      '    <div class="preview-court-card" aria-hidden="true">',
-      '      <span class="preview-court-line line-top"></span>',
-      '      <span class="preview-court-line line-mid"></span>',
-      '      <span class="preview-court-line line-bottom"></span>',
-      '      <span class="preview-court-axis axis-left"></span>',
-      '      <span class="preview-court-axis axis-right"></span>',
-      '      <span class="preview-motion-ball"></span>',
-      '    </div>',
-      '    <div class="preview-splash-mark">宁</div>',
-      '  </section>',
-      '  <section class="preview-brand-copy">',
-      '    <h1>宁约球</h1>',
-      '    <p>Play begins here.</p>',
-      '    <button class="preview-enter-button" type="button" data-enter-splash>登录 / 注册</button>',
-      '  </section>',
-      '  <div class="preview-splash-progress" aria-hidden="true"><span></span></div>',
-      '</main>',
-    ].join('');
   }
 
   function mobileTabbar() {
@@ -2684,13 +2561,6 @@
   function render() {
     state.mode = 'user';
     syncPreviewRoute({ replace: true });
-    if (state.userView === 'splash') {
-      app.innerHTML = splashView() + (state.toast ? '<div class="toast">' + h(state.toast) + '</div>' : '');
-      bindEvents();
-      scheduleSplashEnter();
-      return;
-    }
-    clearSplashTimer();
     var content = userMode();
     app.innerHTML = topbar() + returnHomeFab() + '<main class="page">' + content + '</main>' + searchOverlay() + mobileMoreSheet() + (state.friendAddOpen ? friendAddSheet() : '') + (state.toast ? '<div class="toast">' + h(state.toast) + '</div>' : '');
     bindEvents();
@@ -2723,13 +2593,6 @@
   }
 
   function bindEvents() {
-    app.querySelectorAll('[data-enter-splash]').forEach(function (button) {
-      button.addEventListener('click', function () {
-        goToUserView('auth', { replace: true, replaceUrl: true });
-        render();
-      });
-    });
-
     bindRadarSlider();
     app.querySelectorAll('[data-mode]').forEach(function (button) {
       button.addEventListener('click', async function () {

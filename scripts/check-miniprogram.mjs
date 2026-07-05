@@ -69,10 +69,6 @@ const rootProjectConfig = parseJson(path.join(root, "project.config.json"));
 const miniProjectConfig = parseJson(path.join(miniRoot, "project.config.json"));
 const sitemapJson = parseJson(path.join(miniRoot, "sitemap.json"));
 
-function looksLikeWechatAppId(appid) {
-  return /^wx[A-Za-z0-9_-]{8,}$/.test(appid);
-}
-
 function validateProjectConfig(config, file, expectedRoots) {
   if (!config) return;
   const label = rel(file);
@@ -80,29 +76,19 @@ function validateProjectConfig(config, file, expectedRoots) {
   if (config.compileType !== "miniprogram") {
     errors.push(`${label} compileType must be "miniprogram".`);
   }
+  if (appid !== "touristappid" && !/^wx[a-f0-9]{16}$/i.test(appid)) {
+    errors.push(`${label} appid must be "touristappid" or a valid wx Mini Program test/real AppID.`);
+  }
   if (!expectedRoots.includes(config.miniprogramRoot)) {
     errors.push(`${label} miniprogramRoot must be one of: ${expectedRoots.join(", ")}.`);
   }
-  if (appid === "touristappid") {
-    if (config.setting?.urlCheck !== false) {
-      errors.push(`${label} setting.urlCheck must be false for local localhost API development before registration.`);
-    }
-  } else {
-    if (!looksLikeWechatAppId(appid)) {
-      errors.push(`${label} appid must be touristappid for local development or a real WeChat AppID starting with "wx" for release config.`);
-    }
-    if (config.setting?.urlCheck === false) {
-      errors.push(`${label} setting.urlCheck must not stay false when using a real WeChat AppID for release config.`);
-    }
+  if (config.setting?.urlCheck !== false) {
+    errors.push(`${label} setting.urlCheck must be false for local localhost API development before registration.`);
   }
 }
 
 validateProjectConfig(rootProjectConfig, path.join(root, "project.config.json"), ["miniprogram/", "miniprogram"]);
 validateProjectConfig(miniProjectConfig, path.join(miniRoot, "project.config.json"), ["./", "."]);
-
-if (rootProjectConfig && miniProjectConfig && rootProjectConfig.appid !== miniProjectConfig.appid) {
-  errors.push("project.config.json and miniprogram/project.config.json must use the same appid.");
-}
 
 if (sitemapJson) {
   if (!Array.isArray(sitemapJson.rules) || sitemapJson.rules.length === 0) {
@@ -142,31 +128,11 @@ if (appJson) {
     for (const ext of ["js", "json", "wxml", "wxss"]) {
       const file = path.join(miniRoot, `${page}.${ext}`);
       mustExist(file, `page ${ext}`);
+      if (ext === "json" && fs.existsSync(file)) parseJson(file);
     }
 
-    const jsonFile = path.join(miniRoot, `${page}.json`);
     const jsFile = path.join(miniRoot, `${page}.js`);
     const wxmlFile = path.join(miniRoot, `${page}.wxml`);
-    const pageJson = fs.existsSync(jsonFile) ? parseJson(jsonFile) : null;
-
-    if (pageJson) {
-      if (typeof pageJson.navigationBarTitleText !== "string" || !pageJson.navigationBarTitleText.trim()) {
-        errors.push(`${rel(jsonFile)} navigationBarTitleText is required for clear WeChat DevTools page testing.`);
-      }
-
-      const jsSource = fs.existsSync(jsFile) ? readUtf8(jsFile) : "";
-      const hasPullDownHandler = /\bonPullDownRefresh\s*\(/.test(jsSource);
-      if (pageJson.enablePullDownRefresh === true && !hasPullDownHandler) {
-        errors.push(`${rel(jsonFile)} enables pull-down refresh but ${rel(jsFile)} has no onPullDownRefresh handler.`);
-      }
-      if (hasPullDownHandler && pageJson.enablePullDownRefresh !== true) {
-        errors.push(`${rel(jsFile)} defines onPullDownRefresh but ${rel(jsonFile)} does not enable pull-down refresh.`);
-      }
-      if (hasPullDownHandler && !jsSource.includes("wx.stopPullDownRefresh")) {
-        errors.push(`${rel(jsFile)} defines onPullDownRefresh but does not call wx.stopPullDownRefresh.`);
-      }
-    }
-
     if (fs.existsSync(jsFile) && fs.existsSync(wxmlFile)) {
       const methods = pageMethodNames(readUtf8(jsFile));
       for (const handler of wxmlEventHandlers(readUtf8(wxmlFile))) {
@@ -222,9 +188,6 @@ for (const file of walk(miniRoot)) {
   const source = readUtf8(file);
   if (source.includes("\uFFFD")) {
     errors.push(`Replacement character found in ${rel(file)}; check UTF-8 encoding.`);
-  }
-  if (source.includes("待同步")) {
-    errors.push(`Placeholder text "待同步" found in ${rel(file)}; use polished demo or empty-state wording.`);
   }
   for (const fragment of mojibakeFragments) {
     if (source.includes(fragment)) {

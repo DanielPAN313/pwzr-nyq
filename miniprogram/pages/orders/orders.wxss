@@ -1,3 +1,20 @@
+.page-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+  color: #ffffff;
+  background: linear-gradient(145deg, #092b1b, #116f43);
+}
+
+.page-hero .page-title {
+  color: #ffffff;
+  margin-bottom: 0;
+}
+
+.page-hero .muted {
+  color: rgba(255, 255, 255, 0.76);
+}
+
 .order-card {
   position: relative;
   display: flex;
@@ -14,7 +31,7 @@
   width: 28rpx;
   height: 28rpx;
   border-radius: 50%;
-  background: #07120d;
+  background: #f1f5ef;
 }
 
 .order-card::before {
@@ -25,20 +42,11 @@
   right: -14rpx;
 }
 
-.order-card.is-highlighted {
-  border-color: rgba(216, 255, 62, 0.55);
-  box-shadow: 0 0 0 4rpx rgba(216, 255, 62, 0.1), 0 18rpx 44rpx rgba(0, 0, 0, 0.22);
-}
-
 .order-head {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 18rpx;
-}
-
-.order-head > view {
-  min-width: 0;
 }
 
 .card-row {
@@ -47,13 +55,12 @@
   justify-content: space-between;
   gap: 20rpx;
   padding-bottom: 18rpx;
-  border-bottom: 1rpx dashed rgba(151, 169, 157, 0.38);
+  border-bottom: 1rpx dashed rgba(151, 169, 157, 0.6);
 }
 
 .price {
   display: block;
-  margin-top: 6rpx;
-  color: #d8ff3e;
+  color: #12824f;
   font-size: 42rpx;
   font-weight: 900;
   line-height: 1.15;
@@ -62,108 +69,20 @@
 .ticket-label {
   padding: 12rpx 18rpx;
   border-radius: 14rpx;
-  color: #d8ff3e;
-  background: #17231c;
+  color: #d9f76e;
+  background: #17231d;
   font-size: 24rpx;
   font-weight: 900;
-}
-
-.status-chip {
-  display: inline-flex;
-  align-items: center;
-  flex-shrink: 0;
-  min-height: 44rpx;
-  padding: 0 18rpx;
-  border-radius: 999rpx;
-  color: #10200f;
-  background: #d8ff3e;
-  font-size: 24rpx;
-  font-weight: 900;
-  line-height: 44rpx;
-}
-
-.status-warning {
-  color: #10200f;
-  background: #ffb45f;
-}
-
-.status-muted {
-  color: rgba(247, 251, 245, 0.76);
-  background: #334139;
-}
-
-.status-info,
-.status-neutral {
-  color: #10200f;
-  background: #8ed8ff;
-}
-
-.step-box {
-  margin-top: 0;
-  padding: 20rpx;
-  border-radius: 18rpx;
-}
-
-.step-success {
-  background: rgba(216, 255, 62, 0.12);
-}
-
-.step-warning {
-  background: rgba(240, 122, 50, 0.16);
-}
-
-.step-muted {
-  background: #17231c;
-}
-
-.step-info,
-.step-neutral {
-  background: rgba(68, 166, 214, 0.14);
-}
-
-.cancel-info {
-  display: flex;
-  flex-direction: column;
-  gap: 8rpx;
-  padding: 18rpx 20rpx;
-  border: 1rpx solid rgba(240, 122, 50, 0.26);
-  border-radius: 18rpx;
-  background: rgba(240, 122, 50, 0.12);
-}
-
-.cancel-title {
-  display: block;
-  color: #ffb45f;
-  font-size: 24rpx;
-  font-weight: 900;
-  line-height: 1.3;
-}
-
-.cancel-text {
-  display: block;
-  color: rgba(247, 251, 245, 0.7);
-  font-size: 24rpx;
-  line-height: 1.5;
 }
 
 .checkin-box {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
   gap: 18rpx;
   padding: 22rpx;
   border-radius: 16rpx;
   background: #edf6ee;
-}
-
-.checkin-main {
-  min-width: 0;
-  flex: 1;
-}
-
-.checkin-box .muted {
-  color: #6f7c72;
 }
 
 .checkin-code {
@@ -175,18 +94,22 @@
   letter-spacing: 2rpx;
 }
 
-.copy-code {
-  flex-shrink: 0;
-  min-width: 112rpx;
-}
-
-.order-actions {
+.code-mark {
+  display: flex;
   flex-wrap: wrap;
-  align-items: stretch;
-  justify-content: flex-start;
+  flex-shrink: 0;
+  gap: 6rpx;
+  width: 58rpx;
 }
 
-.order-actions button {
-  flex: 1;
-  min-width: 190rpx;
+.code-mark view {
+  width: 24rpx;
+  height: 24rpx;
+  border-radius: 6rpx;
+  background: #0b6f41;
+}
+
+.code-mark view:nth-child(2),
+.code-mark view:nth-child(3) {
+  background: #d9f76e;
 }

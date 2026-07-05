@@ -5,65 +5,24 @@
     <text wx:if="{{loading}}" class="muted">正在加载消息...</text>
     <text wx:elif="{{error}}" class="muted">{{error}}，已显示本地兜底消息。</text>
     <text wx:elif="{{empty}}" class="muted">暂时没有新消息。</text>
-    <text wx:else class="muted">未读 {{unreadCount}} 条。订单、球局和系统通知会在这里汇总。</text>
-    <button
-      wx:if="{{!loading && !empty && !error}}"
-      class="hero-action small"
-      bindtap="markAllRead"
-      disabled="{{unreadCount === 0 || markingAllRead}}"
-    >
-      全部已读
-    </button>
-  </view>
-
-  <view wx:if="{{error}}" class="state-panel warning">
-    <text class="state-title">消息数据暂时没连上</text>
-    <text class="state-text">当前展示的是本地兜底消息。确认后端运行后可以重试。</text>
-    <view class="state-actions">
-      <button class="primary small" bindtap="retryLoadMessages">重试加载</button>
-      <button class="secondary small" bindtap="goHome">回首页</button>
-    </view>
-  </view>
-
-  <view wx:elif="{{empty}}" class="state-panel empty">
-    <text class="state-title">暂时没有消息</text>
-    <text class="state-text">订单支付、核销提醒和球局动态后续都会出现在这里。</text>
-    <view class="state-actions">
-      <button class="primary small" bindtap="goHome">回首页</button>
-      <button class="secondary small" bindtap="goOrders">查看订单</button>
-    </view>
+    <text wx:else class="muted">已接入订单提醒、核销提醒和系统通知。</text>
   </view>
 
   <view
-    wx:for="{{messageSections}}"
+    wx:for="{{messages}}"
     wx:key="title"
-    class="section message-section"
+    class="section message-card"
+    bindtap="markRead"
+    data-id="{{item.id}}"
   >
-    <view class="section-head">
-      <text class="section-title">{{item.title}}</text>
-      <text class="section-count">{{item.count}}</text>
+    <view class="message-head">
+      <text class="message-dot"></text>
+      <text class="card-title">{{item.title}}</text>
     </view>
-
-    <view
-      wx:for="{{item.messages}}"
-      wx:for-item="message"
-      wx:key="id"
-      class="message-card message-{{message.statusTone}}"
-      bindtap="openMessage"
-      data-id="{{message.id}}"
-    >
-      <view class="message-head">
-        <text class="message-dot"></text>
-        <view class="message-copy">
-          <text class="card-title">{{message.title}}</text>
-          <text class="muted">{{message.body}}</text>
-        </view>
-        <text class="status-pill status-{{message.statusTone}}">{{message.statusText}}</text>
-      </view>
-      <view class="message-footer">
-        <text class="target-hint">{{message.actionHint}} · {{message.timeText}}</text>
-        <text wx:if="{{message.targetText}}" class="action-text">{{message.targetText}}</text>
-      </view>
+    <text class="muted">{{item.body}}</text>
+    <view class="message-foot">
+      <text class="pill">{{item.statusText}}</text>
+      <text class="muted">{{item.timeText}}</text>
     </view>
   </view>
 </view>

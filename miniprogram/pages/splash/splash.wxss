@@ -1,105 +1,96 @@
-.splash-page {
+.splash {
   position: relative;
-  display: flex;
   min-height: 100vh;
-  flex-direction: column;
-  justify-content: center;
-  padding: 72rpx 36rpx 84rpx;
-  color: #f7fbf5;
+  padding: 120rpx 48rpx 84rpx;
   background: #07120d;
+  box-sizing: border-box;
   overflow: hidden;
 }
 
-.light-spot {
+.ambient {
   position: absolute;
-  z-index: 0;
-  border-radius: 999rpx;
-  filter: blur(2rpx);
-  opacity: 0.28;
-  pointer-events: none;
-  transform: rotate(-18deg);
-  animation: light-in 900ms cubic-bezier(0.16, 1, 0.3, 1) both, light-breathe 8s 1200ms ease-in-out infinite;
+  border-radius: 50%;
+  opacity: 0.34;
 }
 
-.light-spot-top {
-  right: -230rpx;
-  top: -150rpx;
-  width: 540rpx;
-  height: 320rpx;
-  background: radial-gradient(ellipse at center, rgba(216, 255, 62, 0.24) 0%, rgba(216, 255, 62, 0.1) 48%, rgba(216, 255, 62, 0) 76%);
+.ambient-one {
+  right: -160rpx;
+  top: -170rpx;
+  width: 420rpx;
+  height: 420rpx;
+  background: rgba(216, 255, 62, 0.2);
+  animation: ambientIn 1800ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.light-spot-bottom {
-  left: -260rpx;
-  bottom: 112rpx;
-  width: 560rpx;
-  height: 330rpx;
-  background: radial-gradient(ellipse at center, rgba(18, 130, 79, 0.3) 0%, rgba(18, 130, 79, 0.11) 50%, rgba(18, 130, 79, 0) 78%);
-  animation-delay: 100ms;
+.ambient-two {
+  left: -180rpx;
+  bottom: 120rpx;
+  width: 360rpx;
+  height: 360rpx;
+  background: rgba(15, 138, 79, 0.24);
+  animation: ambientIn 1800ms 120ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.splash-stage {
+.motion-stage {
   position: relative;
-  z-index: 1;
-  height: 560rpx;
-  margin-bottom: 28rpx;
-  border-color: rgba(255, 255, 255, 0.14);
-  background: transparent;
-  animation: stage-in 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  height: 610rpx;
+  animation: stageIn 1100ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .court-card {
   position: absolute;
   left: 0;
   right: 0;
-  top: 52rpx;
-  height: 390rpx;
-  border: 2rpx solid rgba(255, 255, 255, 0.22);
-  border-radius: 36rpx;
-  background: linear-gradient(145deg, #10231a 0%, #0d5e39 58%, #12824f 100%);
-  box-shadow: 0 42rpx 84rpx rgba(0, 0, 0, 0.36);
+  top: 64rpx;
+  height: 430rpx;
+  border: 2rpx solid rgba(255, 255, 255, 0.2);
+  border-radius: 44rpx;
+  background: linear-gradient(145deg, #10231a 0%, #0d5e39 58%, #0f8a4f 100%);
+  box-shadow: 0 44rpx 90rpx rgba(0, 0, 0, 0.38);
   overflow: hidden;
 }
 
 .court-card::before {
   content: "";
   position: absolute;
-  inset: 42rpx;
-  border: 3rpx solid rgba(255, 255, 255, 0.38);
-  border-radius: 26rpx;
-  animation: line-reveal 760ms 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  inset: 48rpx;
+  border: 3rpx solid rgba(255, 255, 255, 0.42);
+  border-radius: 28rpx;
+  opacity: 0;
+  animation: lineReveal 900ms 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .court-line,
 .court-axis {
   position: absolute;
-  background: rgba(255, 255, 255, 0.38);
-  animation: line-reveal 760ms 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  background: rgba(255, 255, 255, 0.42);
+  opacity: 0;
+  animation: lineReveal 900ms 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .court-line {
-  left: 42rpx;
-  right: 42rpx;
+  left: 48rpx;
+  right: 48rpx;
   height: 3rpx;
 }
 
 .line-top {
-  top: 136rpx;
+  top: 150rpx;
 }
 
 .line-mid {
-  top: 194rpx;
+  top: 214rpx;
   background: #d8ff3e;
-  box-shadow: 0 0 30rpx rgba(216, 255, 62, 0.38);
+  box-shadow: 0 0 32rpx rgba(216, 255, 62, 0.42);
 }
 
 .line-bottom {
-  bottom: 104rpx;
+  bottom: 116rpx;
 }
 
 .court-axis {
-  top: 42rpx;
-  bottom: 42rpx;
+  top: 48rpx;
+  bottom: 48rpx;
   width: 3rpx;
 }
 
@@ -113,90 +104,72 @@
 
 .motion-ball {
   position: absolute;
-  left: 82rpx;
-  top: 246rpx;
+  left: 88rpx;
+  top: 272rpx;
   width: 38rpx;
   height: 38rpx;
   border-radius: 50%;
   background: #d8ff3e;
-  box-shadow: 0 0 0 14rpx rgba(216, 255, 62, 0.16), 0 0 38rpx rgba(216, 255, 62, 0.46);
-  animation: ball-travel 1150ms 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  box-shadow: 0 0 0 14rpx rgba(216, 255, 62, 0.16), 0 0 42rpx rgba(216, 255, 62, 0.5);
+  animation: ballTravel 1400ms 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .brand-mark {
   position: absolute;
   left: 50%;
-  bottom: 20rpx;
+  bottom: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 124rpx;
-  height: 124rpx;
-  margin-left: -62rpx;
-  border-radius: 34rpx;
+  width: 132rpx;
+  height: 132rpx;
+  margin-left: -66rpx;
+  border-radius: 38rpx;
   color: #10200f;
   background: #d8ff3e;
-  box-shadow: 0 30rpx 66rpx rgba(216, 255, 62, 0.2);
-  animation: mark-in 760ms 560ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  box-shadow: 0 34rpx 70rpx rgba(216, 255, 62, 0.2);
+  animation: markIn 900ms 760ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .brand-mark text {
-  font-size: 52rpx;
+  font-size: 54rpx;
   font-weight: 950;
 }
 
 .brand-copy {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-  border-color: rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.06);
+  margin-top: 74rpx;
   text-align: center;
-  animation: copy-in 760ms 760ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: copyIn 900ms 980ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.brand-name,
+.brand-line {
+  display: block;
 }
 
 .brand-name {
   color: #f7fbf5;
-  font-size: 54rpx;
+  font-size: 52rpx;
   font-weight: 950;
   line-height: 1.12;
 }
 
 .brand-line {
   margin-top: 14rpx;
-  color: rgba(247, 251, 245, 0.66);
-  font-size: 26rpx;
+  color: rgba(247, 251, 245, 0.58);
+  font-size: 25rpx;
   font-weight: 800;
-}
-
-.enter-button {
-  background: #d8ff3e;
-  color: #10200f;
-}
-
-.splash-actions {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 14rpx;
-  width: 100%;
-  margin-top: 30rpx;
-}
-
-.account-button {
-  border: 1rpx solid rgba(216, 255, 62, 0.18);
+  letter-spacing: 0;
 }
 
 .progress {
   position: absolute;
-  z-index: 1;
-  left: 96rpx;
-  right: 96rpx;
-  bottom: 54rpx;
+  left: 120rpx;
+  right: 120rpx;
+  bottom: 84rpx;
   height: 6rpx;
   border-radius: 999rpx;
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.1);
   overflow: hidden;
 }
 
@@ -206,13 +179,13 @@
   border-radius: inherit;
   background: #d8ff3e;
   transform-origin: left center;
-  animation: progress-fill 1400ms 120ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: progressFill 1700ms 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-@keyframes stage-in {
+@keyframes stageIn {
   from {
     opacity: 0;
-    transform: translateY(32rpx) scale(0.96);
+    transform: translateY(36rpx) scale(0.96);
   }
   to {
     opacity: 1;
@@ -220,7 +193,7 @@
   }
 }
 
-@keyframes line-reveal {
+@keyframes lineReveal {
   from {
     opacity: 0;
     transform: scaleX(0.86);
@@ -231,24 +204,24 @@
   }
 }
 
-@keyframes ball-travel {
+@keyframes ballTravel {
   0% {
     opacity: 0;
-    transform: translate3d(0, 42rpx, 0) scale(0.72);
+    transform: translate3d(0, 44rpx, 0) scale(0.72);
   }
   28% {
     opacity: 1;
   }
   100% {
     opacity: 1;
-    transform: translate3d(420rpx, -106rpx, 0) scale(1);
+    transform: translate3d(460rpx, -118rpx, 0) scale(1);
   }
 }
 
-@keyframes mark-in {
+@keyframes markIn {
   from {
     opacity: 0;
-    transform: translateY(24rpx) scale(0.82);
+    transform: translateY(26rpx) scale(0.82);
   }
   to {
     opacity: 1;
@@ -256,10 +229,10 @@
   }
 }
 
-@keyframes copy-in {
+@keyframes copyIn {
   from {
     opacity: 0;
-    transform: translateY(22rpx);
+    transform: translateY(24rpx);
   }
   to {
     opacity: 1;
@@ -267,7 +240,7 @@
   }
 }
 
-@keyframes progress-fill {
+@keyframes progressFill {
   from {
     transform: scaleX(0);
   }
@@ -276,25 +249,13 @@
   }
 }
 
-@keyframes light-in {
+@keyframes ambientIn {
   from {
     opacity: 0;
-    transform: rotate(-18deg) scale(0.88);
+    transform: scale(0.82);
   }
   to {
-    opacity: 0.28;
-    transform: rotate(-18deg) scale(1);
-  }
-}
-
-@keyframes light-breathe {
-  0%,
-  100% {
-    opacity: 0.24;
-    transform: rotate(-18deg) scale(1);
-  }
-  50% {
-    opacity: 0.32;
-    transform: rotate(-18deg) scale(1.04);
+    opacity: 0.34;
+    transform: scale(1);
   }
 }

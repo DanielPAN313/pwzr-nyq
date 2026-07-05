@@ -1,8 +1,8 @@
-<view class="page splash-page">
-  <view class="light-spot light-spot-top"></view>
-  <view class="light-spot light-spot-bottom"></view>
+<view class="splash">
+  <view class="ambient ambient-one"></view>
+  <view class="ambient ambient-two"></view>
 
-  <view class="section splash-stage">
+  <view class="motion-stage">
     <view class="court-card">
       <view class="court-line line-top"></view>
       <view class="court-line line-mid"></view>
@@ -17,13 +17,9 @@
     </view>
   </view>
 
-  <view class="section brand-copy">
+  <view class="brand-copy">
     <text class="brand-name">宁约球</text>
     <text class="brand-line">Play begins here.</text>
-    <view class="splash-actions">
-      <button class="primary small enter-button" bindtap="openAuth">登录 / 注册</button>
-      <button class="secondary small account-button" bindtap="enterHome">演示进入首页</button>
-    </view>
   </view>
 
   <view class="progress">

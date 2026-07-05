@@ -6,39 +6,15 @@
     <text wx:elif="{{error}}" class="muted">{{error}}，已显示本地兜底订单。</text>
     <text wx:elif="{{empty}}" class="muted">暂时没有订单。去球局页报名后会生成待支付订单。</text>
     <text wx:else class="muted">这里展示报名、订场和到场核销相关订单。</text>
-    <text wx:if="{{noticeText}}" class="notice-text">{{noticeText}}</text>
   </view>
 
-  <view wx:if="{{error}}" class="state-panel warning">
-    <text class="state-title">订单数据暂时没连上</text>
-    <text class="state-text">当前展示的是本地兜底订单。确认后端运行后可以重试。</text>
-    <view class="state-actions">
-      <button class="primary small" bindtap="retryLoadOrders">重试加载</button>
-      <button class="secondary small" bindtap="goGames">去报名</button>
-    </view>
-  </view>
-
-  <view wx:elif="{{empty}}" class="state-panel empty">
-    <text class="state-title">还没有订单</text>
-    <text class="state-text">报名球局或订场后会生成待支付订单，支付、核销和评价入口都会在这里。</text>
-    <view class="state-actions">
-      <button class="primary small" bindtap="goGames">去报名</button>
-      <button class="secondary small" bindtap="goVenues">去订场</button>
-    </view>
-  </view>
-
-  <view
-    wx:for="{{orders}}"
-    wx:key="id"
-    id="{{item.anchorId}}"
-    class="section order-card {{item.highlighted ? 'is-highlighted' : ''}}"
-  >
+  <view wx:for="{{orders}}" wx:key="title" class="section order-card">
     <view class="order-head">
       <view>
         <text class="card-title">{{item.title}}</text>
         <text class="muted">{{item.venueName}} · {{item.timeText}}</text>
       </view>
-      <text class="status-chip status-{{item.statusTone}}">{{item.statusText}}</text>
+      <text class="status-chip">{{item.statusText}}</text>
     </view>
     <view class="card-row">
       <view>
@@ -47,64 +23,18 @@
       </view>
       <text class="ticket-label">NYQ</text>
     </view>
-    <view class="step-box step-{{item.statusTone}}">
-      <text class="step-title">{{item.stepTitle}}</text>
-      <text class="step-text">{{item.stepText}}</text>
-    </view>
-    <view wx:if="{{item.showCancelInfo}}" class="cancel-info">
-      <text class="cancel-title">{{item.cancelInfoTitle}}</text>
-      <text class="cancel-text">{{item.cancelInfoText}}</text>
-    </view>
-    <view wx:if="{{item.showCheckin}}" class="checkin-box">
-      <view class="checkin-main">
+    <view class="checkin-box">
+      <view>
         <text class="muted">核销码</text>
         <text class="checkin-code">{{item.checkinCode}}</text>
       </view>
-      <button
-        class="secondary small copy-code"
-        bindtap="copyCheckinCode"
-        data-code="{{item.checkinCode}}"
-      >
-        复制
-      </button>
+      <view class="code-mark">
+        <view></view>
+        <view></view>
+        <view></view>
+        <view></view>
+      </view>
     </view>
     <text class="muted">{{item.hint}}</text>
-    <view wx:if="{{item.canPay || item.canCheckin || item.canCancel || item.canReview}}" class="order-actions">
-      <button
-        wx:if="{{item.canPay}}"
-        class="primary small"
-        disabled="{{actionOrderId === item.id}}"
-        bindtap="payOrder"
-        data-id="{{item.id}}"
-      >
-        {{actionOrderId === item.id ? "处理中" : "模拟支付"}}
-      </button>
-      <button
-        wx:if="{{item.canCheckin}}"
-        class="primary small"
-        disabled="{{actionOrderId === item.id}}"
-        bindtap="checkinOrder"
-        data-id="{{item.id}}"
-      >
-        {{actionOrderId === item.id ? "处理中" : "模拟核销"}}
-      </button>
-      <button
-        wx:if="{{item.canCancel}}"
-        class="secondary small"
-        disabled="{{actionOrderId === item.id}}"
-        bindtap="cancelOrder"
-        data-id="{{item.id}}"
-      >
-        {{actionOrderId === item.id ? "处理中" : item.cancelButtonText}}
-      </button>
-      <button
-        wx:if="{{item.canReview}}"
-        class="secondary small"
-        bindtap="openReview"
-        data-game-id="{{item.gameId}}"
-      >
-        去评价
-      </button>
-    </view>
   </view>
 </view>

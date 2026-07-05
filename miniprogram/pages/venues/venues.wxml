@@ -1,49 +1,19 @@
 <view class="page">
   <view class="section page-hero">
-    <text class="page-kicker">COURTS</text>
+    <text class="page-kicker">COURTS NEARBY</text>
     <view class="page-title">附近可订场馆</view>
     <text wx:if="{{loading}}" class="muted">正在加载场馆...</text>
     <text wx:elif="{{error}}" class="muted">{{error}}，已显示本地兜底场馆。</text>
-    <text wx:elif="{{empty}}" class="muted">没有找到匹配场馆，可以换个关键词或运动类型。</text>
-    <text wx:else class="muted">按区域、场馆名或运动类型快速找场。</text>
-    <input
-      class="search-input"
-      placeholder="搜索场馆、区域或运动"
-      value="{{query}}"
-      bindinput="onSearchInput"
-    />
+    <text wx:elif="{{empty}}" class="muted">暂时没有可订场馆。</text>
+    <text wx:else class="muted">已接入真实场馆列表，后续继续补筛选和预订支付。</text>
     <view class="filter-row">
-      <button
-        wx:for="{{sportFilters}}"
-        wx:key="value"
-        class="filter-chip {{activeSport === item.value ? 'is-active' : ''}}"
-        data-value="{{item.value}}"
-        bindtap="changeSport"
-      >
-        {{item.label}}
-      </button>
+      <text class="pill dark">附近</text>
+      <text class="pill">今晚可订</text>
+      <text class="pill">篮球 / 足球</text>
     </view>
   </view>
 
-  <view wx:if="{{error}}" class="state-panel warning">
-    <text class="state-title">场馆数据暂时没连上</text>
-    <text class="state-text">当前展示的是本地兜底场馆。可以先继续看页面，也可以确认后端运行后重试。</text>
-    <view class="state-actions">
-      <button class="primary small" bindtap="retryLoadVenues">重试加载</button>
-      <button class="secondary small" bindtap="resetFilters">清空筛选</button>
-    </view>
-  </view>
-
-  <view wx:elif="{{empty}}" class="state-panel empty">
-    <text class="state-title">没有匹配的场馆</text>
-    <text class="state-text">换个关键词、运动类型或先清空筛选，再看看附近可订场馆。</text>
-    <view class="state-actions">
-      <button class="primary small" bindtap="resetFilters">清空筛选</button>
-      <button class="secondary small" bindtap="retryLoadVenues">重新加载</button>
-    </view>
-  </view>
-
-  <view wx:for="{{venues}}" wx:key="name" class="section venue-card" bindtap="openVenue" data-id="{{item.id}}">
+  <view wx:for="{{venues}}" wx:key="name" class="section venue-card">
     <view class="venue-visual">
       <view class="court-grid"></view>
       <text class="visual-tag">{{item.sportsText}}</text>
@@ -51,19 +21,22 @@
     <view class="card-top">
       <view>
         <text class="card-title">{{item.name}}</text>
-        <text class="muted">{{item.area}} · 默认时段：{{item.bookingLabel}}</text>
+        <text class="muted">{{item.area}} · {{item.sportsText}}</text>
       </view>
-      <text class="rating">可订</text>
+      <text class="rating">4.8</text>
     </view>
     <view class="card-row">
-      <text class="price">¥{{item.price}}</text>
+      <view>
+        <text class="price">¥{{item.price}}</text>
+        <text class="muted">黄金时段优先锁场</text>
+      </view>
       <button
         class="primary small"
-        disabled="{{!item.canBook || bookingVenueId === item.id}}"
-        catchtap="bookVenue"
+        bindtap="bookVenue"
         data-id="{{item.id}}"
+        disabled="{{bookingId === item.id}}"
       >
-        {{bookingVenueId === item.id ? "锁定中" : item.actionText}}
+        {{bookingId === item.id ? "锁定中" : "订场"}}
       </button>
     </view>
   </view>

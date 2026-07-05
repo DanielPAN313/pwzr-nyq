@@ -1,5 +1,6 @@
 <view class="page">
-  <view class="section">
+  <view class="section page-hero">
+    <text class="page-kicker">MATCHES</text>
     <view class="page-title">附近球局</view>
     <text wx:if="{{loading}}" class="muted">正在加载球局...</text>
     <text wx:elif="{{error}}" class="muted">{{error}}，已显示本地兜底球局。</text>
@@ -44,12 +45,26 @@
   </view>
 
   <view wx:for="{{games}}" wx:key="title" class="section game-card" bindtap="openGame" data-id="{{item.id}}">
-    <text class="card-title">{{item.title}}</text>
-    <text class="muted">{{item.time}} · {{item.venueName}} · {{item.fee}}</text>
-    <view class="card-row">
+    <view class="match-head">
+      <view>
+        <text class="card-title">{{item.title}}</text>
+        <text class="muted">{{item.time}} · {{item.venueName}}</text>
+      </view>
       <text class="status">{{item.status}}</text>
+    </view>
+    <view class="match-meta">
+      <text class="meta-item">{{item.fee}}</text>
+      <text class="meta-item">快速报名</text>
+    </view>
+    <view class="card-row">
+      <view class="players">
+        <view class="player-dot"></view>
+        <view class="player-dot"></view>
+        <view class="player-dot empty"></view>
+        <text class="players-text">{{item.status}}</text>
+      </view>
       <button
-        class="primary small"
+        class="primary small join-button"
         disabled="{{!item.canJoin || joiningId === item.id}}"
         catchtap="joinGame"
         data-id="{{item.id}}"

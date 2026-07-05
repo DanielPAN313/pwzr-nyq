@@ -282,3 +282,47 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+.card-title,
+.step-title {
+  color: #f7fbf5;
+}
+
+.my-game-card,
+.step-box {
+  border-color: rgba(216, 255, 62, 0.12);
+  background: #17231c;
+}
+
+.step-box.success,
+.step-box.warning,
+.step-box.info {
+  background: #17231c;
+}
+
+.step-text,
+.joined,
+.section-heading {
+  color: rgba(247, 251, 245, 0.62);
+}
+
+.role,
+.menu-value {
+  color: #d8ff3e;
+}
+
+.tabs {
+  padding-bottom: 4rpx;
+}
+
+.tab {
+  border-color: rgba(216, 255, 62, 0.12);
+  color: rgba(247, 251, 245, 0.72);
+  background: #17231c;
+}
+
+.tab.active {
+  color: #10200f;
+  border-color: #d8ff3e;
+  background: #d8ff3e;
+}

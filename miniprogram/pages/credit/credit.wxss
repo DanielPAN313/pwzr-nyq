@@ -220,3 +220,30 @@
     grid-template-columns: 1fr;
   }
 }
+
+.section-title,
+.event-title {
+  color: #f7fbf5;
+}
+
+.metric,
+.rule-card,
+.credit-row {
+  border-color: rgba(216, 255, 62, 0.12);
+  background: #17231c;
+}
+
+.metric-value,
+.tip-text {
+  color: #f7fbf5;
+}
+
+.metric-hint,
+.event-section-title {
+  color: rgba(247, 251, 245, 0.62);
+}
+
+.rule-card,
+.credit-row {
+  border-bottom-color: rgba(216, 255, 62, 0.1);
+}

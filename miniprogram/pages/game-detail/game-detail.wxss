@@ -295,3 +295,40 @@
   font-weight: 850;
   box-sizing: border-box;
 }
+
+.section-title,
+.step-title,
+.progress-value,
+.player-name {
+  color: #f7fbf5;
+}
+
+.step-text {
+  color: rgba(247, 251, 245, 0.62);
+}
+
+.step-panel,
+.info-item,
+.player-status {
+  border-color: rgba(216, 255, 62, 0.12);
+  background: #17231c;
+}
+
+.step-warning,
+.step-info,
+.step-success,
+.step-muted {
+  background: #17231c;
+}
+
+.info-value {
+  color: #d8ff3e;
+}
+
+.player-row {
+  border-bottom-color: rgba(216, 255, 62, 0.1);
+}
+
+.progress-track {
+  background: #334139;
+}

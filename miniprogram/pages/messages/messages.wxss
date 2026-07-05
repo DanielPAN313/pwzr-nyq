@@ -1,61 +1,13 @@
-.section:first-child {
-  position: relative;
-  padding: 30rpx;
-  border-radius: 28rpx;
-  color: #ffffff;
-  background: linear-gradient(145deg, #10231a 0%, #0b3d27 52%, #12824f 100%);
-  box-shadow: 0 28rpx 64rpx rgba(16, 32, 22, 0.2);
-  overflow: hidden;
-}
-
-.section:first-child::after {
-  content: "";
-  position: absolute;
-  right: -86rpx;
-  top: -106rpx;
-  width: 270rpx;
-  height: 210rpx;
-  border-radius: 999rpx;
-  background: radial-gradient(ellipse at center, rgba(216, 255, 62, 0.22) 0%, rgba(216, 255, 62, 0.1) 48%, rgba(216, 255, 62, 0) 74%);
-}
-
-.page-title {
-  position: relative;
-  z-index: 1;
-  display: block;
-  color: #ffffff;
-  font-size: 42rpx;
-  font-weight: 950;
-  line-height: 1.2;
-}
-
-.section:first-child .muted {
-  position: relative;
-  z-index: 1;
-  display: block;
-  margin-top: 12rpx;
-  color: rgba(247, 251, 245, 0.76);
-  font-size: 25rpx;
-  line-height: 1.5;
-}
-
 .hero-action {
   position: relative;
   z-index: 1;
-  margin: 22rpx 0 0;
-  color: #10231a;
-  background: #d8ff3e;
-}
-
-.hero-action[disabled] {
-  color: rgba(247, 251, 245, 0.7);
-  background: rgba(255, 255, 255, 0.18);
+  align-self: flex-start;
+  margin-top: 12rpx;
 }
 
 .message-section {
   padding: 24rpx;
-  border-radius: 24rpx;
-  box-shadow: 0 18rpx 44rpx rgba(16, 32, 22, 0.07);
+  border-radius: 28rpx;
 }
 
 .section-head {
@@ -63,11 +15,14 @@
 }
 
 .section-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-width: 44rpx;
   height: 44rpx;
   border-radius: 999rpx;
-  color: #12824f;
-  background: #eef6ed;
+  color: #10200f;
+  background: #d8ff3e;
   line-height: 44rpx;
   text-align: center;
 }
@@ -75,11 +30,11 @@
 .message-card {
   display: flex;
   flex-direction: column;
-  gap: 12rpx;
+  gap: 14rpx;
   padding: 22rpx;
-  border: 1rpx solid rgba(219, 228, 216, 0.86);
-  border-radius: 20rpx;
-  background: #fbfdf9;
+  border: 1rpx solid rgba(216, 255, 62, 0.1);
+  border-radius: 22rpx;
+  background: #17231c;
 }
 
 .message-card + .message-card {
@@ -87,19 +42,31 @@
 }
 
 .message-active {
-  border-color: rgba(18, 130, 79, 0.24);
-  background: #f6fbf4;
+  border-color: rgba(216, 255, 62, 0.24);
 }
 
 .message-muted {
-  opacity: 0.82;
+  opacity: 0.76;
 }
 
-.message-title-row {
+.message-head {
+  display: flex;
   align-items: flex-start;
+  gap: 14rpx;
 }
 
-.message-title-row .card-title {
+.message-dot {
+  flex-shrink: 0;
+  width: 18rpx;
+  height: 18rpx;
+  margin-top: 10rpx;
+  border-radius: 50%;
+  background: #d8ff3e;
+  box-shadow: 0 0 0 8rpx rgba(216, 255, 62, 0.18);
+}
+
+.message-copy {
+  flex: 1;
   min-width: 0;
 }
 
@@ -110,13 +77,13 @@
 }
 
 .status-active {
-  color: #ffffff;
-  background: #12824f;
+  color: #10200f;
+  background: #d8ff3e;
 }
 
 .status-muted {
-  color: #6f7c72;
-  background: #eef2ec;
+  color: rgba(247, 251, 245, 0.66);
+  background: #334139;
 }
 
 .message-footer {

@@ -1,5 +1,6 @@
 <view class="page">
-  <view class="section">
+  <view class="section page-hero">
+    <text class="page-kicker">COURTS</text>
     <view class="page-title">附近可订场馆</view>
     <text wx:if="{{loading}}" class="muted">正在加载场馆...</text>
     <text wx:elif="{{error}}" class="muted">{{error}}，已显示本地兜底场馆。</text>
@@ -43,9 +44,17 @@
   </view>
 
   <view wx:for="{{venues}}" wx:key="name" class="section venue-card" bindtap="openVenue" data-id="{{item.id}}">
-    <text class="card-title">{{item.name}}</text>
-    <text class="muted">{{item.area}} · {{item.sportsText}}</text>
-    <text class="muted">默认时段：{{item.bookingLabel}}</text>
+    <view class="venue-visual">
+      <view class="court-grid"></view>
+      <text class="visual-tag">{{item.sportsText}}</text>
+    </view>
+    <view class="card-top">
+      <view>
+        <text class="card-title">{{item.name}}</text>
+        <text class="muted">{{item.area}} · 默认时段：{{item.bookingLabel}}</text>
+      </view>
+      <text class="rating">可订</text>
+    </view>
     <view class="card-row">
       <text class="price">¥{{item.price}}</text>
       <button

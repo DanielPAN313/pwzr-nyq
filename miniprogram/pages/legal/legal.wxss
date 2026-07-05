@@ -125,3 +125,39 @@
   line-height: 1.5;
   font-weight: 750;
 }
+
+.legal-card {
+  border-color: rgba(216, 255, 62, 0.12);
+  background: #17231c;
+}
+
+.legal-title,
+.legal-intro {
+  color: #f7fbf5;
+}
+
+.legal-meta,
+.legal-index {
+  color: #10200f;
+  background: #d8ff3e;
+}
+
+.legal-row {
+  border-top-color: rgba(216, 255, 62, 0.1);
+}
+
+.legal-text {
+  color: rgba(247, 251, 245, 0.72);
+}
+
+.tab {
+  border-color: rgba(216, 255, 62, 0.12);
+  color: rgba(247, 251, 245, 0.72);
+  background: #17231c;
+}
+
+.tab.active {
+  color: #10200f;
+  border-color: #d8ff3e;
+  background: #d8ff3e;
+}

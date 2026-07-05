@@ -1,8 +1,38 @@
-<view class="page">
+<view class="page home-page">
+  <view class="topbar">
+    <view>
+      <text class="location">南京 · Jiangning</text>
+      <text class="topbar-subtitle">宁约球运动地图</text>
+    </view>
+    <text class="pill dark">LIVE</text>
+  </view>
+
+  <view class="search-bar" bindtap="switchTab" data-target="/pages/venues/venues">
+    <text class="search-icon">⌕</text>
+    <text class="search-text">搜索场馆、球局、运动类型</text>
+    <text class="search-filter">筛选</text>
+  </view>
+
   <view class="hero">
-    <text class="eyebrow">南京样板区</text>
-    <text class="title">开球，去宁约球</text>
-    <text class="subtitle">找附近球局、抢黄金场地、报名支付、到场核销。</text>
+    <view class="court-panel">
+      <view class="court-glow"></view>
+      <view class="court-line court-line-top"></view>
+      <view class="court-net"></view>
+      <view class="court-line court-line-bottom"></view>
+      <view class="court-ball"></view>
+      <view class="court-copy">
+        <text class="page-kicker">南京样板区</text>
+        <text class="title">Book your court</text>
+        <text class="subtitle">订场、组局、报名、核销，一次完成。</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="date-strip">
+    <text class="date-pill active">今天</text>
+    <text class="date-pill">明天</text>
+    <text class="date-pill">周末</text>
+    <text class="date-pill">附近</text>
   </view>
 
   <view class="stat-grid">
@@ -12,8 +42,14 @@
     </view>
   </view>
 
-  <view class="section">
-    <view class="section-title">常用入口</view>
+  <view class="section feature-card">
+    <view class="feature-head">
+      <view>
+        <text class="page-title">常用入口</text>
+        <text class="muted">快速进入订场、球局和订单</text>
+      </view>
+      <text class="pill dark">GO</text>
+    </view>
     <view class="quick-grid">
       <button
         wx:for="{{quickActions}}"
@@ -27,8 +63,14 @@
     </view>
   </view>
 
-  <view class="section">
-    <view class="section-title">待处理事项</view>
+  <view class="section feature-card">
+    <view class="feature-head">
+      <view>
+        <text class="page-title">待处理事项</text>
+        <text class="muted">支付、核销、评价都会在这里提醒</text>
+      </view>
+      <text class="pill">TODO</text>
+    </view>
     <text wx:if="{{loading}}" class="muted">正在加载首页数据...</text>
     <text wx:elif="{{error}}" class="muted">{{error}}，已显示本地兜底内容。</text>
     <text wx:elif="{{todoItems.length === 0}}" class="muted">暂无待处理事项，可以去找球局或订场。</text>
@@ -48,26 +90,44 @@
     </view>
   </view>
 
-  <view class="section">
-    <view class="section-title">推荐场馆</view>
+  <view class="section feature-card">
+    <view class="feature-head">
+      <view>
+        <text class="page-title">推荐场馆</text>
+        <text class="muted">热门场地和黄金时段</text>
+      </view>
+      <text class="pill">COURT</text>
+    </view>
     <text wx:if="{{recommendedVenues.length === 0}}" class="muted">暂无推荐场馆。</text>
     <view
       wx:for="{{recommendedVenues}}"
       wx:key="id"
-      class="recommend-row"
+      class="venue-card"
       bindtap="openTarget"
       data-target="{{item.target}}"
     >
-      <view>
-        <text class="recommend-title">{{item.name}}</text>
-        <text class="recommend-meta">{{item.meta}}</text>
+      <view class="venue-image">
+        <view class="mini-court"></view>
       </view>
-      <text class="action-text">查看</text>
+      <view class="venue-info">
+        <text class="card-title">{{item.name}}</text>
+        <text class="muted">{{item.meta}}</text>
+        <view class="venue-bottom">
+          <text class="price">可订</text>
+          <text class="action-text">查看</text>
+        </view>
+      </view>
     </view>
   </view>
 
-  <view class="section">
-    <view class="section-title">推荐球局</view>
+  <view class="section feature-card">
+    <view class="feature-head">
+      <view>
+        <text class="page-title">推荐球局</text>
+        <text class="muted">今晚有人缺位，适合直接上车</text>
+      </view>
+      <text class="pill">MATCH</text>
+    </view>
     <text wx:if="{{recommendedGames.length === 0}}" class="muted">暂无推荐球局。</text>
     <view
       wx:for="{{recommendedGames}}"
@@ -84,8 +144,8 @@
     </view>
   </view>
 
-  <view class="section">
-    <view class="section-title">今日概览</view>
+  <view class="section update-card">
+    <text class="page-title">今日概览</text>
     <text class="muted">{{summary}}</text>
   </view>
 </view>

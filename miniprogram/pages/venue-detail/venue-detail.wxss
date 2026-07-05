@@ -280,3 +280,39 @@
 .submit-button[disabled] {
   box-shadow: none;
 }
+
+.section-title {
+  color: #f7fbf5;
+}
+
+.detail-card,
+.slot-summary,
+.slot-row,
+.booking-summary,
+.picker-value {
+  border-color: rgba(216, 255, 62, 0.12);
+}
+
+.slot-row,
+.slot-summary,
+.detail-card {
+  background: #17231c;
+  color: #f7fbf5;
+}
+
+.detail-value,
+.slot-summary-title,
+.summary-value {
+  color: #f7fbf5;
+}
+
+.detail-label,
+.slot-summary-text {
+  color: rgba(247, 251, 245, 0.62);
+}
+
+.picker-value,
+.booking-summary {
+  background: rgba(216, 255, 62, 0.12);
+  color: #f7fbf5;
+}

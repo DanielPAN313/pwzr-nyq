@@ -345,3 +345,52 @@
   background: #f1f5f9;
   color: #64748b;
 }
+
+.section-title,
+.card-title,
+.step-title,
+.metric-value,
+.price {
+  color: #f7fbf5;
+}
+
+.section-hint,
+.step-text {
+  color: rgba(247, 251, 245, 0.62);
+}
+
+.step-card,
+.metric-card,
+.order-card,
+.application-panel,
+.maintenance-panel,
+.validation-item {
+  border-color: rgba(216, 255, 62, 0.12);
+  background: #17231c;
+}
+
+.venue-row {
+  border-top-color: rgba(216, 255, 62, 0.1);
+}
+
+.form-input,
+.code-input,
+.form-textarea {
+  border-color: rgba(216, 255, 62, 0.12);
+  background: #07120d;
+  color: #f7fbf5;
+}
+
+.validation-text {
+  color: #f7fbf5;
+}
+
+.checkin-box,
+.order-step {
+  background: rgba(216, 255, 62, 0.12);
+}
+
+.checkin-code,
+.status {
+  color: #d8ff3e;
+}

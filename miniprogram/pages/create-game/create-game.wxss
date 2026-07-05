@@ -235,3 +235,42 @@
 .submit-button[disabled] {
   box-shadow: none;
 }
+
+.section-title,
+.summary-title,
+.field-label {
+  color: #f7fbf5;
+}
+
+.summary-muted {
+  color: rgba(247, 251, 245, 0.62);
+}
+
+.summary-panel,
+.summary-card,
+.validation-item {
+  border-color: rgba(216, 255, 62, 0.12);
+  background: #17231c;
+}
+
+.summary-value,
+.validation-text {
+  color: #f7fbf5;
+}
+
+.summary-label {
+  color: rgba(247, 251, 245, 0.62);
+}
+
+.field-input,
+.picker-value,
+.field-textarea {
+  border-color: rgba(216, 255, 62, 0.12);
+  background: #07120d;
+  color: #f7fbf5;
+}
+
+.submit-hint {
+  background: rgba(216, 255, 62, 0.12);
+  color: #d8ff3e;
+}

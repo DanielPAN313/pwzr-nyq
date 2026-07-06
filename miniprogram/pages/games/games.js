@@ -1,8 +1,8 @@
 const { get, post } = require("../../utils/api");
 
 const fallbackGames = [
-  { title: "今晚江宁五人制足球", time: "今天 19:30", status: "缺 2 人", venueName: "未来科技城五人制足球馆", fee: "AA", canJoin: false, actionText: "待同步" },
-  { title: "大学城 3v3 篮球局", time: "明天 20:00", status: "缺 1 人", venueName: "江宁大学城篮球馆", fee: "AA", canJoin: false, actionText: "待同步" }
+  { title: "今晚江宁五人制足球", time: "今天 19:30", status: "缺 2 人", venueName: "未来科技城五人制足球馆", fee: "AA", canJoin: false, actionText: "去这场" },
+  { title: "大学城 3v3 篮球局", time: "明天 20:00", status: "缺 1 人", venueName: "江宁大学城篮球馆", fee: "AA", canJoin: false, actionText: "去这场" }
 ];
 
 const statusText = {
@@ -45,7 +45,7 @@ function mapGame(game) {
     venueName: game.venue_name || game.area || "场地待定",
     fee: fee ? `¥${fee}/人` : "免费/AA",
     canJoin,
-    actionText: game.is_joined ? "已报名" : canJoin ? "报名" : "不可报名"
+    actionText: "去这场"
   };
 }
 
@@ -60,6 +60,12 @@ Page({
 
   onLoad() {
     this.loadGames();
+  },
+
+  onShow() {
+    if (typeof this.getTabBar === "function" && this.getTabBar()) {
+      this.getTabBar().setData({ selected: 2 });
+    }
   },
 
   onPullDownRefresh() {

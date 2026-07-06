@@ -49,6 +49,8 @@
   var app = document.getElementById('app');
   var ROUTABLE_USER_VIEWS = [
     'splash',
+    'register',
+    'login',
     'home',
     'venues',
     'games',
@@ -66,6 +68,8 @@
   ];
   var ROUTE_PATH_VIEWS = {
     'pages/splash/splash': 'splash',
+    'pages/register/register': 'register',
+    'pages/login/login': 'login',
     'pages/home/home': 'home',
     'pages/venues/venues': 'venues',
     'pages/games/games': 'games',

@@ -35,11 +35,10 @@
       </view>
       <button
         class="primary small join-button"
-        disabled="{{!item.canJoin || joiningId === item.id}}"
         bindtap="joinGame"
         data-id="{{item.id}}"
       >
-        {{joiningId === item.id ? "报名中" : item.actionText}}
+        {{item.actionText}}
       </button>
     </view>
   </view>

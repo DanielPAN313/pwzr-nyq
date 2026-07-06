@@ -5,9 +5,22 @@ page {
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 
+page::after {
+  content: "";
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 900;
+  height: 260rpx;
+  background: linear-gradient(180deg, rgba(7, 18, 13, 0), rgba(7, 18, 13, 0.76) 42%, #07120d 100%);
+  box-shadow: 0 -34rpx 70rpx rgba(0, 0, 0, 0.38);
+  pointer-events: none;
+}
+
 .page {
   min-height: 100vh;
-  padding: 28rpx 24rpx 48rpx;
+  padding: 28rpx 24rpx 260rpx;
   box-sizing: border-box;
 }
 

@@ -1,6 +1,8 @@
 {
   "pages": [
     "pages/splash/splash",
+    "pages/register/register",
+    "pages/login/login",
     "pages/home/home",
     "pages/venues/venues",
     "pages/games/games",
@@ -12,13 +14,14 @@
     "navigationBarTitleText": "宁约球",
     "navigationBarBackgroundColor": "#0b6b3e",
     "navigationBarTextStyle": "white",
-    "backgroundColor": "#f4f7f2"
+    "backgroundColor": "#07120d"
   },
   "tabBar": {
-    "color": "#6f7c72",
-    "selectedColor": "#0b6b3e",
-    "backgroundColor": "#ffffff",
-    "borderStyle": "white",
+    "custom": true,
+    "color": "#43503f",
+    "selectedColor": "#07120d",
+    "backgroundColor": "#d8ff3e",
+    "borderStyle": "black",
     "list": [
       {
         "pagePath": "pages/home/home",

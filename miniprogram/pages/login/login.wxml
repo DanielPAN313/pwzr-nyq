@@ -1,0 +1,43 @@
+<view class="login-page">
+  <view class="login-ambient ambient-one"></view>
+  <view class="login-ambient ambient-two"></view>
+
+  <view class="login-hero">
+    <text class="login-kicker">WELCOME BACK</text>
+    <text class="login-title">登陆 NYQ</text>
+    <text class="login-copy">输入用户名和密码，回到你的球局、邀请和订单。</text>
+  </view>
+
+  <view class="login-form">
+    <view class="field">
+      <text class="field-label">用户名</text>
+      <input
+        class="field-input"
+        type="text"
+        placeholder="输入你的用户名"
+        placeholder-class="field-placeholder"
+        value="{{username}}"
+        data-field="username"
+        bindinput="updateField"
+      />
+    </view>
+
+    <view class="field">
+      <text class="field-label">密码</text>
+      <input
+        class="field-input"
+        password
+        placeholder="输入密码"
+        placeholder-class="field-placeholder"
+        value="{{password}}"
+        data-field="password"
+        bindinput="updateField"
+      />
+    </view>
+
+    <text wx:if="{{error}}" class="form-error">{{error}}</text>
+
+    <button class="login-button" bindtap="submitLogin">登陆 NYQ</button>
+    <button class="remember-button" bindtap="rememberLogin">记住我</button>
+  </view>
+</view>

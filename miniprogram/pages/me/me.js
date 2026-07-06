@@ -33,6 +33,12 @@ Page({
     this.loadProfile();
   },
 
+  onShow() {
+    if (typeof this.getTabBar === "function" && this.getTabBar()) {
+      this.getTabBar().setData({ selected: 4 });
+    }
+  },
+
   onPullDownRefresh() {
     this.loadProfile().finally(() => wx.stopPullDownRefresh());
   },

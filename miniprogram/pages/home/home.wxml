@@ -5,12 +5,6 @@
     </view>
   </view>
 
-  <view class="search-bar">
-    <text class="search-icon">⌕</text>
-    <text class="search-text">搜索场馆、球局、运动类型</text>
-    <text class="search-filter">筛选</text>
-  </view>
-
   <view class="hero">
     <view class="court-panel">
       <view class="court-glow"></view>
@@ -26,40 +20,92 @@
     </view>
   </view>
 
-  <view class="date-strip">
-    <text class="date-pill active">今天</text>
-    <text class="date-pill">明天</text>
-    <text class="date-pill">周末</text>
-    <text class="date-pill">附近</text>
+  <view class="home-tabs">
+    <view class="tab-highlight tab-highlight-{{homePanel}} {{tabMotionClass}}"></view>
+    <button
+      wx:for="{{homePanels}}"
+      wx:key="label"
+      class="home-tab {{homePanel == index ? 'active' : ''}}"
+      data-index="{{index}}"
+      bindtap="switchHomePanel"
+    >
+      <text>{{item.label}}</text>
+    </button>
   </view>
 
-  <view class="section feature-card">
-    <view class="feature-head">
-      <view>
-        <text class="page-title">今晚推荐</text>
-        <text class="muted">热门场地和可报名球局</text>
-      </view>
-      <text class="pill dark">LIVE</text>
-    </view>
-    <view class="venue-card">
-      <view class="venue-image">
-        <view class="mini-court"></view>
-      </view>
-      <view class="venue-info">
-        <text class="card-title">未来科技城五人制足球馆</text>
-        <text class="muted">江宁开发区 · 20:00-22:00</text>
-        <view class="venue-bottom">
-          <text class="price">¥260/小时</text>
-          <button class="book-button" bindtap="switchTab" data-target="/pages/venues/venues">订场</button>
+  <view class="panel-viewport {{panelMotionClass}}">
+    <view class="panel-track" style="transform: {{panelTransform}};">
+      <view class="panel-page">
+        <view class="section feature-card">
+          <view class="feature-head">
+            <view>
+              <text class="page-title">好友邀请</text>
+              <text class="muted">好友发来的私密组局，确认后直接锁位</text>
+            </view>
+            <text class="pill dark">NEW</text>
+          </view>
+          <view class="sample-stack">
+            <view wx:for="{{invitationGames}}" wx:key="id" class="game-sample-card {{item.featured ? 'featured' : ''}}">
+              <view class="priority-badge">
+                <text class="countdown-label">倒计时</text>
+                <text class="countdown-value">{{item.countdownText}}</text>
+                <text class="slots-left">{{item.slotsText}}</text>
+              </view>
+              <view class="game-court basketball"></view>
+              <view class="game-info">
+                <view class="sample-top">
+                  <text class="card-title">{{item.title}}</text>
+                </view>
+                <text class="muted">{{item.desc}}</text>
+                <view class="match-meta">
+                  <text class="meta-item">{{item.venue}}</text>
+                  <text class="meta-item">{{item.mode}}</text>
+                  <text class="meta-item">{{item.fee}}</text>
+                </view>
+                <view class="venue-bottom">
+                  <button class="book-button" bindtap="switchTab" data-target="/pages/games/games">{{item.actionText}}</button>
+                </view>
+              </view>
+            </view>
+          </view>
         </view>
       </view>
-    </view>
-  </view>
 
-  <view class="section update-card">
-    <text class="page-title">今日状态</text>
-    <text wx:if="{{loading}}" class="muted">正在加载首页数据...</text>
-    <text wx:elif="{{error}}" class="muted">{{error}}，已显示本地兜底内容。</text>
-    <text wx:else class="muted">{{summary}}</text>
+      <view class="panel-page">
+        <view class="section feature-card">
+          <view class="feature-head">
+            <view>
+              <text class="page-title">正在招人</text>
+              <text class="muted">附近还缺人的公开球局，报名即可锁位</text>
+            </view>
+          </view>
+          <view class="sample-stack">
+            <view wx:for="{{recruitingGames}}" wx:key="id" class="game-sample-card {{item.featured ? 'featured' : ''}}">
+              <view class="priority-badge">
+                <text class="countdown-label">倒计时</text>
+                <text class="countdown-value">{{item.countdownText}}</text>
+                <text class="slots-left">{{item.slotsText}}</text>
+              </view>
+              <view class="game-court basketball"></view>
+              <view class="game-info">
+                <view class="sample-top">
+                  <text class="card-title">{{item.title}}</text>
+                </view>
+                <text class="muted">{{item.desc}}</text>
+                <view class="match-meta">
+                  <text class="meta-item">{{item.venue}}</text>
+                  <text class="meta-item">{{item.mode}}</text>
+                  <text class="meta-item">{{item.fee}}</text>
+                </view>
+                <view class="venue-bottom">
+                  <button class="book-button" bindtap="switchTab" data-target="/pages/games/games">{{item.actionText}}</button>
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+    </view>
   </view>
 </view>

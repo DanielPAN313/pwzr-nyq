@@ -229,15 +229,14 @@
 
 .card-row {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
-  gap: 20rpx;
+  gap: 28rpx;
 }
 
-.venue-actions {
-  display: flex;
-  flex-shrink: 0;
-  gap: 12rpx;
+.card-row > view {
+  flex: 1;
+  min-width: 0;
 }
 
 .price {
@@ -246,6 +245,7 @@
   font-size: 36rpx;
   font-weight: 900;
   line-height: 1.2;
+  white-space: nowrap;
 }
 
 .small {
@@ -266,9 +266,11 @@
   box-sizing: border-box;
 }
 
-.secondary.small {
-  color: rgba(247, 251, 245, 0.86);
-  background: #17231c;
+.book-action {
+  min-width: 246rpx;
+  min-height: 78rpx;
+  font-size: 28rpx;
+  line-height: 78rpx;
 }
 
 @keyframes rise-in {

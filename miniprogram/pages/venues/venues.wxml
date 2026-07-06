@@ -36,11 +36,11 @@
       <text class="muted">换个区域、运动类型或场馆名试试。</text>
     </view>
     <view wx:for="{{venues}}" wx:key="name" class="section venue-card">
-      <view class="venue-visual">
+      <view class="venue-visual" bindtap="openVenueDetail" data-id="{{item.id}}">
         <view class="court-grid"></view>
         <text class="visual-tag">{{item.sportsText}}</text>
       </view>
-      <view class="card-top">
+      <view class="card-top" bindtap="openVenueDetail" data-id="{{item.id}}">
         <view>
           <text class="card-title">{{item.name}}</text>
           <text class="muted">{{item.area}} · {{item.sportsText}} · {{item.distanceText}}</text>
@@ -52,23 +52,14 @@
           <text class="price">¥{{item.price}}</text>
           <text class="muted">黄金时段优先锁场</text>
         </view>
-        <view class="venue-actions">
-          <button
-            class="secondary small"
-            bindtap="openVenueDetail"
-            data-id="{{item.id}}"
-          >
-            详情
-          </button>
-          <button
-            class="primary small"
-            bindtap="bookVenue"
-            data-id="{{item.id}}"
-            disabled="{{bookingId === item.id}}"
-          >
-            {{bookingId === item.id ? "锁定中" : "订场"}}
-          </button>
-        </view>
+        <button
+          class="primary small book-action"
+          bindtap="bookVenue"
+          data-id="{{item.id}}"
+          disabled="{{bookingId === item.id}}"
+        >
+          {{bookingId === item.id ? "锁定中" : "订场"}}
+        </button>
       </view>
     </view>
   </view>

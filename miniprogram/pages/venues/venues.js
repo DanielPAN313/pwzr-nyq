@@ -41,6 +41,29 @@ function sortVenues(venues, mode) {
   return list.sort((a, b) => Number(a.distance) - Number(b.distance));
 }
 
+function filterVenues(venues, keyword) {
+  const query = String(keyword || "").trim().toLowerCase();
+  const list = Array.isArray(venues) ? venues : [];
+  if (!query) return list.slice();
+
+  return list.filter((venue) => {
+    const text = [
+      venue.name,
+      venue.area,
+      venue.sportsText,
+      venue.price,
+      venue.distanceText,
+      venue.rating
+    ].join(" ").toLowerCase();
+
+    return text.includes(query);
+  });
+}
+
+function buildVenueView(venues, mode, keyword) {
+  return sortVenues(filterVenues(venues, keyword), mode);
+}
+
 function todayDate() {
   const now = new Date();
   const month = String(now.getMonth() + 1).padStart(2, "0");
@@ -60,6 +83,7 @@ Page({
       { label: "离我最近", mode: "nearby" },
       { label: "评分最高", mode: "rating" }
     ],
+    keyword: "",
     allVenues: fallbackVenues,
     venues: sortVenues(fallbackVenues, "nearby")
   },
@@ -84,21 +108,25 @@ Page({
     return get("/api/sports-app/venues", { showLoading: false })
       .then((venues) => {
         const list = Array.isArray(venues) ? venues.map(mapVenue) : [];
+        const allVenues = list.length ? list : [];
+        const visibleVenues = buildVenueView(allVenues, this.data.venueMode, this.data.keyword);
 
         this.setData({
           loading: false,
-          allVenues: list.length ? list : [],
-          venues: sortVenues(list.length ? list : [], this.data.venueMode),
-          empty: list.length === 0
+          allVenues,
+          venues: visibleVenues,
+          empty: visibleVenues.length === 0
         });
       })
       .catch((error) => {
+        const visibleVenues = buildVenueView(fallbackVenues, this.data.venueMode, this.data.keyword);
+
         this.setData({
           loading: false,
           error: error.message || "场馆数据加载失败",
-          empty: false,
+          empty: visibleVenues.length === 0,
           allVenues: fallbackVenues,
-          venues: sortVenues(fallbackVenues, this.data.venueMode)
+          venues: visibleVenues
         });
       });
   },
@@ -114,12 +142,33 @@ Page({
     this.setData({
       venueMode: mode,
       venueMotionClass: "venue-entering",
-      venues: sortVenues(this.data.allVenues, mode)
+      venues: buildVenueView(this.data.allVenues, mode, this.data.keyword)
     });
 
     this.venueMoveTimer = setTimeout(() => {
       this.setData({ venueMotionClass: "" });
     }, 520);
+  },
+
+  onSearchInput(event) {
+    const keyword = event.detail.value || "";
+    const venues = buildVenueView(this.data.allVenues, this.data.venueMode, keyword);
+
+    this.setData({
+      keyword,
+      venues,
+      empty: venues.length === 0
+    });
+  },
+
+  clearSearch() {
+    const venues = buildVenueView(this.data.allVenues, this.data.venueMode, "");
+
+    this.setData({
+      keyword: "",
+      venues,
+      empty: venues.length === 0
+    });
   },
 
   bookVenue(event) {

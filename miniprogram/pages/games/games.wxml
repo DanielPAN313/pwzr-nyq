@@ -13,6 +13,29 @@
     </view>
   </view>
 
+  <view class="search-panel">
+    <view class="search-mark"></view>
+    <input
+      class="search-input"
+      value="{{keyword}}"
+      placeholder="搜球局 / 场地 / 状态"
+      placeholder-class="search-placeholder"
+      confirm-type="search"
+      bindinput="onSearchInput"
+    />
+    <button wx:if="{{keyword}}" class="search-clear" bindtap="clearSearch">×</button>
+  </view>
+
+  <view class="result-line">
+    <text>{{games.length}} 场可查看</text>
+    <text wx:if="{{keyword}}"> · 已筛选“{{keyword}}”</text>
+  </view>
+
+  <view wx:if="{{empty}}" class="section empty-card">
+    <text class="card-title">没有找到匹配球局</text>
+    <text class="muted">换个关键词，或者去场馆页先订一个场。</text>
+  </view>
+
   <view wx:for="{{games}}" wx:key="title" class="section game-card">
     <view class="match-head">
       <view>
@@ -35,10 +58,11 @@
       </view>
       <button
         class="primary small join-button"
-        bindtap="joinGame"
+        bindtap="openGame"
         data-id="{{item.id}}"
+        disabled="{{joiningId === item.id && item.id}}"
       >
-        {{item.actionText}}
+        {{joiningId === item.id && item.id ? "报名中" : item.actionText}}
       </button>
     </view>
   </view>

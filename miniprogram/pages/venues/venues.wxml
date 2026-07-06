@@ -12,7 +12,29 @@
     </button>
   </view>
 
+  <view class="search-panel">
+    <view class="search-dot"></view>
+    <input
+      class="search-input"
+      value="{{keyword}}"
+      placeholder="搜场馆 / 区域 / 篮球"
+      placeholder-class="search-placeholder"
+      confirm-type="search"
+      bindinput="onSearchInput"
+    />
+    <button wx:if="{{keyword}}" class="search-clear" bindtap="clearSearch">×</button>
+  </view>
+
+  <view class="result-line">
+    <text>{{venues.length}} 个场馆可选</text>
+    <text wx:if="{{keyword}}"> · 已筛选“{{keyword}}”</text>
+  </view>
+
   <view class="venue-list {{venueMotionClass}}">
+    <view wx:if="{{empty}}" class="section empty-card">
+      <text class="card-title">没有找到匹配场馆</text>
+      <text class="muted">换个区域、运动类型或场馆名试试。</text>
+    </view>
     <view wx:for="{{venues}}" wx:key="name" class="section venue-card">
       <view class="venue-visual">
         <view class="court-grid"></view>

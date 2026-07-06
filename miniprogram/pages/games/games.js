@@ -1,8 +1,8 @@
 const { get, post } = require("../../utils/api");
 
 const fallbackGames = [
-  { title: "今晚江宁五人制足球", time: "今天 19:30", status: "缺 2 人", venueName: "未来科技城五人制足球馆", fee: "AA", canJoin: false, actionText: "去这场" },
-  { title: "大学城 3v3 篮球局", time: "明天 20:00", status: "缺 1 人", venueName: "江宁大学城篮球馆", fee: "AA", canJoin: false, actionText: "去这场" }
+  { id: "", title: "今晚江宁五人制足球", time: "今天 19:30", status: "缺 2 人", venueName: "未来科技城五人制足球馆", fee: "AA", canJoin: false, actionText: "去这场" },
+  { id: "", title: "大学城 3v3 篮球局", time: "明天 20:00", status: "缺 1 人", venueName: "江宁大学城篮球馆", fee: "AA", canJoin: false, actionText: "去这场" }
 ];
 
 const statusText = {
@@ -49,12 +49,32 @@ function mapGame(game) {
   };
 }
 
+function filterGames(games, keyword) {
+  const query = String(keyword || "").trim().toLowerCase();
+  const list = Array.isArray(games) ? games : [];
+  if (!query) return list.slice();
+
+  return list.filter((game) => {
+    const text = [
+      game.title,
+      game.time,
+      game.status,
+      game.venueName,
+      game.fee
+    ].join(" ").toLowerCase();
+
+    return text.includes(query);
+  });
+}
+
 Page({
   data: {
     loading: false,
     joiningId: "",
     error: "",
     empty: false,
+    keyword: "",
+    allGames: fallbackGames,
     games: fallbackGames
   },
 
@@ -78,21 +98,58 @@ Page({
     return get("/api/sports-app/games", { showLoading: false })
       .then((games) => {
         const list = Array.isArray(games) ? games.map(mapGame) : [];
+        const allGames = list.length ? list : [];
+        const visibleGames = filterGames(allGames, this.data.keyword);
 
         this.setData({
           loading: false,
-          games: list.length ? list : [],
-          empty: list.length === 0
+          allGames,
+          games: visibleGames,
+          empty: visibleGames.length === 0
         });
       })
       .catch((error) => {
+        const visibleGames = filterGames(fallbackGames, this.data.keyword);
+
         this.setData({
           loading: false,
           error: error.message || "球局数据加载失败",
-          empty: false,
-          games: fallbackGames
+          empty: visibleGames.length === 0,
+          allGames: fallbackGames,
+          games: visibleGames
         });
       });
+  },
+
+  onSearchInput(event) {
+    const keyword = event.detail.value || "";
+    const games = filterGames(this.data.allGames, keyword);
+
+    this.setData({
+      keyword,
+      games,
+      empty: games.length === 0
+    });
+  },
+
+  clearSearch() {
+    const games = filterGames(this.data.allGames, "");
+
+    this.setData({
+      keyword: "",
+      games,
+      empty: games.length === 0
+    });
+  },
+
+  openGame(event) {
+    const id = event.currentTarget.dataset.id;
+    if (!id) {
+      wx.showToast({ title: "体验数据暂不支持报名", icon: "none" });
+      return;
+    }
+
+    this.joinGame(event);
   },
 
   joinGame(event) {

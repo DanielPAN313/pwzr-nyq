@@ -223,6 +223,38 @@ homePage.switchTab.call(homePage, {
 assert(context.location.search.includes("page=games"), "home.switchTab did not route to games page.");
 assert(context.location.search.includes("path=pages%2Fgames%2Fgames") || context.location.search.includes("path=pages/games/games"), "home.switchTab did not preserve games path.");
 
+function inputEvent(value) {
+  return {
+    detail: { value },
+    currentTarget: { dataset: {} },
+  };
+}
+
+const venuesPage = registeredPageByPath.get("pages/venues/venues");
+assert(venuesPage, "pages/venues/venues page instance was not registered.");
+assert(typeof venuesPage.onSearchInput === "function", "pages/venues/venues should expose onSearchInput method.");
+assert(typeof venuesPage.clearSearch === "function", "pages/venues/venues should expose clearSearch method.");
+venuesPage.onSearchInput.call(venuesPage, inputEvent("篮球"));
+assert(venuesPage.data.keyword === "篮球", "venues search did not persist the keyword.");
+assert(venuesPage.data.venues.length >= 1, "venues search should find the fallback basketball venue.");
+assert(venuesPage.data.venues.every((venue) => `${venue.name} ${venue.area} ${venue.sportsText}`.includes("篮球")), "venues search returned a non-matching venue.");
+venuesPage.clearSearch.call(venuesPage);
+assert(venuesPage.data.keyword === "", "venues clearSearch did not reset the keyword.");
+assert(venuesPage.data.venues.length === venuesPage.data.allVenues.length, "venues clearSearch did not restore the full venue list.");
+
+const gamesPage = registeredPageByPath.get("pages/games/games");
+assert(gamesPage, "pages/games/games page instance was not registered.");
+assert(typeof gamesPage.onSearchInput === "function", "pages/games/games should expose onSearchInput method.");
+assert(typeof gamesPage.clearSearch === "function", "pages/games/games should expose clearSearch method.");
+assert(typeof gamesPage.openGame === "function", "pages/games/games should expose openGame method.");
+gamesPage.onSearchInput.call(gamesPage, inputEvent("足球"));
+assert(gamesPage.data.keyword === "足球", "games search did not persist the keyword.");
+assert(gamesPage.data.games.length >= 1, "games search should find the fallback football match.");
+assert(gamesPage.data.games.every((game) => `${game.title} ${game.venueName} ${game.status} ${game.fee}`.includes("足球")), "games search returned a non-matching match.");
+gamesPage.clearSearch.call(gamesPage);
+assert(gamesPage.data.keyword === "", "games clearSearch did not reset the keyword.");
+assert(gamesPage.data.games.length === gamesPage.data.allGames.length, "games clearSearch did not restore the full game list.");
+
 for (const timer of timers.splice(0)) timer();
 
-console.log(`Mini Program runtime check passed: loaded app.js, ${registeredPages.length} pages, and home.switchTab.`);
+console.log(`Mini Program runtime check passed: loaded app.js, ${registeredPages.length} pages, home.switchTab, and search flows.`);

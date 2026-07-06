@@ -33,6 +33,12 @@ Page({
     this.loadProfile();
   },
 
+  onShow() {
+    if (typeof this.getTabBar === "function" && this.getTabBar()) {
+      this.getTabBar().setData({ selected: 4 });
+    }
+  },
+
   onPullDownRefresh() {
     this.loadProfile().finally(() => wx.stopPullDownRefresh());
   },
@@ -65,7 +71,10 @@ Page({
 
   openMenu(event) {
     const target = event.currentTarget.dataset.target;
-    if (!target) return;
+    if (!target) {
+      wx.showToast({ title: "该功能正在接入新版 UI", icon: "none" });
+      return;
+    }
 
     wx.navigateTo({ url: target });
   }

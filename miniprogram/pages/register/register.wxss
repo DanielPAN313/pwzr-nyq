@@ -1,0 +1,142 @@
+.register-page {
+  position: relative;
+  min-height: 100vh;
+  padding: 96rpx 28rpx 80rpx;
+  color: #f7fbf5;
+  background: #07120d;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.register-ambient {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.ambient-one {
+  right: -190rpx;
+  top: -160rpx;
+  width: 430rpx;
+  height: 430rpx;
+  background: rgba(216, 255, 62, 0.18);
+}
+
+.ambient-two {
+  left: -210rpx;
+  bottom: 120rpx;
+  width: 390rpx;
+  height: 390rpx;
+  background: rgba(15, 138, 79, 0.22);
+}
+
+.register-hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+  margin-bottom: 44rpx;
+}
+
+.register-kicker {
+  align-self: flex-start;
+  padding: 8rpx 16rpx;
+  border-radius: 999rpx;
+  color: #10200f;
+  background: #d8ff3e;
+  font-size: 21rpx;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.register-title {
+  max-width: 560rpx;
+  color: #ffffff;
+  font-size: 58rpx;
+  font-weight: 950;
+  line-height: 1.08;
+}
+
+.register-copy {
+  max-width: 580rpx;
+  color: rgba(247, 251, 245, 0.62);
+  font-size: 27rpx;
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+.register-form {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+  padding: 22rpx;
+  border: 1rpx solid rgba(216, 255, 62, 0.12);
+  border-radius: 34rpx;
+  background: rgba(16, 27, 21, 0.92);
+  box-shadow: 0 30rpx 70rpx rgba(0, 0, 0, 0.32);
+  box-sizing: border-box;
+}
+
+.field {
+  padding: 20rpx;
+  border: 1rpx solid rgba(247, 251, 245, 0.08);
+  border-radius: 26rpx;
+  background: rgba(7, 18, 13, 0.74);
+  box-sizing: border-box;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 14rpx;
+  color: rgba(247, 251, 245, 0.7);
+  font-size: 23rpx;
+  font-weight: 900;
+}
+
+.field-input {
+  width: 100%;
+  min-height: 54rpx;
+  color: #ffffff;
+  font-size: 31rpx;
+  font-weight: 850;
+  line-height: 54rpx;
+}
+
+.field-placeholder {
+  color: rgba(247, 251, 245, 0.34);
+}
+
+.form-error {
+  color: #ff8f8f;
+  font-size: 24rpx;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.register-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 86rpx;
+  margin-top: 8rpx;
+  border-radius: 999rpx;
+  color: #10200f;
+  background: #d8ff3e;
+  font-size: 29rpx;
+  font-weight: 950;
+  line-height: 86rpx;
+}
+
+.login-entry-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 76rpx;
+  border-radius: 999rpx;
+  color: #d8ff3e;
+  background: rgba(216, 255, 62, 0.12);
+  font-size: 27rpx;
+  font-weight: 950;
+  line-height: 76rpx;
+}

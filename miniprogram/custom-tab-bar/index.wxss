@@ -1,0 +1,190 @@
+.tab-safe {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+  padding: 0 24rpx 24rpx;
+  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.liquid-shell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0;
+  min-height: 104rpx;
+  padding: 8rpx 12rpx;
+  border-radius: 32rpx;
+  background: #d8ff3e;
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+.tab-item {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
+  height: 88rpx;
+  border-radius: 28rpx;
+  color: rgba(7, 18, 13, 0.52);
+  transition: all 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.tab-item.active {
+  flex: 1.2;
+  color: #07120d;
+}
+
+.tab-symbol {
+  position: relative;
+  width: 48rpx;
+  height: 48rpx;
+  color: rgba(7, 18, 13, 0.5);
+  transition: transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1), color 240ms ease;
+}
+
+.active .tab-symbol {
+  color: #07120d;
+  transform: scale(1.08);
+}
+
+.symbol-part {
+  position: absolute;
+  box-sizing: border-box;
+}
+
+.tab-symbol-0 .part-a {
+  left: 7rpx;
+  top: 20rpx;
+  width: 34rpx;
+  height: 22rpx;
+  border-radius: 6rpx;
+  background: currentColor;
+}
+
+.tab-symbol-0 .part-b {
+  left: 10rpx;
+  top: 8rpx;
+  width: 28rpx;
+  height: 28rpx;
+  background: currentColor;
+  transform: rotate(45deg);
+}
+
+.tab-symbol-0 .part-c {
+  left: 20rpx;
+  top: 28rpx;
+  width: 8rpx;
+  height: 14rpx;
+  border-radius: 4rpx 4rpx 0 0;
+  background: #d8ff3e;
+}
+
+.tab-symbol-1 .part-a {
+  left: 5rpx;
+  top: 8rpx;
+  width: 38rpx;
+  height: 32rpx;
+  border: 5rpx solid currentColor;
+  border-radius: 8rpx;
+}
+
+.tab-symbol-1 .part-b {
+  left: 24rpx;
+  top: 8rpx;
+  width: 5rpx;
+  height: 32rpx;
+  background: currentColor;
+}
+
+.tab-symbol-1 .part-c {
+  left: 10rpx;
+  top: 22rpx;
+  width: 28rpx;
+  height: 5rpx;
+  background: currentColor;
+}
+
+.tab-symbol-2 .part-a,
+.tab-symbol-2 .part-b {
+  top: 10rpx;
+  width: 20rpx;
+  height: 28rpx;
+  border: 5rpx solid currentColor;
+  border-radius: 999rpx;
+}
+
+.tab-symbol-2 .part-a {
+  left: 6rpx;
+}
+
+.tab-symbol-2 .part-b {
+  right: 6rpx;
+}
+
+.tab-symbol-2 .part-c {
+  left: 22rpx;
+  top: 18rpx;
+  width: 5rpx;
+  height: 12rpx;
+  border-radius: 999rpx;
+  background: currentColor;
+}
+
+.tab-symbol-3 .part-a {
+  left: 5rpx;
+  top: 8rpx;
+  width: 38rpx;
+  height: 28rpx;
+  border-radius: 11rpx;
+  background: currentColor;
+}
+
+.tab-symbol-3 .part-b {
+  left: 14rpx;
+  top: 30rpx;
+  width: 14rpx;
+  height: 14rpx;
+  background: currentColor;
+  transform: skewX(-26deg);
+}
+
+.tab-symbol-3 .part-c {
+  left: 14rpx;
+  top: 20rpx;
+  width: 20rpx;
+  height: 5rpx;
+  border-radius: 999rpx;
+  background: #d8ff3e;
+}
+
+.tab-symbol-4 .part-a {
+  left: 15rpx;
+  top: 7rpx;
+  width: 18rpx;
+  height: 18rpx;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.tab-symbol-4 .part-b {
+  left: 8rpx;
+  top: 29rpx;
+  width: 32rpx;
+  height: 15rpx;
+  border-radius: 16rpx 16rpx 5rpx 5rpx;
+  background: currentColor;
+}
+
+.tab-symbol-4 .part-c {
+  display: none;
+}

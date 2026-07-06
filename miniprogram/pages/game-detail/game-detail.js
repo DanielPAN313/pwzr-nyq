@@ -114,6 +114,7 @@ function mapDetail(detail) {
   const missingCount = Math.max(capacity - playerCount, 0);
   const progressPercent = capacity ? Math.min(Math.round((playerCount / capacity) * 100), 100) : 0;
   const step = gameStep(game, players, currentUser.id, Boolean(detail.review_open), reviewablePlayers);
+  const canJoin = Boolean(game.id) && !game.is_joined && ["forming", "open"].includes(game.status) && missingCount > 0;
 
   return {
     title: game.title || "未命名球局",
@@ -137,11 +138,52 @@ function mapDetail(detail) {
     stepTone: step.tone,
     missingText: missingCount > 0 ? `还缺 ${missingCount} 人` : "人数已满",
     progressPercent,
+    canJoin,
+    joinText: canJoin ? "提交报名" : game.is_joined ? "已报名" : "暂不可报名",
     players,
     reviewablePlayers,
     playerCount,
     reviewOpen: Boolean(detail.review_open),
     reviewedCount: reviewedIds.length
+  };
+}
+
+function mapPreviewDetail(query) {
+  const title = decodeURIComponent(query.title || "附近球局");
+  const venue = decodeURIComponent(query.venue || "场地待定");
+  const desc = decodeURIComponent(query.desc || "名额和时间以球局列表为准");
+  const fee = decodeURIComponent(query.fee || "免费/AA");
+
+  return {
+    title,
+    statusText: "预览",
+    statusTone: "warning",
+    venueName: venue,
+    area: "",
+    address: "这是首页卡片预览，连接后端真实球局后可直接提交报名。",
+    startText: desc,
+    endText: "",
+    capacity: 0,
+    feeText: fee,
+    notes: "点击下方按钮可先去球局页选择真实可报名场次。",
+    infoCards: [
+      { label: "时间", value: desc || "待定" },
+      { label: "场馆", value: venue },
+      { label: "费用", value: fee }
+    ],
+    stepTitle: "确认报名信息",
+    stepText: "真实球局会在这里显示报名按钮，提交后生成待支付订单。",
+    stepTone: "warning",
+    missingText: "待同步",
+    progressPercent: 0,
+    canJoin: false,
+    joinText: "去球局页报名",
+    previewOnly: true,
+    players: [],
+    reviewablePlayers: [],
+    playerCount: 0,
+    reviewOpen: false,
+    reviewedCount: 0
   };
 }
 
@@ -157,6 +199,7 @@ Page({
   data: {
     id: "",
     loading: false,
+    joiningId: "",
     submittingReview: false,
     reviewHint: "",
     error: "",
@@ -166,7 +209,13 @@ Page({
   onLoad(query) {
     const id = query && query.id ? idString(query.id) : "";
     const reviewHint = query && query.review ? "订单已核销，赛后互评开放后可在这里提交。" : "";
-    this.setData({ id, reviewHint });
+    const previewOnly = query && query.preview && !/^\d+$/.test(id);
+    this.setData({
+      id,
+      reviewHint,
+      detail: previewOnly ? mapPreviewDetail(query || {}) : null
+    });
+    if (previewOnly) return;
     this.loadDetail();
   },
 
@@ -184,6 +233,44 @@ Page({
 
   goOrders() {
     wx.navigateTo({ url: "/pages/orders/orders" });
+  },
+
+  submitJoinGame() {
+    const detail = this.data.detail;
+
+    if (detail && detail.previewOnly) {
+      wx.switchTab({ url: "/pages/games/games" });
+      return;
+    }
+
+    const id = this.data.id;
+    if (!id || this.data.joiningId || !detail || !detail.canJoin) return;
+
+    this.setData({ joiningId: id });
+
+    post(`/api/sports-app/games/${id}/join`, {}, { loadingTitle: "报名中" })
+      .then((result) => {
+        wx.showToast({
+          title: result.order_id ? "已生成待支付订单" : "报名成功",
+          icon: "success"
+        });
+
+        if (result.order_id) {
+          wx.navigateTo({ url: `/pages/orders/orders?orderId=${result.order_id}` });
+          return null;
+        }
+
+        return this.loadDetail();
+      })
+      .catch((error) => {
+        wx.showToast({
+          title: error.message || "报名失败",
+          icon: "none"
+        });
+      })
+      .finally(() => {
+        this.setData({ joiningId: "" });
+      });
   },
 
   loadDetail() {

@@ -154,6 +154,21 @@ Page({
     wx.switchTab({ url: target });
   },
 
+  openHomeGame(event) {
+    const item = event.currentTarget.dataset || {};
+    const id = item.id || "";
+    const query = [
+      `id=${encodeURIComponent(id)}`,
+      `preview=1`,
+      `title=${encodeURIComponent(item.title || "附近球局")}`,
+      `venue=${encodeURIComponent(item.venue || "场地待定")}`,
+      `desc=${encodeURIComponent(item.desc || "")}`,
+      `fee=${encodeURIComponent(item.fee || "免费/AA")}`
+    ].join("&");
+
+    wx.navigateTo({ url: `/pages/game-detail/game-detail?${query}` });
+  },
+
   switchHomePanel(event) {
     const index = Number(event.currentTarget.dataset.index || 0);
 

@@ -227,6 +227,7 @@ const homePage = registeredPageByPath.get("pages/home/home");
 assert(homePage, "pages/home/home page instance was not registered.");
 assert(typeof homePage.switchTab === "function", "pages/home/home should expose switchTab method.");
 assert(typeof homePage.openQuickAction === "function", "pages/home/home should expose openQuickAction method.");
+assert(typeof homePage.openHomeGame === "function", "pages/home/home should expose openHomeGame method.");
 assert(Array.isArray(homePage.data.quickActions) && homePage.data.quickActions.length >= 4, "home should expose at least four quick actions.");
 assert(homePage.data.quickActions.some((action) => action.target === "/pages/orders/orders" && action.mode === "page"), "home quick actions should include a page navigation entry for orders.");
 assert(homePage.data.homePanel === 1, "home should default to the recruiting panel.");
@@ -275,6 +276,20 @@ assert(gamesPage.data.games.every((game) => `${game.title} ${game.venueName} ${g
 gamesPage.clearSearch.call(gamesPage);
 assert(gamesPage.data.keyword === "", "games clearSearch did not reset the keyword.");
 assert(gamesPage.data.games.length === gamesPage.data.allGames.length, "games clearSearch did not restore the full game list.");
+
+const gameDetailPage = registeredPageByPath.get("pages/game-detail/game-detail");
+assert(gameDetailPage, "pages/game-detail/game-detail page instance was not registered.");
+assert(typeof gameDetailPage.submitJoinGame === "function", "pages/game-detail/game-detail should expose submitJoinGame method.");
+gameDetailPage.onLoad.call(gameDetailPage, {
+  id: "invite-preview",
+  preview: "1",
+  title: encodeURIComponent("首页邀请预览"),
+  venue: encodeURIComponent("江宁大学城篮球馆"),
+  desc: encodeURIComponent("今晚 20:00"),
+  fee: encodeURIComponent("AA ¥32"),
+});
+assert(gameDetailPage.data.detail?.previewOnly === true, "game detail should support home invitation preview mode.");
+assert(gameDetailPage.data.detail?.joinText === "去球局页报名", "preview game detail should guide users to signup.");
 
 const ordersPage = registeredPageByPath.get("pages/orders/orders");
 assert(ordersPage, "pages/orders/orders page instance was not registered.");

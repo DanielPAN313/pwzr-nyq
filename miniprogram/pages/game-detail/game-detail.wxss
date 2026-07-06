@@ -162,6 +162,38 @@
   line-height: 1.5;
 }
 
+.signup-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20rpx;
+  border-color: rgba(216, 255, 62, 0.18);
+  background: #101b15;
+}
+
+.signup-panel > view {
+  flex: 1;
+  min-width: 0;
+}
+
+.signup-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: 218rpx;
+  min-height: 78rpx;
+  padding: 0 28rpx;
+  border-radius: 999rpx;
+  color: #10200f;
+  background: #d8ff3e;
+  font-size: 28rpx;
+  font-weight: 950;
+  line-height: 78rpx;
+  text-align: center;
+  box-sizing: border-box;
+}
+
 .info-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

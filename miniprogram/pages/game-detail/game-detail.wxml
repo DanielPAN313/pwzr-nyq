@@ -27,6 +27,20 @@
       <text class="step-text">{{detail.stepText}}</text>
     </view>
 
+    <view class="section signup-panel">
+      <view>
+        <text class="section-title">报名确认</text>
+        <text class="muted">{{detail.previewOnly ? "这是首页邀请预览，去球局页可选择真实场次。" : "确认后会生成待支付订单，支付后正式占位。"}}</text>
+      </view>
+      <button
+        class="primary signup-button"
+        bindtap="submitJoinGame"
+        disabled="{{!detail.canJoin && !detail.previewOnly || joiningId}}"
+      >
+        {{joiningId ? "报名中" : detail.joinText}}
+      </button>
+    </view>
+
     <view class="section info-grid">
       <view wx:for="{{detail.infoCards}}" wx:key="label" class="info-item">
         <text class="info-value">{{item.value}}</text>

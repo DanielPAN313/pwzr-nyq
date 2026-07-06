@@ -1,8 +1,8 @@
 Page({
   onLoad() {
     this.timer = setTimeout(() => {
-      wx.redirectTo({
-        url: "/pages/register/register"
+      wx.switchTab({
+        url: "/pages/home/home"
       });
     }, 1900);
   },

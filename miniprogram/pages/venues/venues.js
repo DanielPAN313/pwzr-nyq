@@ -1,4 +1,4 @@
-const { get, post } = require("../../utils/api");
+const { get } = require("../../utils/api");
 
 const fallbackVenues = [
   { name: "江宁大学城篮球馆", area: "江宁大学城", price: "180/小时", sportsText: "篮球" },
@@ -18,17 +18,9 @@ function mapVenue(venue) {
   };
 }
 
-function todayDate() {
-  const now = new Date();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
-  return `${now.getFullYear()}-${month}-${day}`;
-}
-
 Page({
   data: {
     loading: false,
-    bookingId: "",
     error: "",
     empty: false,
     venues: fallbackVenues
@@ -62,39 +54,6 @@ Page({
           empty: false,
           venues: fallbackVenues
         });
-      });
-  },
-
-  bookVenue(event) {
-    const id = event.currentTarget.dataset.id;
-    if (!id || this.data.bookingId) {
-      wx.showToast({ title: "真实场馆加载后可订场", icon: "none" });
-      return;
-    }
-
-    const date = todayDate();
-    this.setData({ bookingId: id });
-
-    get(`/api/sports-app/venues/${id}/availability?date=${date}`, { loadingTitle: "查时段" })
-      .then((availability) => {
-        const slot = (availability.slots || []).find((item) => !item.occupied && item.start && item.end);
-        if (!slot) throw new Error("今天暂无可订时段");
-
-        return post(`/api/sports-app/venues/${id}/book`, {
-          booking_date: date,
-          booking_start_time: slot.start,
-          booking_end_time: slot.end
-        }, { loadingTitle: "锁定场地" });
-      })
-      .then(() => {
-        wx.showToast({ title: "已生成订单", icon: "success" });
-        wx.switchTab({ url: "/pages/orders/orders" });
-      })
-      .catch((error) => {
-        wx.showToast({ title: error.message || "订场失败", icon: "none" });
-      })
-      .finally(() => {
-        this.setData({ bookingId: "" });
       });
   }
 });

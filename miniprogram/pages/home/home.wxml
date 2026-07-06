@@ -5,7 +5,7 @@
     </view>
   </view>
 
-  <view class="search-bar" bindtap="switchTab" data-target="/pages/venues/venues">
+  <view class="search-bar">
     <text class="search-icon">⌕</text>
     <text class="search-text">搜索场馆、球局、运动类型</text>
     <text class="search-filter">筛选</text>

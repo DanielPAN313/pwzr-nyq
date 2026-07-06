@@ -65,10 +65,7 @@ Page({
 
   openMenu(event) {
     const target = event.currentTarget.dataset.target;
-    if (!target) {
-      wx.showToast({ title: "UI 版暂未开放该页", icon: "none" });
-      return;
-    }
+    if (!target) return;
 
     wx.navigateTo({ url: target });
   }

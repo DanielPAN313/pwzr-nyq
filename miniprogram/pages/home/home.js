@@ -77,10 +77,10 @@ Page({
     loading: false,
     error: "",
     summary: fallbackSummary,
-    homePanel: 0,
+    homePanel: 1,
     tabMotionClass: "",
     panelMotionClass: "",
-    panelTransform: "translateX(0%)",
+    panelTransform: "translateX(-100%)",
     homePanels: [
       { label: "好友邀请" },
       { label: "正在招人" }

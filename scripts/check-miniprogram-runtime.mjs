@@ -229,6 +229,8 @@ assert(typeof homePage.switchTab === "function", "pages/home/home should expose 
 assert(typeof homePage.openQuickAction === "function", "pages/home/home should expose openQuickAction method.");
 assert(Array.isArray(homePage.data.quickActions) && homePage.data.quickActions.length >= 4, "home should expose at least four quick actions.");
 assert(homePage.data.quickActions.some((action) => action.target === "/pages/orders/orders" && action.mode === "page"), "home quick actions should include a page navigation entry for orders.");
+assert(homePage.data.homePanel === 1, "home should default to the recruiting panel.");
+assert(homePage.data.panelTransform === "translateX(-100%)", "home recruiting panel should be visible by default.");
 homePage.switchTab.call(homePage, {
   currentTarget: {
     dataset: {

@@ -88,10 +88,10 @@ Page({
     invitationGames: buildPrioritizedGames(inviteGames),
     recruitingGames: buildPrioritizedGames(recruitingGames),
     quickActions: [
-      { label: "订场", target: "/pages/venues/venues" },
-      { label: "找球局", target: "/pages/games/games" },
-      { label: "消息", target: "/pages/messages/messages" },
-      { label: "我的", target: "/pages/me/me" }
+      { label: "订场", hint: "锁定今天可用时段", target: "/pages/venues/venues", mode: "tab" },
+      { label: "找球局", hint: "报名附近公开局", target: "/pages/games/games", mode: "tab" },
+      { label: "查订单", hint: "支付和核销码", target: "/pages/orders/orders", mode: "page" },
+      { label: "消息", hint: "订单提醒", target: "/pages/messages/messages", mode: "tab" }
     ]
   },
 
@@ -139,6 +139,19 @@ Page({
     wx.switchTab({
       url: event.currentTarget.dataset.target
     });
+  },
+
+  openQuickAction(event) {
+    const target = event.currentTarget.dataset.target;
+    const mode = event.currentTarget.dataset.mode;
+    if (!target) return;
+
+    if (mode === "page") {
+      wx.navigateTo({ url: target });
+      return;
+    }
+
+    wx.switchTab({ url: target });
   },
 
   switchHomePanel(event) {

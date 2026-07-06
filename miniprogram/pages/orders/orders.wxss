@@ -15,6 +15,51 @@
   color: rgba(255, 255, 255, 0.76);
 }
 
+.hero-actions,
+.order-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.hero-actions {
+  margin-top: 8rpx;
+}
+
+.hero-action,
+.action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 142rpx;
+  min-height: 66rpx;
+  padding: 0 22rpx;
+  border-radius: 999rpx;
+  color: rgba(247, 251, 245, 0.86);
+  background: rgba(247, 251, 245, 0.12);
+  font-size: 25rpx;
+  font-weight: 900;
+  line-height: 66rpx;
+  box-sizing: border-box;
+}
+
+.primary-action {
+  color: #10200f;
+  background: #d8ff3e;
+}
+
+.subtle-action {
+  color: rgba(247, 251, 245, 0.64);
+  background: #17231d;
+}
+
+.empty-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+  border-style: dashed;
+}
+
 .order-card {
   position: relative;
   display: flex;
@@ -112,4 +157,15 @@
 .code-mark view:nth-child(2),
 .code-mark view:nth-child(3) {
   background: #d9f76e;
+}
+
+.order-note {
+  display: block;
+  padding: 14rpx 18rpx;
+  border-radius: 18rpx;
+  color: rgba(247, 251, 245, 0.72);
+  background: #17231d;
+  font-size: 23rpx;
+  font-weight: 800;
+  line-height: 1.45;
 }

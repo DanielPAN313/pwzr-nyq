@@ -6,6 +6,19 @@
     <text wx:elif="{{error}}" class="muted">{{error}}，已显示本地兜底订单。</text>
     <text wx:elif="{{empty}}" class="muted">暂时没有订单。去球局页报名后会生成待支付订单。</text>
     <text wx:else class="muted">这里展示报名、订场和到场核销相关订单。</text>
+    <view class="hero-actions">
+      <button class="hero-action primary-action" bindtap="goVenues">去订场</button>
+      <button class="hero-action" bindtap="goGames">找球局</button>
+    </view>
+  </view>
+
+  <view wx:if="{{empty}}" class="section empty-card">
+    <text class="card-title">还没有订单</text>
+    <text class="muted">先订一个场或报名一场球局，待支付订单和核销码会出现在这里。</text>
+    <view class="order-actions">
+      <button class="action-button primary-action" bindtap="goVenues">马上订场</button>
+      <button class="action-button" bindtap="goGames">去找球局</button>
+    </view>
   </view>
 
   <view wx:for="{{orders}}" wx:key="title" class="section order-card">
@@ -36,5 +49,44 @@
       </view>
     </view>
     <text class="muted">{{item.hint}}</text>
+    <text wx:if="{{item.cancelHint}}" class="order-note">{{item.cancelHint}}</text>
+    <view class="order-actions">
+      <button
+        wx:if="{{item.canPay}}"
+        class="action-button primary-action"
+        bindtap="payOrder"
+        data-id="{{item.id}}"
+        disabled="{{payingId === item.id}}"
+      >
+        {{payingId === item.id ? "支付中" : "去支付"}}
+      </button>
+      <button
+        wx:if="{{item.canCheckin}}"
+        class="action-button primary-action"
+        bindtap="checkinOrder"
+        data-id="{{item.id}}"
+        disabled="{{checkingInId === item.id}}"
+      >
+        {{checkingInId === item.id ? "核销中" : "到场核销"}}
+      </button>
+      <button
+        wx:if="{{item.canCopyCode}}"
+        class="action-button"
+        bindtap="copyCheckinCode"
+        data-code="{{item.checkinCode}}"
+      >
+        复制核销码
+      </button>
+      <button
+        wx:if="{{item.canCancel}}"
+        class="action-button subtle-action"
+        bindtap="cancelOrder"
+        data-id="{{item.id}}"
+        data-hint="{{item.cancelHint}}"
+        disabled="{{cancellingId === item.id}}"
+      >
+        {{cancellingId === item.id ? "取消中" : "取消订单"}}
+      </button>
+    </view>
   </view>
 </view>

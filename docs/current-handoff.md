@@ -16,11 +16,12 @@
 - 启动页：使用 UI 分支动效，开发阶段自动进入首页，跳过强制登录。
 - 注册/登录：保留同伴 UI，接入 `/api/auth/register` 和 `/api/auth/login`，成功后写入小程序 session。
 - 首页：展示 UI 分支首页视觉，好友邀请/正在招人卡片接入真实球局数据，失败时保留 UI 兜底示例。
+- 首页：首屏增加订场、找球局、查订单、消息快捷入口，订单入口使用普通页面跳转。
 - 订场：加载真实场馆列表，点击订场会尝试锁定今天最近可用时段并生成待支付订单。
 - 球局：加载真实球局列表，支持报名并生成订单。
 - 消息：加载通知列表，点击消息可标记已读。
 - 我的：加载个人概览，已有页面可跳转；UI 版暂未开放的入口会提示。
-- 订单：加载订单列表，展示金额、状态和核销码。
+- 订单：加载订单列表，展示金额、状态和核销码，支持支付预留、取消订单、到场核销、复制核销码。
 
 ## 自动检查
 
@@ -38,7 +39,7 @@ npm run check:h5-bridge-coverage
 当前通过时应看到：
 
 ```text
-Mini Program runtime check passed: loaded app.js, 9 pages, and home.switchTab.
+Mini Program runtime check passed: loaded app.js, 9 pages, home quick actions, search flows, and order actions.
 ```
 
 ## 注意

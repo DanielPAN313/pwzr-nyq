@@ -191,7 +191,7 @@ Page({
       })
       .then(() => {
         wx.showToast({ title: "已生成订单", icon: "success" });
-        wx.switchTab({ url: "/pages/orders/orders" });
+        wx.navigateTo({ url: "/pages/orders/orders" });
       })
       .catch((error) => {
         wx.showToast({ title: error.message || "订场失败", icon: "none" });

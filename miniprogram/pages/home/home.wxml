@@ -20,6 +20,20 @@
     </view>
   </view>
 
+  <view class="quick-grid">
+    <button
+      wx:for="{{quickActions}}"
+      wx:key="label"
+      class="quick-action"
+      bindtap="openQuickAction"
+      data-target="{{item.target}}"
+      data-mode="{{item.mode}}"
+    >
+      <text class="quick-label">{{item.label}}</text>
+      <text class="quick-hint">{{item.hint}}</text>
+    </button>
+  </view>
+
   <view class="home-tabs">
     <view class="tab-highlight tab-highlight-{{homePanel}} {{tabMotionClass}}"></view>
     <button

@@ -213,6 +213,9 @@ for (const file of fs.readdirSync(path.join(miniRoot, "utils"))) {
 const homePage = registeredPageByPath.get("pages/home/home");
 assert(homePage, "pages/home/home page instance was not registered.");
 assert(typeof homePage.switchTab === "function", "pages/home/home should expose switchTab method.");
+assert(typeof homePage.openQuickAction === "function", "pages/home/home should expose openQuickAction method.");
+assert(Array.isArray(homePage.data.quickActions) && homePage.data.quickActions.length >= 4, "home should expose at least four quick actions.");
+assert(homePage.data.quickActions.some((action) => action.target === "/pages/orders/orders" && action.mode === "page"), "home quick actions should include a page navigation entry for orders.");
 homePage.switchTab.call(homePage, {
   currentTarget: {
     dataset: {
@@ -255,6 +258,13 @@ gamesPage.clearSearch.call(gamesPage);
 assert(gamesPage.data.keyword === "", "games clearSearch did not reset the keyword.");
 assert(gamesPage.data.games.length === gamesPage.data.allGames.length, "games clearSearch did not restore the full game list.");
 
+const ordersPage = registeredPageByPath.get("pages/orders/orders");
+assert(ordersPage, "pages/orders/orders page instance was not registered.");
+for (const method of ["goVenues", "goGames", "copyCheckinCode", "payOrder", "cancelOrder", "checkinOrder"]) {
+  assert(typeof ordersPage[method] === "function", `pages/orders/orders should expose ${method} method.`);
+}
+assert(ordersPage.data.orders.every((order) => "canPay" in order && "canCancel" in order && "canCheckin" in order), "orders should expose actionable payment/cancel/checkin flags.");
+
 for (const timer of timers.splice(0)) timer();
 
-console.log(`Mini Program runtime check passed: loaded app.js, ${registeredPages.length} pages, home.switchTab, and search flows.`);
+console.log(`Mini Program runtime check passed: loaded app.js, ${registeredPages.length} pages, home quick actions, search flows, and order actions.`);

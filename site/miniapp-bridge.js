@@ -14,8 +14,13 @@
     'pages/register/register': 'register',
     'pages/login/login': 'login',
     'pages/orders/orders': 'orders',
+    'pages/venue-detail/venue-detail': 'venues',
+    'pages/game-detail/game-detail': 'games',
+    'pages/create-game/create-game': 'create',
+    'pages/venue-admin/venue-admin': 'teams',
     'pages/credit/credit': 'credit',
     'pages/my-games/my-games': 'my-games',
+    'pages/legal/legal': 'me',
     'pages/create/create': 'create',
     'pages/teams/teams': 'teams',
     'pages/ai/ai': 'ai',
@@ -25,7 +30,7 @@
   });
 
   var VIEW_PAGES = Object.keys(ROUTE_PAGES).reduce(function (acc, path) {
-    acc[ROUTE_PAGES[path]] = path;
+    if (!acc[ROUTE_PAGES[path]]) acc[ROUTE_PAGES[path]] = path;
     return acc;
   }, {});
 

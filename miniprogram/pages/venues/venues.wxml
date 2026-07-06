@@ -52,14 +52,23 @@
           <text class="price">¥{{item.price}}</text>
           <text class="muted">黄金时段优先锁场</text>
         </view>
-        <button
-          class="primary small"
-          bindtap="bookVenue"
-          data-id="{{item.id}}"
-          disabled="{{bookingId === item.id}}"
-        >
-          {{bookingId === item.id ? "锁定中" : "订场"}}
-        </button>
+        <view class="venue-actions">
+          <button
+            class="secondary small"
+            bindtap="openVenueDetail"
+            data-id="{{item.id}}"
+          >
+            详情
+          </button>
+          <button
+            class="primary small"
+            bindtap="bookVenue"
+            data-id="{{item.id}}"
+            disabled="{{bookingId === item.id}}"
+          >
+            {{bookingId === item.id ? "锁定中" : "订场"}}
+          </button>
+        </view>
       </view>
     </view>
   </view>

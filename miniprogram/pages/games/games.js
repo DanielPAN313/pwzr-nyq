@@ -152,6 +152,20 @@ Page({
     this.joinGame(event);
   },
 
+  openGameDetail(event) {
+    const id = event.currentTarget.dataset.id;
+    if (!id) {
+      wx.showToast({ title: "体验数据暂无详情", icon: "none" });
+      return;
+    }
+
+    wx.navigateTo({ url: `/pages/game-detail/game-detail?id=${id}` });
+  },
+
+  createGame() {
+    wx.navigateTo({ url: "/pages/create-game/create-game" });
+  },
+
   joinGame(event) {
     const id = event.currentTarget.dataset.id;
     if (!id || this.data.joiningId) return;

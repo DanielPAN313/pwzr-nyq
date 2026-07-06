@@ -11,6 +11,7 @@
       <text class="pill">今晚</text>
       <text class="pill">离我近</text>
     </view>
+    <button class="create-button" bindtap="createGame">发起球局</button>
   </view>
 
   <view class="search-panel">
@@ -56,14 +57,23 @@
         <text class="player-dot empty"></text>
         <text class="players-text">{{item.status}}</text>
       </view>
-      <button
-        class="primary small join-button"
-        bindtap="openGame"
-        data-id="{{item.id}}"
-        disabled="{{joiningId === item.id && item.id}}"
-      >
-        {{joiningId === item.id && item.id ? "报名中" : item.actionText}}
-      </button>
+      <view class="game-actions">
+        <button
+          class="secondary small"
+          bindtap="openGameDetail"
+          data-id="{{item.id}}"
+        >
+          详情
+        </button>
+        <button
+          class="primary small join-button"
+          bindtap="openGame"
+          data-id="{{item.id}}"
+          disabled="{{joiningId === item.id && item.id}}"
+        >
+          {{joiningId === item.id && item.id ? "报名中" : item.actionText}}
+        </button>
+      </view>
     </view>
   </view>
 </view>

@@ -56,6 +56,8 @@ function mapOrder(order) {
     canCancel: Boolean(order.can_cancel),
     canCheckin: Boolean(order.can_checkin),
     canCopyCode: Boolean(order.checkin_code),
+    canReview: Boolean(order.game_id && ["checked_in", "review_open", "completed"].includes(order.status)),
+    gameId: order.game_id,
     cancelHint: order.cancel_hint || "",
     cancelPenaltyPreview: Number(order.cancel_penalty_preview || 0)
   };
@@ -199,5 +201,15 @@ Page({
       .finally(() => {
         this.setData({ checkingInId: "" });
       });
+  },
+
+  openGameReview(event) {
+    const gameId = event.currentTarget.dataset.gameId;
+    if (!gameId) {
+      wx.showToast({ title: "该订单暂无关联球局", icon: "none" });
+      return;
+    }
+
+    wx.navigateTo({ url: `/pages/game-detail/game-detail?id=${gameId}&review=1` });
   }
 });

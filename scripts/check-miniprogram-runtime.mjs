@@ -210,6 +210,19 @@ for (const file of fs.readdirSync(path.join(miniRoot, "utils"))) {
   if (file.endsWith(".js")) loadModule(path.join(miniRoot, "utils", file));
 }
 
+assert(registeredPages.length === 16, "Mini Program should register the restored 16-page product flow.");
+for (const pagePath of [
+  "pages/venue-detail/venue-detail",
+  "pages/create-game/create-game",
+  "pages/game-detail/game-detail",
+  "pages/venue-admin/venue-admin",
+  "pages/credit/credit",
+  "pages/my-games/my-games",
+  "pages/legal/legal",
+]) {
+  assert(registeredPageByPath.has(pagePath), `${pagePath} should be restored and registered.`);
+}
+
 const homePage = registeredPageByPath.get("pages/home/home");
 assert(homePage, "pages/home/home page instance was not registered.");
 assert(typeof homePage.switchTab === "function", "pages/home/home should expose switchTab method.");
@@ -237,6 +250,7 @@ const venuesPage = registeredPageByPath.get("pages/venues/venues");
 assert(venuesPage, "pages/venues/venues page instance was not registered.");
 assert(typeof venuesPage.onSearchInput === "function", "pages/venues/venues should expose onSearchInput method.");
 assert(typeof venuesPage.clearSearch === "function", "pages/venues/venues should expose clearSearch method.");
+assert(typeof venuesPage.openVenueDetail === "function", "pages/venues/venues should expose openVenueDetail method.");
 venuesPage.onSearchInput.call(venuesPage, inputEvent("篮球"));
 assert(venuesPage.data.keyword === "篮球", "venues search did not persist the keyword.");
 assert(venuesPage.data.venues.length >= 1, "venues search should find the fallback basketball venue.");
@@ -250,6 +264,8 @@ assert(gamesPage, "pages/games/games page instance was not registered.");
 assert(typeof gamesPage.onSearchInput === "function", "pages/games/games should expose onSearchInput method.");
 assert(typeof gamesPage.clearSearch === "function", "pages/games/games should expose clearSearch method.");
 assert(typeof gamesPage.openGame === "function", "pages/games/games should expose openGame method.");
+assert(typeof gamesPage.openGameDetail === "function", "pages/games/games should expose openGameDetail method.");
+assert(typeof gamesPage.createGame === "function", "pages/games/games should expose createGame method.");
 gamesPage.onSearchInput.call(gamesPage, inputEvent("足球"));
 assert(gamesPage.data.keyword === "足球", "games search did not persist the keyword.");
 assert(gamesPage.data.games.length >= 1, "games search should find the fallback football match.");
@@ -260,11 +276,17 @@ assert(gamesPage.data.games.length === gamesPage.data.allGames.length, "games cl
 
 const ordersPage = registeredPageByPath.get("pages/orders/orders");
 assert(ordersPage, "pages/orders/orders page instance was not registered.");
-for (const method of ["goVenues", "goGames", "copyCheckinCode", "payOrder", "cancelOrder", "checkinOrder"]) {
+for (const method of ["goVenues", "goGames", "copyCheckinCode", "payOrder", "cancelOrder", "checkinOrder", "openGameReview"]) {
   assert(typeof ordersPage[method] === "function", `pages/orders/orders should expose ${method} method.`);
 }
 assert(ordersPage.data.orders.every((order) => "canPay" in order && "canCancel" in order && "canCheckin" in order), "orders should expose actionable payment/cancel/checkin flags.");
 
+const mePage = registeredPageByPath.get("pages/me/me");
+assert(mePage, "pages/me/me page instance was not registered.");
+for (const target of ["/pages/my-games/my-games", "/pages/credit/credit", "/pages/venue-admin/venue-admin", "/pages/legal/legal"]) {
+  assert(mePage.data.items.some((item) => item.target === target), `me menu should expose ${target}.`);
+}
+
 for (const timer of timers.splice(0)) timer();
 
-console.log(`Mini Program runtime check passed: loaded app.js, ${registeredPages.length} pages, home quick actions, search flows, and order actions.`);
+console.log(`Mini Program runtime check passed: loaded app.js, ${registeredPages.length} pages, restored product pages, search flows, and order actions.`);

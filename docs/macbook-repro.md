@@ -44,7 +44,7 @@ npm run check
 ```text
 Mini Program check passed.
 Mini Program flow contract check passed.
-Mini Program runtime check passed: loaded app.js, 15 pages, and home.switchTab.
+Mini Program runtime check passed: loaded app.js, 16 pages, restored product pages, search flows, and order actions.
 H5 Mini Program preview check passed.
 H5 HTTP preview check passed.
 H5 Mini Program bridge runtime check passed.

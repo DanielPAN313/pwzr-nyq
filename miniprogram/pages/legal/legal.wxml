@@ -1,0 +1,33 @@
+<view class="page">
+  <view class="section">
+    <view class="page-title">合规说明</view>
+    <text class="muted">这里展示开发版协议和上线前需要补齐的合规要点。</text>
+  </view>
+
+  <scroll-view class="tabs" scroll-x enable-flex>
+    <view
+      wx:for="{{legalTabs}}"
+      wx:key="key"
+      class="tab {{activeKey === item.key ? 'active' : ''}}"
+      bindtap="changeTab"
+      data-key="{{item.key}}"
+    >
+      {{item.label}}
+    </view>
+  </scroll-view>
+
+  <view class="section legal-card">
+    <text class="legal-title">{{content.title}}</text>
+    <text class="legal-meta">{{content.updatedAt}}</text>
+    <text class="legal-intro">{{content.intro}}</text>
+    <view wx:for="{{content.items}}" wx:key="*this" class="legal-row">
+      <text class="legal-index">{{index + 1}}</text>
+      <text class="legal-text">{{item}}</text>
+    </view>
+  </view>
+
+  <view class="state-panel warning">
+    <text class="state-title">上线前必须替换为正式文本</text>
+    <text class="state-text">当前内容是开发版摘要。正式提交审核前，请以 docs/legal/ 中的正式隐私政策、用户协议、支付说明和场馆合作说明为准，并补齐主体信息、客服电话和生效日期。</text>
+  </view>
+</view>

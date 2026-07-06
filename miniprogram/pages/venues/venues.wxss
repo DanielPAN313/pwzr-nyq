@@ -234,6 +234,12 @@
   gap: 20rpx;
 }
 
+.venue-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 12rpx;
+}
+
 .price {
   display: block;
   color: #d8ff3e;
@@ -258,6 +264,11 @@
   line-height: 72rpx;
   text-align: center;
   box-sizing: border-box;
+}
+
+.secondary.small {
+  color: rgba(247, 251, 245, 0.86);
+  background: #17231c;
 }
 
 @keyframes rise-in {

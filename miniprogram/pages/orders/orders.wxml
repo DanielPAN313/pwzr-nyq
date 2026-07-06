@@ -78,6 +78,14 @@
         复制核销码
       </button>
       <button
+        wx:if="{{item.canReview}}"
+        class="action-button"
+        bindtap="openGameReview"
+        data-game-id="{{item.gameId}}"
+      >
+        赛后互评
+      </button>
+      <button
         wx:if="{{item.canCancel}}"
         class="action-button subtle-action"
         bindtap="cancelOrder"

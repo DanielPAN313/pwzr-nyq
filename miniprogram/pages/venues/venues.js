@@ -171,6 +171,16 @@ Page({
     });
   },
 
+  openVenueDetail(event) {
+    const id = event.currentTarget.dataset.id;
+    if (!id) {
+      wx.showToast({ title: "体验数据暂无详情", icon: "none" });
+      return;
+    }
+
+    wx.navigateTo({ url: `/pages/venue-detail/venue-detail?id=${id}` });
+  },
+
   bookVenue(event) {
     const id = event.currentTarget.dataset.id;
     if (!id || this.data.bookingId) return;

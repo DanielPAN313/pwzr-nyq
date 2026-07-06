@@ -23,6 +23,23 @@
   margin-top: 8rpx;
 }
 
+.create-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  min-width: 176rpx;
+  min-height: 68rpx;
+  margin-top: 4rpx;
+  padding: 0 24rpx;
+  border-radius: 999rpx;
+  color: #10200f;
+  background: #d8ff3e;
+  font-size: 26rpx;
+  font-weight: 950;
+  line-height: 68rpx;
+}
+
 .search-panel {
   display: flex;
   align-items: center;
@@ -151,6 +168,12 @@
   gap: 18rpx;
 }
 
+.game-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 12rpx;
+}
+
 .players {
   display: flex;
   align-items: center;
@@ -202,6 +225,11 @@
 
 .join-button {
   flex-shrink: 0;
+}
+
+.secondary.small {
+  color: rgba(247, 251, 245, 0.86);
+  background: #17231c;
 }
 
 @keyframes rise-in {

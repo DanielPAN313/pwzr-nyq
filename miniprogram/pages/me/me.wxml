@@ -2,35 +2,33 @@
   <view class="profile">
     <view class="profile-top">
       <text class="avatar">NYQ</text>
-      <text class="page-kicker">PLAYER CARD</text>
+      <text class="profile-tag">{{profileTag}}</text>
     </view>
     <text class="name">{{profileName}}</text>
-    <text wx:if="{{loading}}" class="profile-hint">正在加载我的数据...</text>
-    <text wx:elif="{{error}}" class="profile-hint">{{error}}，已显示本地兜底资料。</text>
+    <text wx:if="{{loading}}" class="profile-hint">正在加载个人信息...</text>
     <text wx:else class="profile-hint">{{profileHint}}</text>
     <view class="profile-stats">
-      <view>
-        <text class="stat-value">100</text>
-        <text class="stat-label">信用分</text>
-      </view>
-      <view>
-        <text class="stat-value">0</text>
-        <text class="stat-label">待核销</text>
-      </view>
-      <view>
-        <text class="stat-value">0</text>
-        <text class="stat-label">本周局</text>
+      <view wx:for="{{profileStats}}" wx:key="label" class="stat-card stat-{{item.tone}}">
+        <text class="stat-value">{{item.value}}</text>
+        <text class="stat-label">{{item.label}}</text>
       </view>
     </view>
   </view>
 
-  <view class="section">
+  <view class="section menu-section">
+    <view class="section-head">
+      <text class="section-title">功能入口</text>
+      <text class="section-hint">查看订单、球局、信用和规则</text>
+    </view>
     <view wx:for="{{items}}" wx:key="label" class="menu-row" bindtap="openMenu" data-target="{{item.target}}">
-      <view>
+      <view class="menu-copy">
         <text class="menu-label">{{item.label}}</text>
-        <text class="muted">查看详情</text>
+        <text class="menu-hint">{{item.hint}}</text>
       </view>
-      <text class="menu-value">{{item.value}} ›</text>
+      <view class="menu-meta">
+        <text class="menu-value menu-{{item.tone}}">{{item.value}}</text>
+        <text class="menu-arrow">›</text>
+      </view>
     </view>
   </view>
 </view>

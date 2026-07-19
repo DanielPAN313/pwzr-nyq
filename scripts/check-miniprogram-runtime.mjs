@@ -319,9 +319,12 @@ assert(creditPage.data.ratingDraftAverage === "2.0", "credit rating preset shoul
 
 const mePage = registeredPageByPath.get("pages/me/me");
 assert(mePage, "pages/me/me page instance was not registered.");
+assert(Array.isArray(mePage.data.profileStats) && mePage.data.profileStats.length === 3, "me page should expose three profile stats.");
+assert(typeof mePage.data.profileTag === "string" && mePage.data.profileTag.length > 0, "me page should expose a profile tag.");
 for (const target of ["/pages/my-games/my-games", "/pages/credit/credit", "/pages/venue-admin/venue-admin", "/pages/legal/legal"]) {
   assert(mePage.data.items.some((item) => item.target === target), `me menu should expose ${target}.`);
 }
+assert(mePage.data.items.every((item) => typeof item.hint === "string" && item.hint.length > 0), "me menu items should expose descriptive hints.");
 
 for (const timer of timers.splice(0)) timer();
 

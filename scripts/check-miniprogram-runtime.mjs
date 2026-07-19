@@ -298,6 +298,25 @@ for (const method of ["goVenues", "goGames", "copyCheckinCode", "payOrder", "can
 }
 assert(ordersPage.data.orders.every((order) => "canPay" in order && "canCancel" in order && "canCheckin" in order), "orders should expose actionable payment/cancel/checkin flags.");
 
+const creditPage = registeredPageByPath.get("pages/credit/credit");
+assert(creditPage, "pages/credit/credit page instance was not registered.");
+for (const method of ["loadCredit", "goOrders", "goMyGames", "onRatingChange", "applyRatingPreset", "submitSelfRating", "syncRatingState"]) {
+  assert(typeof creditPage[method] === "function", `pages/credit/credit should expose ${method} method.`);
+}
+assert(Array.isArray(creditPage.data.ratingDimensions) && creditPage.data.ratingDimensions.length === 5, "credit page should expose five rating dimensions.");
+assert(Array.isArray(creditPage.data.ratingPresets) && creditPage.data.ratingPresets.length === 5, "credit page should expose rating presets.");
+assert(Array.isArray(creditPage.data.ratingSummaryCards) && creditPage.data.ratingSummaryCards.length === 3, "credit page should expose summary cards for self-rating.");
+creditPage.onRatingChange.call(creditPage, {
+  detail: { value: 5 },
+  currentTarget: { dataset: { key: "technique" } },
+});
+assert(creditPage.data.ratingForm.technique === 5, "credit rating slider should update the targeted dimension.");
+creditPage.applyRatingPreset.call(creditPage, {
+  currentTarget: { dataset: { score: 2 } },
+});
+assert(creditPage.data.ratingForm.technique === 2 && creditPage.data.ratingForm.attitude === 2, "credit rating preset should apply the same score to all dimensions.");
+assert(creditPage.data.ratingDraftAverage === "2.0", "credit rating preset should refresh the preview average.");
+
 const mePage = registeredPageByPath.get("pages/me/me");
 assert(mePage, "pages/me/me page instance was not registered.");
 for (const target of ["/pages/my-games/my-games", "/pages/credit/credit", "/pages/venue-admin/venue-admin", "/pages/legal/legal"]) {
@@ -306,4 +325,4 @@ for (const target of ["/pages/my-games/my-games", "/pages/credit/credit", "/page
 
 for (const timer of timers.splice(0)) timer();
 
-console.log(`Mini Program runtime check passed: loaded app.js, ${registeredPages.length} pages, restored product pages, search flows, and order actions.`);
+console.log(`Mini Program runtime check passed: loaded app.js, ${registeredPages.length} pages, restored product pages, search flows, order actions, and credit self-rating.`);

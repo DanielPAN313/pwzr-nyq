@@ -11,6 +11,58 @@
     <text class="hero-hint">{{progressHint}}</text>
   </view>
 
+  <view class="section rating-panel">
+    <view class="section-title">实力自评</view>
+    <text wx:if="{{ratingError}}" class="muted">{{ratingError}}</text>
+    <view class="rating-summary-grid">
+      <view wx:for="{{ratingSummaryCards}}" wx:key="label" class="rating-summary-card">
+        <text class="rating-summary-value">{{item.value}}</text>
+        <text class="muted">{{item.label}}</text>
+        <text class="rating-summary-hint">{{item.hint}}</text>
+      </view>
+    </view>
+    <text class="rating-summary-meta">{{ratingHint}}</text>
+    <view class="rating-preset-row">
+      <button
+        wx:for="{{ratingPresets}}"
+        wx:key="key"
+        class="rating-preset"
+        data-score="{{item.value}}"
+        bindtap="applyRatingPreset"
+      >
+        {{item.label}}
+      </button>
+    </view>
+    <view wx:for="{{ratingInputs}}" wx:key="key" class="rating-dimension">
+      <view class="rating-dimension-head">
+        <view>
+          <text class="event-title">{{item.label}}</text>
+          <text class="muted">{{item.hint}}</text>
+        </view>
+        <text class="rating-dimension-value">{{item.value}}</text>
+      </view>
+      <slider
+        class="rating-slider"
+        min="1"
+        max="5"
+        step="1"
+        value="{{item.value}}"
+        data-key="{{item.key}}"
+        bindchange="onRatingChange"
+        activeColor="#d8ff3e"
+        backgroundColor="rgba(247, 251, 245, 0.12)"
+        blockColor="#ffffff"
+        blockSize="18"
+      />
+    </view>
+    <view class="rating-footer">
+      <text class="muted">当前预估 {{ratingDraftAverage}} 分，提交后 7 天内仅可修改 1 次。</text>
+      <button class="primary small" bindtap="submitSelfRating" disabled="{{ratingSubmitting}}">
+        {{ratingSubmitting ? "提交中" : "提交自评"}}
+      </button>
+    </view>
+  </view>
+
   <view class="section metric-grid">
     <view wx:for="{{scoreCards}}" wx:key="label" class="metric">
       <text class="metric-value">{{item.value}}</text>

@@ -215,6 +215,108 @@
   color: #7a847d;
 }
 
+.rating-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.rating-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12rpx;
+}
+
+.rating-summary-card {
+  min-height: 116rpx;
+  padding: 18rpx;
+  border: 1rpx solid rgba(219, 228, 216, 0.95);
+  border-radius: 18rpx;
+  background: #fbfdf9;
+  box-sizing: border-box;
+}
+
+.rating-summary-value {
+  display: block;
+  color: #102016;
+  font-size: 34rpx;
+  font-weight: 950;
+  line-height: 1.1;
+}
+
+.rating-summary-hint,
+.rating-summary-meta {
+  display: block;
+  margin-top: 6rpx;
+  color: #7a847d;
+  font-size: 22rpx;
+  line-height: 1.35;
+}
+
+.rating-summary-meta {
+  margin-top: 0;
+}
+
+.rating-preset-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+}
+
+.rating-preset {
+  min-height: 56rpx;
+  padding: 0 18rpx;
+  border: 0;
+  border-radius: 999rpx;
+  color: #12824f;
+  background: #eef6ed;
+  font-size: 24rpx;
+  font-weight: 900;
+}
+
+.rating-dimension {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid rgba(219, 228, 216, 0.9);
+}
+
+.rating-dimension:last-child {
+  border-bottom: 0;
+}
+
+.rating-dimension-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18rpx;
+}
+
+.rating-dimension-value {
+  flex-shrink: 0;
+  min-width: 44rpx;
+  color: #12824f;
+  font-size: 34rpx;
+  font-weight: 950;
+  text-align: right;
+}
+
+.rating-slider {
+  width: 100%;
+}
+
+.rating-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.rating-footer button {
+  min-width: 220rpx;
+  align-self: flex-start;
+}
+
 @media (max-width: 360px) {
   .metric-grid {
     grid-template-columns: 1fr;
@@ -233,12 +335,24 @@
   background: #17231c;
 }
 
+.rating-summary-card,
+.rating-preset {
+  border-color: rgba(216, 255, 62, 0.12);
+  background: #17231c;
+}
+
 .metric-value,
 .tip-text {
   color: #f7fbf5;
 }
 
 .metric-hint,
+.rating-summary-hint,
+.rating-summary-meta,
+.rating-dimension .muted {
+  color: rgba(247, 251, 245, 0.62);
+}
+
 .event-section-title {
   color: rgba(247, 251, 245, 0.62);
 }
@@ -246,4 +360,24 @@
 .rule-card,
 .credit-row {
   border-bottom-color: rgba(216, 255, 62, 0.1);
+}
+
+.rating-summary-value,
+.rating-dimension-value {
+  color: #d8ff3e;
+}
+
+.rating-preset {
+  color: #f7fbf5;
+  background: rgba(216, 255, 62, 0.12);
+}
+
+.rating-summary-card {
+  border-color: rgba(216, 255, 62, 0.12);
+}
+
+@media (max-width: 520px) {
+  .rating-summary-grid {
+    grid-template-columns: 1fr;
+  }
 }

@@ -6,6 +6,17 @@
     <text wx:else class="muted">查看场馆、时间、人数和到场状态。</text>
   </view>
 
+  <view wx:if="{{loading && !detail}}" class="section loading-panel">
+    <view class="loading-line lg"></view>
+    <view class="loading-line md"></view>
+    <view class="loading-pill"></view>
+    <view class="loading-grid">
+      <view class="loading-card"></view>
+      <view class="loading-card"></view>
+      <view class="loading-card"></view>
+    </view>
+  </view>
+
   <view wx:if="{{error}}" class="state-panel warning">
     <text class="state-title">球局详情暂时不可用</text>
     <text class="state-text">{{error}} 可以重试加载，或者返回球局列表重新选择。</text>

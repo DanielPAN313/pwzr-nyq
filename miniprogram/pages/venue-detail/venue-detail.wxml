@@ -6,6 +6,17 @@
     <text wx:else class="muted">选择日期和开放时段，生成待支付订单。</text>
   </view>
 
+  <view wx:if="{{loading && !venue}}" class="section loading-panel">
+    <view class="loading-line lg"></view>
+    <view class="loading-line md"></view>
+    <view class="loading-pill"></view>
+    <view class="loading-grid">
+      <view class="loading-card"></view>
+      <view class="loading-card"></view>
+      <view class="loading-card"></view>
+    </view>
+  </view>
+
   <view wx:if="{{error && !venue}}" class="state-panel warning">
     <text class="state-title">场馆详情暂时不可用</text>
     <text class="state-text">{{error}} 可以重新加载当前日期，或者返回订场页换一个场馆。</text>

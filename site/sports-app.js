@@ -253,6 +253,19 @@
     }
   }
 
+  var routeTransitionTimer = null;
+
+  function flashRouteTransition() {
+    if (!document.body || !document.body.classList) return;
+    document.body.classList.add('is-route-switching');
+    if (routeTransitionTimer) window.clearTimeout(routeTransitionTimer);
+    routeTransitionTimer = window.setTimeout(function () {
+      if (document.body && document.body.classList) {
+        document.body.classList.remove('is-route-switching');
+      }
+    }, 180);
+  }
+
   function saveProfileDemo(next) {
     state.profileDemo = Object.assign({}, state.profileDemo || {}, next || {});
     window.localStorage.setItem('nyq_profile_demo', JSON.stringify(state.profileDemo));
@@ -3454,6 +3467,7 @@
   window.addEventListener('popstate', function () {
     var nextView = readPreviewRoute();
     if (nextView === state.userView && !hasOpenOverlay()) return;
+    flashRouteTransition();
     rememberMobileTabMove(nextView);
     state.mode = 'user';
     state.userView = nextView;

@@ -37,6 +37,7 @@
   var pageStack = [];
   var networkStatusCallbacks = [];
   var pendingEventChannel = null;
+  var routeTransitionTimer = null;
   var tabBarState = {
     visible: true,
     style: {},
@@ -77,6 +78,17 @@
     (pages || []).forEach(function (page) {
       callLifecycle(page, 'onUnload');
     });
+  }
+
+  function flashRouteTransition() {
+    if (!document.body || !document.body.classList) return;
+    document.body.classList.add('is-route-switching');
+    if (routeTransitionTimer) window.clearTimeout(routeTransitionTimer);
+    routeTransitionTimer = window.setTimeout(function () {
+      if (document.body && document.body.classList) {
+        document.body.classList.remove('is-route-switching');
+      }
+    }, 180);
   }
 
   function normalizePage(url) {
@@ -131,6 +143,7 @@
 
   function routeTo(page, replace, action) {
     var previous = currentPageInstance();
+    flashRouteTransition();
     if (action === 'navigateTo' || action === 'switchTab') callLifecycle(previous, 'onHide');
     if (action === 'redirectTo') callLifecycle(previous, 'onUnload');
     if (action === 'reLaunch') unloadPageInstances(pageStack);

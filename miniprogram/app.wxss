@@ -124,3 +124,68 @@ button[disabled] {
   font-weight: 900;
   line-height: 44rpx;
 }
+
+.loading-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+}
+
+.loading-line,
+.loading-card,
+.loading-pill {
+  position: relative;
+  overflow: hidden;
+  background: rgba(247, 251, 245, 0.08);
+}
+
+.loading-line::after,
+.loading-card::after,
+.loading-pill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(216, 255, 62, 0.18), transparent);
+  animation: loading-shimmer 1.25s ease-in-out infinite;
+}
+
+.loading-line {
+  height: 24rpx;
+  border-radius: 999rpx;
+}
+
+.loading-line.lg {
+  width: 68%;
+}
+
+.loading-line.md {
+  width: 48%;
+}
+
+.loading-line.sm {
+  width: 34%;
+}
+
+.loading-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12rpx;
+}
+
+.loading-card {
+  height: 120rpx;
+  border-radius: 18rpx;
+}
+
+.loading-pill {
+  width: 140rpx;
+  height: 42rpx;
+  border-radius: 999rpx;
+}
+
+@keyframes loading-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}

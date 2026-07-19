@@ -20,6 +20,12 @@
   font-family: Inter, "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
 }
 
+html,
+body {
+  min-height: 100%;
+  background: var(--bg);
+}
+
 /* Mobile audit polish: make primary flows feel like app tabs and dense sports lists. */
 @media (max-width: 720px) {
   .mobile-tabbar {
@@ -3064,6 +3070,30 @@ body {
   min-height: 100vh;
   margin: 0;
   color: var(--ink);
+  background: var(--bg);
+  position: relative;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(240, 246, 236, 0.98), rgba(240, 246, 236, 0.92));
+  opacity: 0;
+  transition: opacity 140ms ease;
+}
+
+body.is-route-switching::before {
+  opacity: 1;
+}
+
+#app {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
   background: var(--bg);
 }
 
@@ -12271,4 +12301,3 @@ td {
     grid-column: 1 / -1 !important;
   }
 }
-

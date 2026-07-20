@@ -263,7 +263,7 @@ Page({
   },
 
   goGames() {
-    wx.switchTab({ url: "/pages/games/games" });
+    wx.navigateTo({ url: "/pages/games/games" });
   },
 
   createGame() {

@@ -1,0 +1,67 @@
+<view class="page">
+  <view class="section rank-hero">
+    <text class="page-kicker">RANKING BOARD</text>
+    <text class="page-title">进球与出勤榜</text>
+    <text wx:if="{{loading}}" class="muted">正在加载统计...</text>
+    <text wx:else class="muted">{{bannerText}}</text>
+    <view class="filter-row">
+      <text class="pill dark">{{sourceLabel}}</text>
+      <text class="pill">场馆试点</text>
+      <text class="pill">自动统计</text>
+    </view>
+    <view class="summary-grid">
+      <view wx:for="{{summaryCards}}" wx:key="label" class="summary-card">
+        <text class="summary-value">{{item.value}}</text>
+        <text class="summary-label">{{item.label}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="section rank-switch">
+    <button
+      wx:for="{{tabs}}"
+      wx:key="key"
+      class="rank-tab {{activeTab === item.key ? 'active' : ''}}"
+      bindtap="changeTab"
+      data-key="{{item.key}}"
+    >
+      {{item.label}}
+    </button>
+  </view>
+
+  <view class="section rank-section">
+    <view class="section-head">
+      <view>
+        <text class="card-title">{{rankTitle}}</text>
+        <text class="muted">{{rankHint}}</text>
+      </view>
+      <text class="status-chip">{{rankRows.length}} 人上榜</text>
+    </view>
+
+    <view class="podium-grid">
+      <view wx:for="{{podiumRows}}" wx:key="id" class="podium-card podium-{{index}}">
+        <text class="podium-rank">{{item.rankLabel}}</text>
+        <text class="podium-name">{{item.name}}</text>
+        <text class="podium-team">{{item.team}}</text>
+        <text class="podium-value">{{item.valueText}}</text>
+        <text class="podium-note">{{item.note}}</text>
+      </view>
+    </view>
+
+    <view class="rank-list">
+      <view wx:for="{{rankRows}}" wx:key="id" class="rank-row">
+        <view class="rank-left">
+          <text class="rank-badge {{item.accent}}">{{item.rankLabel}}</text>
+          <view class="rank-copy">
+            <text class="rank-name">{{item.name}}</text>
+            <text class="rank-team">{{item.team}}</text>
+          </view>
+        </view>
+        <view class="rank-right">
+          <text class="rank-value">{{item.valueText}}</text>
+          <text class="rank-meta">{{item.metaText}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

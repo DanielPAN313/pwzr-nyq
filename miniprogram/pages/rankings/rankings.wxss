@@ -1,0 +1,254 @@
+.rank-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+  color: #ffffff;
+  background: linear-gradient(145deg, #13241a, #0b3d27 54%, #0f8a4f);
+  border-radius: 34rpx;
+}
+
+.rank-hero .page-title {
+  color: #ffffff;
+  margin-bottom: 0;
+}
+
+.rank-hero .muted {
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12rpx;
+}
+
+.summary-card {
+  min-height: 108rpx;
+  padding: 18rpx 16rpx;
+  border-radius: 18rpx;
+  background: rgba(255, 255, 255, 0.12);
+  box-sizing: border-box;
+}
+
+.summary-value {
+  display: block;
+  color: #d8ff3e;
+  font-size: 34rpx;
+  font-weight: 950;
+  line-height: 1.12;
+}
+
+.summary-label {
+  display: block;
+  margin-top: 8rpx;
+  color: rgba(247, 251, 245, 0.72);
+  font-size: 22rpx;
+  font-weight: 850;
+}
+
+.rank-switch {
+  display: flex;
+  gap: 12rpx;
+  padding: 14rpx;
+}
+
+.rank-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 72rpx;
+  border-radius: 18rpx;
+  color: rgba(247, 251, 245, 0.76);
+  background: #17231c;
+  font-size: 28rpx;
+  font-weight: 900;
+  line-height: 72rpx;
+}
+
+.rank-tab.active {
+  color: #10200f;
+  background: #d8ff3e;
+}
+
+.rank-section {
+  padding: 0;
+  overflow: hidden;
+}
+
+.section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18rpx;
+  padding: 26rpx 26rpx 18rpx;
+}
+
+.podium-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12rpx;
+  padding: 0 18rpx 12rpx;
+}
+
+.podium-card {
+  min-height: 180rpx;
+  padding: 18rpx 16rpx;
+  border-radius: 22rpx;
+  background: #101b15;
+  border: 1rpx solid rgba(216, 255, 62, 0.1);
+  box-sizing: border-box;
+}
+
+.podium-0 {
+  background: linear-gradient(180deg, rgba(216, 255, 62, 0.18), rgba(16, 27, 21, 0.98));
+  border-color: rgba(216, 255, 62, 0.28);
+}
+
+.podium-1 {
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.podium-2 {
+  border-color: rgba(255, 196, 92, 0.18);
+}
+
+.podium-rank {
+  display: block;
+  color: #d8ff3e;
+  font-size: 24rpx;
+  font-weight: 950;
+}
+
+.podium-name {
+  display: block;
+  margin-top: 10rpx;
+  color: #f7fbf5;
+  font-size: 28rpx;
+  font-weight: 950;
+  line-height: 1.25;
+}
+
+.podium-team {
+  display: block;
+  margin-top: 6rpx;
+  color: rgba(247, 251, 245, 0.6);
+  font-size: 22rpx;
+}
+
+.podium-value {
+  display: block;
+  margin-top: 14rpx;
+  color: #d8ff3e;
+  font-size: 32rpx;
+  font-weight: 950;
+}
+
+.podium-note {
+  display: block;
+  margin-top: 8rpx;
+  color: rgba(247, 251, 245, 0.7);
+  font-size: 22rpx;
+  line-height: 1.35;
+}
+
+.rank-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+  padding: 0 18rpx 18rpx;
+}
+
+.rank-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+  min-height: 112rpx;
+  padding: 18rpx 16rpx;
+  border-radius: 20rpx;
+  background: #101b15;
+  border: 1rpx solid rgba(216, 255, 62, 0.08);
+  box-sizing: border-box;
+}
+
+.rank-left {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  min-width: 0;
+}
+
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 74rpx;
+  height: 74rpx;
+  border-radius: 20rpx;
+  color: #10200f;
+  background: #d8ff3e;
+  font-size: 24rpx;
+  font-weight: 950;
+  flex-shrink: 0;
+}
+
+.rank-badge.normal {
+  color: rgba(247, 251, 245, 0.9);
+  background: #17231c;
+}
+
+.rank-badge.top-1 {
+  background: #d8ff3e;
+}
+
+.rank-badge.top-2 {
+  color: #10200f;
+  background: #ffffff;
+}
+
+.rank-badge.top-3 {
+  color: #10200f;
+  background: #ffc95c;
+}
+
+.rank-copy {
+  min-width: 0;
+}
+
+.rank-name {
+  display: block;
+  color: #f7fbf5;
+  font-size: 29rpx;
+  font-weight: 950;
+  line-height: 1.2;
+}
+
+.rank-team {
+  display: block;
+  margin-top: 6rpx;
+  color: rgba(247, 251, 245, 0.58);
+  font-size: 22rpx;
+}
+
+.rank-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.rank-value {
+  color: #d8ff3e;
+  font-size: 32rpx;
+  font-weight: 950;
+  line-height: 1.1;
+}
+
+.rank-meta {
+  margin-top: 6rpx;
+  color: rgba(247, 251, 245, 0.62);
+  font-size: 22rpx;
+  line-height: 1.25;
+  text-align: right;
+}

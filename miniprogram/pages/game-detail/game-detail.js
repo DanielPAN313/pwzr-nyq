@@ -228,7 +228,7 @@ Page({
   },
 
   goGames() {
-    wx.switchTab({ url: "/pages/games/games" });
+    wx.navigateTo({ url: "/pages/games/games" });
   },
 
   goOrders() {
@@ -239,7 +239,7 @@ Page({
     const detail = this.data.detail;
 
     if (detail && detail.previewOnly) {
-      wx.switchTab({ url: "/pages/games/games" });
+      wx.navigateTo({ url: "/pages/games/games" });
       return;
     }
 

@@ -4,12 +4,13 @@
   var TAB_PAGES = {
     'pages/home/home': 'home',
     'pages/venues/venues': 'venues',
-    'pages/games/games': 'games',
+    'pages/rankings/rankings': 'rankings',
     'pages/messages/messages': 'messages',
     'pages/me/me': 'me',
   };
 
   var ROUTE_PAGES = Object.assign({}, TAB_PAGES, {
+    'pages/games/games': 'games',
     'pages/splash/splash': 'splash',
     'pages/register/register': 'register',
     'pages/login/login': 'login',

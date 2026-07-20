@@ -7,6 +7,7 @@
     "pages/venues/venues",
     "pages/venue-detail/venue-detail",
     "pages/games/games",
+    "pages/rankings/rankings",
     "pages/create-game/create-game",
     "pages/game-detail/game-detail",
     "pages/messages/messages",
@@ -39,8 +40,8 @@
         "text": "订场"
       },
       {
-        "pagePath": "pages/games/games",
-        "text": "球局"
+        "pagePath": "pages/rankings/rankings",
+        "text": "榜单"
       },
       {
         "pagePath": "pages/messages/messages",

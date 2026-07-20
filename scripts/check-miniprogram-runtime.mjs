@@ -195,6 +195,7 @@ function loadModule(file) {
 
 loadModule(path.join(miniRoot, "app.js"));
 assert(context.getApp().globalData.apiBaseUrl, "miniprogram app.js did not initialize globalData.apiBaseUrl");
+assert(Array.isArray(appJson.tabBar?.list) && appJson.tabBar.list[2]?.pagePath === "pages/rankings/rankings", "rankings should occupy the middle tab bar slot.");
 
 for (const pagePath of appJson.pages) {
   context.location.href = `http://localhost:4174/${pagePath}`;
@@ -210,11 +211,12 @@ for (const file of fs.readdirSync(path.join(miniRoot, "utils"))) {
   if (file.endsWith(".js")) loadModule(path.join(miniRoot, "utils", file));
 }
 
-assert(registeredPages.length === 16, "Mini Program should register the restored 16-page product flow.");
+assert(registeredPages.length === 17, "Mini Program should register the restored 17-page product flow.");
 for (const pagePath of [
   "pages/venue-detail/venue-detail",
   "pages/create-game/create-game",
   "pages/game-detail/game-detail",
+  "pages/rankings/rankings",
   "pages/venue-admin/venue-admin",
   "pages/credit/credit",
   "pages/my-games/my-games",
@@ -239,6 +241,7 @@ homePage.switchTab.call(homePage, {
     },
   },
 });
+assert(homePage.data.quickActions.some((action) => action.target === "/pages/games/games" && action.mode === "page"), "home quick actions should keep games as a page entry.");
 assert(context.location.search.includes("page=games"), "home.switchTab did not route to games page.");
 assert(context.location.search.includes("path=pages%2Fgames%2Fgames") || context.location.search.includes("path=pages/games/games"), "home.switchTab did not preserve games path.");
 
@@ -325,6 +328,15 @@ for (const target of ["/pages/my-games/my-games", "/pages/credit/credit", "/page
   assert(mePage.data.items.some((item) => item.target === target), `me menu should expose ${target}.`);
 }
 assert(mePage.data.items.every((item) => typeof item.hint === "string" && item.hint.length > 0), "me menu items should expose descriptive hints.");
+
+const rankingsPage = registeredPageByPath.get("pages/rankings/rankings");
+assert(rankingsPage, "pages/rankings/rankings page instance was not registered.");
+for (const method of ["loadRankings", "changeTab", "goGames"]) {
+  assert(typeof rankingsPage[method] === "function", `pages/rankings/rankings should expose ${method} method.`);
+}
+assert(Array.isArray(rankingsPage.data.tabs) && rankingsPage.data.tabs.length === 2, "rankings page should expose two leaderboard tabs.");
+assert(Array.isArray(rankingsPage.data.summaryCards) && rankingsPage.data.summaryCards.length === 4, "rankings page should expose four summary cards.");
+assert(Array.isArray(rankingsPage.data.rankRows) && rankingsPage.data.rankRows.length >= 3, "rankings page should expose ranking rows.");
 
 for (const timer of timers.splice(0)) timer();
 

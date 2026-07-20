@@ -4,7 +4,7 @@ Component({
     tabs: [
       { pagePath: "pages/home/home", text: "首页", mark: "H" },
       { pagePath: "pages/venues/venues", text: "订场", mark: "V" },
-      { pagePath: "pages/games/games", text: "球局", mark: "G" },
+      { pagePath: "pages/rankings/rankings", text: "榜单", mark: "R" },
       { pagePath: "pages/messages/messages", text: "消息", mark: "M" },
       { pagePath: "pages/me/me", text: "我的", mark: "P" }
     ]

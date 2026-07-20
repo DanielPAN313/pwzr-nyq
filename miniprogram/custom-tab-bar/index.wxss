@@ -115,29 +115,27 @@
 }
 
 .tab-symbol-2 .part-a,
-.tab-symbol-2 .part-b {
-  top: 10rpx;
-  width: 20rpx;
-  height: 28rpx;
-  border: 5rpx solid currentColor;
-  border-radius: 999rpx;
+.tab-symbol-2 .part-b,
+.tab-symbol-2 .part-c {
+  bottom: 8rpx;
+  width: 10rpx;
+  border-radius: 4rpx 4rpx 0 0;
+  background: currentColor;
 }
 
 .tab-symbol-2 .part-a {
-  left: 6rpx;
+  left: 8rpx;
+  height: 16rpx;
 }
 
 .tab-symbol-2 .part-b {
-  right: 6rpx;
+  left: 19rpx;
+  height: 26rpx;
 }
 
 .tab-symbol-2 .part-c {
-  left: 22rpx;
-  top: 18rpx;
-  width: 5rpx;
-  height: 12rpx;
-  border-radius: 999rpx;
-  background: currentColor;
+  left: 30rpx;
+  height: 20rpx;
 }
 
 .tab-symbol-3 .part-a {

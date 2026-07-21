@@ -211,9 +211,13 @@ if (mustExist(customTabJs, "custom tab js")) {
   if (!tabSource.includes('pagePath: "pages/rankings/rankings"') || !tabSource.includes('text: "排行"') || !tabSource.includes('type: "page"')) {
     errors.push('custom tab should expose a sixth "排行" entry as a page navigation item.');
   }
+  if (!tabSource.includes("this.setData({ selected: index })") || !tabSource.includes('animationType: "none"')) {
+    errors.push('custom tab should optimistically highlight the tapped ranking item and suppress page-style animation.');
+  }
 }
 const rankingsWxml = path.join(miniRoot, "pages/rankings/rankings.wxml");
 const rankingsJson = path.join(miniRoot, "pages/rankings/rankings.json");
+const rankingsJs = path.join(miniRoot, "pages/rankings/rankings.js");
 if (mustExist(rankingsWxml, "rankings wxml") && !readUtf8(rankingsWxml).includes("<app-tab-bar")) {
   errors.push("rankings page should render the custom six-item tab bar.");
 }
@@ -222,6 +226,9 @@ if (mustExist(rankingsJson, "rankings json")) {
   if (!rankingsConfig?.usingComponents?.["app-tab-bar"]) {
     errors.push("rankings page should register app-tab-bar component.");
   }
+}
+if (mustExist(rankingsJs, "rankings js") && !readUtf8(rankingsJs).includes("selected: 3")) {
+  errors.push('rankings page should select the fourth custom tab item, not "球局".');
 }
 if (mustExist(homeWxml, "home wxml") && !readUtf8(homeWxml).includes("/assets/kazimen-logo-mark.png")) {
   errors.push("home recruiting cards should use the transparent Kazi Men logo asset.");

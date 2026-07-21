@@ -344,8 +344,38 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 20rpx;
   margin-bottom: 20rpx;
+}
+
+.feature-copy {
+  flex: 1;
+  min-width: 300rpx;
+}
+
+.feature-filter {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  flex-shrink: 0;
+}
+
+.feature-filter-item {
+  min-width: 128rpx;
+  height: 46rpx;
+  padding: 0 16rpx;
+  border-radius: 999rpx;
+  color: #666666;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 22rpx;
+  font-weight: 900;
+  line-height: 46rpx;
+}
+
+.feature-filter-item.active {
+  color: #10200f;
+  background: #C8FF00;
 }
 
 .sample-stack {
@@ -406,7 +436,7 @@
   z-index: 1;
   width: 118rpx;
   height: 118rpx;
-  opacity: 0.1;
+  opacity: 0.94;
   filter: drop-shadow(0 0 14rpx rgba(200, 255, 0, 0.18));
 }
 

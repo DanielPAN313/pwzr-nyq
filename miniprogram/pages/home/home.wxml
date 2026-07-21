@@ -67,13 +67,29 @@
 
   <view class="section feature-card">
     <view class="feature-head">
-      <view>
-        <text class="page-title">正在招人</text>
-        <text class="muted">附近还缺人的公开球局，报名即可锁位</text>
+      <view class="feature-copy">
+        <text class="page-title">{{homeFeedTitle}}</text>
+        <text class="muted">{{homeFeedSubtitle}}</text>
+      </view>
+      <view class="feature-filter">
+        <button
+          class="feature-filter-item {{homeFeedMode === 'recruiting' ? 'active' : ''}}"
+          data-mode="recruiting"
+          bindtap="setHomeFeedMode"
+        >
+          正在招人
+        </button>
+        <button
+          class="feature-filter-item {{homeFeedMode === 'nearby' ? 'active' : ''}}"
+          data-mode="nearby"
+          bindtap="setHomeFeedMode"
+        >
+          离我最近
+        </button>
       </view>
     </view>
     <view class="sample-stack">
-      <view wx:for="{{recruitingGames}}" wx:key="id" class="recruit-card {{item.featured ? 'featured' : ''}}">
+      <view wx:for="{{displayedGames}}" wx:key="id" class="recruit-card {{item.featured ? 'featured' : ''}}">
         <view class="recruit-thumb">
           <image
             class="recruit-logo"

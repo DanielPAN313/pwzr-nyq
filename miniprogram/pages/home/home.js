@@ -17,6 +17,23 @@ const recruitingGames = [
   { id: "recruit-3", countdownSeconds: 1960, slotsLeft: 3 }
 ];
 
+const nearbyGames = [
+  { id: "nearby-1", countdownSeconds: 620, slotsLeft: 1, distanceText: "距你 1.2km" },
+  { id: "nearby-2", countdownSeconds: 1240, slotsLeft: 2, distanceText: "距你 1.8km" },
+  { id: "nearby-3", countdownSeconds: 1820, slotsLeft: 3, distanceText: "距你 2.4km" }
+];
+
+const feedCopy = {
+  recruiting: {
+    title: "正在招人",
+    subtitle: "附近还缺人的公开球局，报名即可锁位"
+  },
+  nearby: {
+    title: "离我最近",
+    subtitle: "优先展示离你更近的卡子门附近球局"
+  }
+};
+
 function gameCountdownSeconds(game) {
   const start = new Date(game.start_time || Date.now() + 30 * 60 * 1000);
   if (Number.isNaN(start.getTime())) return 1800;
@@ -105,7 +122,7 @@ const buildRecruitingCards = (games) =>
       mode,
       fee,
       thumbLabel: game.thumbLabel || recruitingCardTemplate.thumbLabel,
-      reserveLine: game.reserveLine || `${hostName}已预留 ${Math.max(1, Number(game.slotsLeft || 1))} 个名额 · ${timeText}`,
+      reserveLine: game.reserveLine || `${game.distanceText ? `${game.distanceText} · ` : ""}${hostName}已预留 ${Math.max(1, Number(game.slotsLeft || 1))} 个名额 · ${timeText}`,
       hostLine: `${hostName}·${timeText}`,
       metaLine: `${venue}·${mode}·${fee}`,
       actionText: recruitingCardTemplate.actionText
@@ -136,9 +153,14 @@ Page({
     error: "",
     summary: fallbackSummary,
     heroIndex: 0,
+    homeFeedMode: "recruiting",
+    homeFeedTitle: feedCopy.recruiting.title,
+    homeFeedSubtitle: feedCopy.recruiting.subtitle,
     bookingHero: bookingHeroTemplate,
     gameHero: buildGameHero(),
-    recruitingGames: buildRecruitingCards(recruitingGames)
+    recruitingGames: buildRecruitingCards(recruitingGames),
+    nearbyGames: buildRecruitingCards(nearbyGames),
+    displayedGames: buildRecruitingCards(recruitingGames)
   },
 
   onLoad() {
@@ -169,6 +191,8 @@ Page({
           : 0;
         const mappedGames = games.map(mapHomeGame);
         const nextRecruitingGames = mappedGames.length ? buildRecruitingCards(mappedGames.slice(1, 4).length ? mappedGames.slice(1, 4) : mappedGames) : this.data.recruitingGames;
+        const nextNearbyGames = mappedGames.length ? buildRecruitingCards(mappedGames.slice().reverse().slice(0, 3)) : this.data.nearbyGames;
+        const nextDisplayedGames = this.data.homeFeedMode === "nearby" ? nextNearbyGames : nextRecruitingGames;
 
         setPendingPaymentCount(pendingPaymentCount);
         this.setData({
@@ -179,7 +203,9 @@ Page({
           },
           gameHero: buildGameHero(nextRecruitingGames[0]),
           summary: `今日已加载 ${venueCount} 个场馆、${gameCount} 场球局、${orderCount} 条订单提醒。`,
-          recruitingGames: nextRecruitingGames
+          recruitingGames: nextRecruitingGames,
+          nearbyGames: nextNearbyGames,
+          displayedGames: nextDisplayedGames
         });
         if (typeof this.getTabBar === "function" && this.getTabBar() && typeof this.getTabBar().syncTabState === "function") {
           this.getTabBar().syncTabState();
@@ -209,6 +235,17 @@ Page({
   onHeroSwiperChange(event) {
     this.setData({
       heroIndex: Number(event.detail.current || 0)
+    });
+  },
+
+  setHomeFeedMode(event) {
+    const mode = event.currentTarget.dataset.mode === "nearby" ? "nearby" : "recruiting";
+    const copy = feedCopy[mode] || feedCopy.recruiting;
+    this.setData({
+      homeFeedMode: mode,
+      homeFeedTitle: copy.title,
+      homeFeedSubtitle: copy.subtitle,
+      displayedGames: mode === "nearby" ? this.data.nearbyGames : this.data.recruitingGames
     });
   },
 
@@ -250,9 +287,12 @@ Page({
       }));
 
       const nextRecruitingGames = buildPrioritizedGames(tick(this.data.recruitingGames));
+      const nextNearbyGames = buildPrioritizedGames(tick(this.data.nearbyGames));
 
       this.setData({
         recruitingGames: nextRecruitingGames,
+        nearbyGames: nextNearbyGames,
+        displayedGames: this.data.homeFeedMode === "nearby" ? nextNearbyGames : nextRecruitingGames,
         gameHero: buildGameHero(nextRecruitingGames[0])
       });
     }, 1000);

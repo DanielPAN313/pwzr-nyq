@@ -208,11 +208,11 @@ if (mustExist(customTabJs, "custom tab js")) {
   if (!tabSource.includes('pagePath: "pages/games/games"') || !tabSource.includes('text: "球局"')) {
     errors.push('custom tab middle label should be "球局" and point to pages/games/games.');
   }
-  if (!tabSource.includes('pagePath: "pages/rankings/rankings"') || !tabSource.includes('text: "排行"') || !tabSource.includes('type: "page"')) {
-    errors.push('custom tab should expose a sixth "排行" entry as a page navigation item.');
+  if (tabSource.includes('pagePath: "pages/rankings/rankings"') || tabSource.includes('type: "page"') || tabSource.includes("wx.navigateTo")) {
+    errors.push("custom tab should only use native tabBar pages; ranking stays inside the games hub to avoid page-slide animation.");
   }
-  if (!tabSource.includes("this.setData({ selected: index })") || !tabSource.includes('animationType: "none"')) {
-    errors.push('custom tab should optimistically highlight the tapped ranking item and suppress page-style animation.');
+  if (!tabSource.includes("wx.switchTab") || tabSource.includes('animationType: "none"')) {
+    errors.push("custom tab should rely on wx.switchTab only, without page animation workarounds.");
   }
 }
 const rankingsWxml = path.join(miniRoot, "pages/rankings/rankings.wxml");
@@ -227,8 +227,8 @@ if (mustExist(rankingsJson, "rankings json")) {
     errors.push("rankings page should register app-tab-bar component.");
   }
 }
-if (mustExist(rankingsJs, "rankings js") && !readUtf8(rankingsJs).includes("selected: 3")) {
-  errors.push('rankings page should select the fourth custom tab item, not "球局".');
+if (mustExist(rankingsJs, "rankings js") && !readUtf8(rankingsJs).includes("selected: 2")) {
+  errors.push('rankings page should stay under the "球局" tab context when opened from the games hub.');
 }
 if (mustExist(homeWxml, "home wxml") && !readUtf8(homeWxml).includes("/assets/kazimen-logo-mark.png")) {
   errors.push("home recruiting cards should use the transparent Kazi Men logo asset.");

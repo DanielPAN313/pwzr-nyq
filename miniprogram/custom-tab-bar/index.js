@@ -8,7 +8,6 @@ Component({
       { pagePath: "pages/home/home", text: "首页", mark: "H", type: "tab" },
       { pagePath: "pages/venues/venues", text: "订场", mark: "V", type: "tab" },
       { pagePath: "pages/games/games", text: "球局", mark: "G", type: "tab" },
-      { pagePath: "pages/rankings/rankings", text: "排行", mark: "R", type: "page" },
       { pagePath: "pages/messages/messages", text: "消息", mark: "M", type: "tab" },
       { pagePath: "pages/me/me", text: "我的", mark: "P", type: "tab" }
     ]
@@ -58,17 +57,6 @@ Component({
       const pages = getCurrentPages();
       const current = pages[pages.length - 1];
       if (current && current.route === item.pagePath) return;
-
-      this.setData({ selected: index });
-
-      if (item.type === "page") {
-        wx.navigateTo({
-          url: `/${item.pagePath}`,
-          animationType: "none",
-          animationDuration: 0
-        });
-        return;
-      }
 
       wx.switchTab({ url: `/${item.pagePath}` });
     }

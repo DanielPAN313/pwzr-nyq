@@ -150,31 +150,7 @@
   background: currentColor;
 }
 
-.tab-symbol-3 .part-a,
-.tab-symbol-3 .part-b,
-.tab-symbol-3 .part-c {
-  bottom: 8rpx;
-  width: 9rpx;
-  border-radius: 4rpx 4rpx 0 0;
-  background: currentColor;
-}
-
 .tab-symbol-3 .part-a {
-  left: 7rpx;
-  height: 15rpx;
-}
-
-.tab-symbol-3 .part-b {
-  left: 18rpx;
-  height: 25rpx;
-}
-
-.tab-symbol-3 .part-c {
-  left: 29rpx;
-  height: 19rpx;
-}
-
-.tab-symbol-4 .part-a {
   left: 5rpx;
   top: 8rpx;
   width: 38rpx;
@@ -183,7 +159,7 @@
   background: currentColor;
 }
 
-.tab-symbol-4 .part-b {
+.tab-symbol-3 .part-b {
   left: 14rpx;
   top: 30rpx;
   width: 14rpx;
@@ -192,7 +168,7 @@
   transform: skewX(-26deg);
 }
 
-.tab-symbol-4 .part-c {
+.tab-symbol-3 .part-c {
   left: 14rpx;
   top: 20rpx;
   width: 20rpx;
@@ -201,7 +177,7 @@
   background: #C8FF00;
 }
 
-.tab-symbol-5 .part-a {
+.tab-symbol-4 .part-a {
   left: 15rpx;
   top: 7rpx;
   width: 18rpx;
@@ -210,7 +186,7 @@
   background: currentColor;
 }
 
-.tab-symbol-5 .part-b {
+.tab-symbol-4 .part-b {
   left: 8rpx;
   top: 29rpx;
   width: 32rpx;
@@ -219,7 +195,7 @@
   background: currentColor;
 }
 
-.tab-symbol-5 .part-c {
+.tab-symbol-4 .part-c {
   display: none;
 }
 

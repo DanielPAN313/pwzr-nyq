@@ -17,7 +17,7 @@
     <input
       class="search-input"
       value="{{keyword}}"
-      placeholder="搜场馆 / 区域 / 篮球"
+      placeholder="搜场馆 / 区域 / 足球"
       placeholder-class="search-placeholder"
       confirm-type="search"
       bindinput="onSearchInput"
@@ -38,20 +38,19 @@
     <view wx:for="{{venues}}" wx:key="name" class="section venue-card">
       <view class="venue-visual" bindtap="openVenueDetail" data-id="{{item.id}}">
         <view class="court-grid"></view>
-        <text class="visual-tag">{{item.sportsText}}</text>
+        <view class="goal-box goal-left"></view>
+        <view class="goal-box goal-right"></view>
       </view>
       <view class="card-top" bindtap="openVenueDetail" data-id="{{item.id}}">
         <view>
+          <text class="venue-type">{{item.sportsText}}</text>
           <text class="card-title">{{item.name}}</text>
-          <text class="muted">{{item.area}} · {{item.sportsText}} · {{item.distanceText}}</text>
         </view>
         <text class="rating">{{item.rating}}</text>
       </view>
+      <text class="venue-address">{{item.address}}</text>
       <view class="card-row">
-        <view>
-          <text class="price">¥{{item.price}}</text>
-          <text class="muted">黄金时段优先锁场</text>
-        </view>
+        <text class="price">{{item.priceText}}</text>
         <button
           class="primary small book-action"
           bindtap="bookVenue"

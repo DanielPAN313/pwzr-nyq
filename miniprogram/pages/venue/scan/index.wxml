@@ -1,0 +1,18 @@
+<view class="scan-page">
+  <camera class="camera-area" mode="scanCode" device-position="back" flash="off"></camera>
+
+  <view class="scan-top">
+    <text class="scan-back" bindtap="returnVenueHome">← 返回</text>
+    <text class="scan-title">扫码核销</text>
+    <text class="scan-spacer"></text>
+  </view>
+
+  <view class="scan-frame">
+    <view class="corner corner-left-top"></view>
+    <view class="corner corner-right-top"></view>
+    <view class="corner corner-left-bottom"></view>
+    <view class="corner corner-right-bottom"></view>
+  </view>
+
+  <view class="scan-tip">将用户订单二维码放入框内</view>
+</view>

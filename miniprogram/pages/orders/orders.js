@@ -1,4 +1,5 @@
 const { get, post } = require("../../utils/api");
+const { setPendingPaymentCount } = require("../../utils/tab-bar-state");
 
 const fallbackOrders = [
   {
@@ -88,12 +89,17 @@ Page({
     return get("/api/sports-app/orders", { showLoading: false })
       .then((orders) => {
         const list = Array.isArray(orders) ? orders.map(mapOrder) : [];
+        const pendingPaymentCount = list.filter((order) => order && order.status === "pending_payment").length;
 
         this.setData({
           loading: false,
           orders: list.length ? list : [],
           empty: list.length === 0
         });
+        setPendingPaymentCount(pendingPaymentCount);
+        if (typeof this.getTabBar === "function" && this.getTabBar() && typeof this.getTabBar().syncTabState === "function") {
+          this.getTabBar().syncTabState();
+        }
       })
       .catch((error) => {
         this.setData({

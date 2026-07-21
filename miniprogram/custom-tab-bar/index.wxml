@@ -11,7 +11,9 @@
         <view class="symbol-part part-a"></view>
         <view class="symbol-part part-b"></view>
         <view class="symbol-part part-c"></view>
+        <view wx:if="{{index === 5 && showPendingDot}}" class="tab-dot"></view>
       </view>
+      <text class="tab-label">{{item.text}}</text>
     </view>
   </view>
 </view>

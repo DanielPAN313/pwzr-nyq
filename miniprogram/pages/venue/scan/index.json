@@ -1,0 +1,8 @@
+{
+  "navigationStyle": "custom",
+  "disableScroll": true,
+  "backgroundColor": "#0A0A0A",
+  "backgroundColorTop": "#0A0A0A",
+  "backgroundColorBottom": "#0A0A0A",
+  "initialRenderingCache": "static"
+}

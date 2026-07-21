@@ -1,0 +1,54 @@
+<view class="venue-page">
+  <view class="top-bar">
+    <text class="back-link" bindtap="returnPlayerMode">← 返回球友模式</text>
+    <text class="venue-title">卡子门足球场</text>
+    <text class="top-spacer"></text>
+  </view>
+
+  <view class="stats-grid">
+    <view wx:for="{{stats}}" wx:key="label" class="stat-item">
+      <text class="stat-value">{{item.value}}</text>
+      <text class="stat-label">{{item.label}}</text>
+    </view>
+  </view>
+
+  <view class="schedule-section">
+    <text class="section-title">今日日程（7月20日）</text>
+    <view class="schedule-card">
+      <view wx:for="{{schedules}}" wx:key="id" class="schedule-row">
+        <text class="schedule-time">{{item.time}}</text>
+        <text class="schedule-project">{{item.project}}</text>
+        <text class="schedule-status status-{{item.statusTone}}">{{item.status}}</text>
+        <text class="schedule-people">{{item.people}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="bottom-actions">
+    <button class="action-button scan-button" bindtap="openScanPage">扫码核销</button>
+    <button class="action-button confirm-button" bindtap="openConfirmSheet">确认订单</button>
+  </view>
+
+  <view wx:if="{{showConfirmSheet}}" class="sheet-mask" bindtap="closeConfirmSheet">
+    <view class="confirm-sheet" catchtap="noop">
+      <view class="sheet-handle"></view>
+      <view class="sheet-header">
+        <text class="sheet-title">待确认订单</text>
+        <text class="sheet-close" bindtap="closeConfirmSheet">关闭</text>
+      </view>
+
+      <view wx:if="{{pendingOrders.length === 0}}" class="empty-orders">暂无待确认订单</view>
+
+      <view wx:for="{{pendingOrders}}" wx:key="id" class="order-row">
+        <view class="order-main">
+          <text class="order-title">{{item.title}}</text>
+          <text class="order-meta">{{item.time}} · {{item.user}} · {{item.people}}</text>
+        </view>
+        <view class="order-actions">
+          <button class="order-button approve" data-id="{{item.id}}" bindtap="confirmOrder">确认</button>
+          <button class="order-button reject" data-id="{{item.id}}" bindtap="rejectOrder">拒绝</button>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

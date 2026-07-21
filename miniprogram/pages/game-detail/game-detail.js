@@ -115,19 +115,23 @@ function mapDetail(detail) {
   const progressPercent = capacity ? Math.min(Math.round((playerCount / capacity) * 100), 100) : 0;
   const step = gameStep(game, players, currentUser.id, Boolean(detail.review_open), reviewablePlayers);
   const canJoin = Boolean(game.id) && !game.is_joined && ["forming", "open"].includes(game.status) && missingCount > 0;
+  const venueName = "卡子门足球场";
+  const address = game.address || "";
+  const notes = game.notes || "";
 
   return {
     title: game.title || "未命名球局",
     statusText: statusText[game.status] || game.status || "未知状态",
     statusTone: step.tone,
-    venueName: game.venue_name || "场馆待定",
+    venueName,
     area: game.area || "",
-    address: game.address || "",
+    address,
     startText: formatTime(game.start_time),
     endText: formatTime(game.end_time),
     capacity,
     feeText: fee ? `¥${fee}/人` : "免费/AA",
-    notes: game.notes || "暂无备注",
+    notes,
+    hasVenueInfo: Boolean(address || notes),
     infoCards: [
       { label: "开始", value: formatTime(game.start_time) },
       { label: "人数", value: `${playerCount}/${capacity || "?"}` },
@@ -150,14 +154,14 @@ function mapDetail(detail) {
 
 function mapPreviewDetail(query) {
   const title = decodeURIComponent(query.title || "附近球局");
-  const venue = decodeURIComponent(query.venue || "场地待定");
+  const venue = decodeURIComponent(query.venue || "卡子门足球场");
   const desc = decodeURIComponent(query.desc || "名额和时间以球局列表为准");
   const fee = decodeURIComponent(query.fee || "免费/AA");
 
   return {
     title,
-    statusText: "预览",
-    statusTone: "warning",
+    statusText: "体验版",
+    statusTone: "preview",
     venueName: venue,
     area: "",
     address: "这是首页卡片预览，连接后端真实球局后可直接提交报名。",
@@ -166,6 +170,7 @@ function mapPreviewDetail(query) {
     capacity: 0,
     feeText: fee,
     notes: "点击下方按钮可先去球局页选择真实可报名场次。",
+    hasVenueInfo: true,
     infoCards: [
       { label: "时间", value: desc || "待定" },
       { label: "场馆", value: venue },

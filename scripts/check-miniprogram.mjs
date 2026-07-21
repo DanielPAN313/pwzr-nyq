@@ -124,11 +124,11 @@ if (appJson) {
 
   const registeredPages = new Set(appJson.pages || []);
 
-  for (const page of registeredPages) {
-    for (const ext of ["js", "json", "wxml", "wxss"]) {
-      const file = path.join(miniRoot, `${page}.${ext}`);
-      mustExist(file, `page ${ext}`);
-      if (ext === "json" && fs.existsSync(file)) parseJson(file);
+    for (const page of registeredPages) {
+      for (const ext of ["js", "json", "wxml", "wxss"]) {
+        const file = path.join(miniRoot, `${page}.${ext}`);
+        mustExist(file, `page ${ext}`);
+        if (ext === "json" && fs.existsSync(file)) parseJson(file);
     }
 
     const jsFile = path.join(miniRoot, `${page}.js`);
@@ -140,6 +140,22 @@ if (appJson) {
           errors.push(`${rel(wxmlFile)} binds "${handler}" but ${rel(jsFile)} does not expose that Page method.`);
         }
       }
+      }
+    }
+
+  for (const page of registeredPages) {
+    const pageJsonFile = path.join(miniRoot, `${page}.json`);
+    const pageJson = parseJson(pageJsonFile);
+    if (!pageJson) continue;
+    const allowedBackgrounds = new Set(["#07120d", "#0A0A0A"]);
+    if (!allowedBackgrounds.has(pageJson.backgroundColor)) {
+      errors.push(`${page}.json backgroundColor must be dark to avoid white flashes.`);
+    }
+    if (!allowedBackgrounds.has(pageJson.backgroundColorTop) || !allowedBackgrounds.has(pageJson.backgroundColorBottom)) {
+      errors.push(`${page}.json backgroundColorTop/backgroundColorBottom must be dark to avoid secondary-page white flashes.`);
+    }
+    if (pageJson.initialRenderingCache !== "static") {
+      errors.push(`${page}.json should keep initialRenderingCache static to reduce page transition flashes.`);
     }
   }
 
@@ -153,6 +169,9 @@ if (appJson) {
         errors.push(`miniprogram/app.json tabBar.${key} must be a 6-digit hex color.`);
       }
     }
+    if (appJson.tabBar.color !== "#666666" || appJson.tabBar.selectedColor !== "#C8FF00" || appJson.tabBar.backgroundColor !== "#07120d") {
+      errors.push("miniprogram/app.json tabBar fallback colors must stay dark to avoid flashes before the custom tab bar renders.");
+    }
     if (appJson.tabBar.borderStyle && !["black", "white"].includes(appJson.tabBar.borderStyle)) {
       errors.push('miniprogram/app.json tabBar.borderStyle must be "black" or "white".');
     }
@@ -161,6 +180,17 @@ if (appJson) {
         errors.push(`miniprogram/app.json tabBar.list[${index}].pagePath is required.`);
       } else if (!registeredPages.has(tab.pagePath)) {
         errors.push(`tabBar pagePath is not registered in pages: ${tab.pagePath}`);
+      } else {
+        const tabPageJson = parseJson(path.join(miniRoot, `${tab.pagePath}.json`));
+        if (tabPageJson && tabPageJson.backgroundColor !== "#07120d") {
+          errors.push(`${tab.pagePath}.json backgroundColor must stay #07120d to avoid white flashes during tab switching.`);
+        }
+        if (tabPageJson && (tabPageJson.backgroundColorTop !== "#07120d" || tabPageJson.backgroundColorBottom !== "#07120d")) {
+          errors.push(`${tab.pagePath}.json backgroundColorTop/backgroundColorBottom must stay #07120d to avoid native white flashes.`);
+        }
+        if (tabPageJson && tabPageJson.initialRenderingCache !== "static") {
+          errors.push(`${tab.pagePath}.json should keep initialRenderingCache static to reduce first-render tab flashes.`);
+        }
       }
       if (!tab.text) {
         errors.push(`miniprogram/app.json tabBar.list[${index}].text is required.`);
@@ -168,6 +198,59 @@ if (appJson) {
     }
   }
 }
+
+const homeWxml = path.join(miniRoot, "pages/home/home.wxml");
+const homeWxss = path.join(miniRoot, "pages/home/home.wxss");
+const kazimenLogo = path.join(miniRoot, "assets/kazimen-logo-mark.png");
+const customTabJs = path.join(miniRoot, "custom-tab-bar/index.js");
+if (mustExist(customTabJs, "custom tab js")) {
+  const tabSource = readUtf8(customTabJs);
+  if (!tabSource.includes('pagePath: "pages/games/games"') || !tabSource.includes('text: "球局"')) {
+    errors.push('custom tab middle label should be "球局" and point to pages/games/games.');
+  }
+  if (!tabSource.includes('pagePath: "pages/rankings/rankings"') || !tabSource.includes('text: "排行"') || !tabSource.includes('type: "page"')) {
+    errors.push('custom tab should expose a sixth "排行" entry as a page navigation item.');
+  }
+}
+const rankingsWxml = path.join(miniRoot, "pages/rankings/rankings.wxml");
+const rankingsJson = path.join(miniRoot, "pages/rankings/rankings.json");
+if (mustExist(rankingsWxml, "rankings wxml") && !readUtf8(rankingsWxml).includes("<app-tab-bar")) {
+  errors.push("rankings page should render the custom six-item tab bar.");
+}
+if (mustExist(rankingsJson, "rankings json")) {
+  const rankingsConfig = parseJson(rankingsJson);
+  if (!rankingsConfig?.usingComponents?.["app-tab-bar"]) {
+    errors.push("rankings page should register app-tab-bar component.");
+  }
+}
+if (mustExist(homeWxml, "home wxml") && !readUtf8(homeWxml).includes("/assets/kazimen-logo-mark.png")) {
+  errors.push("home recruiting cards should use the transparent Kazi Men logo asset.");
+}
+if (fs.existsSync(homeWxml)) {
+  const homeSource = readUtf8(homeWxml);
+  if (homeSource.includes("quick-grid") || homeSource.includes("openQuickAction")) {
+    errors.push("home should not render the removed quick action grid.");
+  }
+  if (!homeSource.includes("<swiper") || !homeSource.includes("onHeroSwiperChange")) {
+    errors.push("home should render the two-page swiper hero.");
+  }
+  if (homeSource.includes("home-tabs") || homeSource.includes("switchHomePanel")) {
+    errors.push("home should not render the old two-button hero tab switcher.");
+  }
+}
+if (mustExist(homeWxss, "home wxss")) {
+  const homeStyles = readUtf8(homeWxss);
+  if (!homeStyles.includes(".hero-swiper") || !homeStyles.includes("height: 300rpx")) {
+    errors.push("home swiper hero should stay compact so the recruiting section remains visible.");
+  }
+  if (!homeStyles.includes(".recruit-thumb") || !homeStyles.includes("width: 216rpx")) {
+    errors.push("home recruiting cards should keep the restored large visual thumb.");
+  }
+  if (!homeStyles.includes(".recruit-countdown") || !homeStyles.includes("background: #C8FF00")) {
+    errors.push("home recruiting cards should keep the neon countdown pill.");
+  }
+}
+mustExist(kazimenLogo, "Kazi Men transparent logo asset");
 
 const forbiddenBrowserApis = /\b(window|document|localStorage|sessionStorage|fetch|XMLHttpRequest|navigator)\b/;
 const mojibakeFragments = [

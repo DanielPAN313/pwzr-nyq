@@ -1,20 +1,15 @@
 const { get } = require("../../utils/api");
+const { setPendingPaymentCount } = require("../../utils/tab-bar-state");
 
 const fallbackSummary = "这里会从旧 H5 原型迁移真实首页数据、推荐场馆、今日球局和订单提醒。";
 const homeGameTemplate = {
-  title: "3v3篮球",
+  title: "5v5足球",
   desc: "阿杰已预留 1 个名额 · 今晚 20:00",
-  venue: "江宁大学城篮球馆",
+  venue: "卡子门足球场",
   mode: "3v3",
   fee: "AA ¥32",
   actionText: "查看邀请"
 };
-
-const inviteGames = [
-  { id: "invite-1", countdownSeconds: 520, slotsLeft: 1 },
-  { id: "invite-2", countdownSeconds: 1260, slotsLeft: 2 },
-  { id: "invite-3", countdownSeconds: 2380, slotsLeft: 1 }
-];
 
 const recruitingGames = [
   { id: "recruit-1", countdownSeconds: 430, slotsLeft: 1 },
@@ -33,6 +28,7 @@ function mapHomeGame(game, index) {
   const capacity = Number(game.capacity || 0);
   const slotsLeft = capacity > joined ? capacity - joined : Math.max(1, index + 1);
   const start = game.start_time ? new Date(game.start_time) : null;
+  const hostName = game.username || game.host_name || game.creator_name || game.nickName || "发起人";
   const timeText = start && !Number.isNaN(start.getTime())
     ? `${String(start.getHours()).padStart(2, "0")}:${String(start.getMinutes()).padStart(2, "0")}`
     : "20:00";
@@ -45,6 +41,8 @@ function mapHomeGame(game, index) {
     venue: game.venue_name || game.area || homeGameTemplate.venue,
     mode: capacity ? `${capacity}人局` : homeGameTemplate.mode,
     fee: fee ? `¥${fee}/人` : homeGameTemplate.fee,
+    hostName,
+    timeText,
     actionText: homeGameTemplate.actionText,
     countdownSeconds: gameCountdownSeconds(game),
     slotsLeft
@@ -72,27 +70,75 @@ const buildPrioritizedGames = (games) =>
       featured: index === 0
     }));
 
+const recruitingCardTemplate = {
+  title: "正在招人",
+  hostName: "发起人",
+  timeText: "今晚 20:00",
+  venue: "卡子门足球场",
+  mode: "5v5",
+  fee: "AA ¥32",
+  thumbLabel: "招",
+  actionText: "查看邀请"
+};
+
+const bookingHeroTemplate = {
+  venueName: "卡子门足球场",
+  weekBookings: 12
+};
+
+const buildRecruitingCards = (games) =>
+  buildPrioritizedGames(games).map((game) => {
+    const hostName = game.hostName || recruitingCardTemplate.hostName;
+    const timeText = game.timeText || recruitingCardTemplate.timeText;
+    const venue = game.venue || recruitingCardTemplate.venue;
+    const mode = game.mode || recruitingCardTemplate.mode;
+    const fee = game.fee || recruitingCardTemplate.fee;
+
+    return {
+      ...recruitingCardTemplate,
+      ...game,
+      title: game.title || recruitingCardTemplate.title,
+      hostName,
+      timeText,
+      desc: game.desc || `${hostName} · ${timeText}`,
+      venue,
+      mode,
+      fee,
+      thumbLabel: game.thumbLabel || recruitingCardTemplate.thumbLabel,
+      reserveLine: game.reserveLine || `${hostName}已预留 ${Math.max(1, Number(game.slotsLeft || 1))} 个名额 · ${timeText}`,
+      hostLine: `${hostName}·${timeText}`,
+      metaLine: `${venue}·${mode}·${fee}`,
+      actionText: recruitingCardTemplate.actionText
+    };
+  });
+
+function buildGameHero(game) {
+  const next = game || buildRecruitingCards(recruitingGames)[0] || {};
+  const slotsLeft = Number(next.slotsLeft || 2);
+  const feeText = String(next.fee || "AA ¥35").replace("楼", "¥").replace("/人", "");
+
+  return {
+    id: next.id || "recruit-1",
+    title: next.title || "正在组局",
+    timeText: next.timeText || "今晚 20:00",
+    mode: next.mode || "五人制",
+    slotsText: `缺 ${slotsLeft} 人`,
+    feeText,
+    venue: next.venue || "卡子门足球场",
+    desc: next.desc || `${next.timeText || "今晚 20:00"} ${next.mode || "五人制"}`,
+    fee: next.fee || feeText
+  };
+}
+
 Page({
   data: {
     loading: false,
     error: "",
     summary: fallbackSummary,
-    homePanel: 1,
-    tabMotionClass: "",
-    panelMotionClass: "",
-    panelTransform: "translateX(-100%)",
-    homePanels: [
-      { label: "好友邀请" },
-      { label: "正在招人" }
-    ],
-    invitationGames: buildPrioritizedGames(inviteGames),
-    recruitingGames: buildPrioritizedGames(recruitingGames),
-    quickActions: [
-      { label: "订场", hint: "锁定今天可用时段", target: "/pages/venues/venues", mode: "tab" },
-      { label: "找球局", hint: "报名附近公开局", target: "/pages/games/games", mode: "page" },
-      { label: "查订单", hint: "支付和核销码", target: "/pages/orders/orders", mode: "page" },
-      { label: "消息", hint: "订单提醒", target: "/pages/messages/messages", mode: "tab" }
-    ]
+    heroIndex: 0,
+    bookingHero: bookingHeroTemplate,
+    gameHero: buildGameHero(),
+    recruitingGames: buildRecruitingCards(recruitingGames)
   },
 
   onLoad() {
@@ -103,6 +149,9 @@ Page({
   onShow() {
     if (typeof this.getTabBar === "function" && this.getTabBar()) {
       this.getTabBar().setData({ selected: 0 });
+      if (typeof this.getTabBar().syncTabState === "function") {
+        this.getTabBar().syncTabState();
+      }
     }
   },
 
@@ -115,21 +164,31 @@ Page({
         const games = Array.isArray(data.games) ? data.games : [];
         const gameCount = games.length;
         const orderCount = Array.isArray(data.orders) ? data.orders.length : 0;
+        const pendingPaymentCount = Array.isArray(data.orders)
+          ? data.orders.filter((order) => order && order.status === "pending_payment").length
+          : 0;
         const mappedGames = games.map(mapHomeGame);
-        const nextInvitationGames = mappedGames.length ? buildPrioritizedGames(mappedGames.slice(0, 3)) : this.data.invitationGames;
-        const nextRecruitingGames = mappedGames.length ? buildPrioritizedGames(mappedGames.slice(1, 4).length ? mappedGames.slice(1, 4) : mappedGames) : this.data.recruitingGames;
+        const nextRecruitingGames = mappedGames.length ? buildRecruitingCards(mappedGames.slice(1, 4).length ? mappedGames.slice(1, 4) : mappedGames) : this.data.recruitingGames;
 
+        setPendingPaymentCount(pendingPaymentCount);
         this.setData({
           loading: false,
+          bookingHero: {
+            ...bookingHeroTemplate,
+            weekBookings: Math.max(12, orderCount || 0)
+          },
+          gameHero: buildGameHero(nextRecruitingGames[0]),
           summary: `今日已加载 ${venueCount} 个场馆、${gameCount} 场球局、${orderCount} 条订单提醒。`,
-          invitationGames: nextInvitationGames,
           recruitingGames: nextRecruitingGames
         });
+        if (typeof this.getTabBar === "function" && this.getTabBar() && typeof this.getTabBar().syncTabState === "function") {
+          this.getTabBar().syncTabState();
+        }
       })
-      .catch((error) => {
+      .catch(() => {
         this.setData({
           loading: false,
-          error: error.message || "首页数据加载失败",
+          error: "",
           summary: fallbackSummary
         });
       });
@@ -147,17 +206,17 @@ Page({
     wx.navigateTo({ url: target });
   },
 
-  openQuickAction(event) {
-    const target = event.currentTarget.dataset.target;
-    const mode = event.currentTarget.dataset.mode;
-    if (!target) return;
+  onHeroSwiperChange(event) {
+    this.setData({
+      heroIndex: Number(event.detail.current || 0)
+    });
+  },
 
-    if (mode === "page") {
-      wx.navigateTo({ url: target });
-      return;
+  openHeroCard(event) {
+    const action = event.currentTarget.dataset.action || "";
+    if (action === "bookVenue") {
+      wx.switchTab({ url: "/pages/venues/venues" });
     }
-
-    wx.switchTab({ url: target });
   },
 
   openHomeGame(event) {
@@ -175,42 +234,9 @@ Page({
     wx.navigateTo({ url: `/pages/game-detail/game-detail?${query}` });
   },
 
-  switchHomePanel(event) {
-    const index = Number(event.currentTarget.dataset.index || 0);
-
-    if (index === this.data.homePanel) return;
-
-    if (this.tabMoveTimer) {
-      clearTimeout(this.tabMoveTimer);
-    }
-    if (this.panelMoveTimer) {
-      clearTimeout(this.panelMoveTimer);
-    }
-
-    this.setData({
-      homePanel: index,
-      tabMotionClass: "moving",
-      panelMotionClass: "panel-entering",
-      panelTransform: `translateX(-${index * 100}%)`
-    });
-
-    this.tabMoveTimer = setTimeout(() => {
-      this.setData({ tabMotionClass: "" });
-    }, 380);
-    this.panelMoveTimer = setTimeout(() => {
-      this.setData({ panelMotionClass: "" });
-    }, 520);
-  },
-
   onUnload() {
-    if (this.tabMoveTimer) {
-      clearTimeout(this.tabMoveTimer);
-    }
     if (this.countdownTimer && typeof clearInterval === "function") {
       clearInterval(this.countdownTimer);
-    }
-    if (this.panelMoveTimer) {
-      clearTimeout(this.panelMoveTimer);
     }
   },
 
@@ -223,9 +249,11 @@ Page({
         countdownSeconds: Math.max(0, Number(game.countdownSeconds || 0) - 1)
       }));
 
+      const nextRecruitingGames = buildPrioritizedGames(tick(this.data.recruitingGames));
+
       this.setData({
-        invitationGames: buildPrioritizedGames(tick(this.data.invitationGames)),
-        recruitingGames: buildPrioritizedGames(tick(this.data.recruitingGames))
+        recruitingGames: nextRecruitingGames,
+        gameHero: buildGameHero(nextRecruitingGames[0])
       });
     }, 1000);
   }

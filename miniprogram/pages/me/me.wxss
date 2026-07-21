@@ -146,10 +146,10 @@
   align-items: center;
   justify-content: space-between;
   gap: 18rpx;
-  min-height: 118rpx;
+  min-height: 56px;
   margin: 0 18rpx;
-  padding: 20rpx 8rpx;
-  border-bottom: 1rpx solid rgba(216, 255, 62, 0.12);
+  padding: 0 8rpx;
+  border-bottom: 1rpx solid #333333;
   box-sizing: border-box;
 }
 
@@ -163,8 +163,8 @@
 
 .menu-label {
   display: block;
-  color: #f7fbf5;
-  font-size: 30rpx;
+  color: #FFFFFF;
+  font-size: 15px;
   font-weight: 950;
   line-height: 1.28;
 }
@@ -186,28 +186,68 @@
 
 .menu-value {
   max-width: 180rpx;
-  color: rgba(247, 251, 245, 0.74);
-  font-size: 27rpx;
+  color: #C8FF00;
+  font-size: 14px;
   font-weight: 950;
   line-height: 1.2;
   text-align: right;
 }
 
 .menu-accent {
-  color: #d8ff3e;
+  color: #C8FF00;
 }
 
 .menu-warning {
-  color: #ffd166;
+  color: #C8FF00;
 }
 
 .menu-subtle {
-  color: rgba(247, 251, 245, 0.62);
+  color: #C8FF00;
 }
 
 .menu-arrow {
-  color: rgba(216, 255, 62, 0.82);
-  font-size: 34rpx;
+  color: #666666;
+  font-size: 20px;
   font-weight: 950;
   line-height: 1;
+}
+
+.venue-mode-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  margin: 0 18rpx;
+  padding: 0 8rpx;
+  border-bottom: 1rpx solid #333333;
+  box-sizing: border-box;
+}
+
+.venue-mode-icon {
+  flex-shrink: 0;
+  color: #C8FF00;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.venue-mode-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.venue-mode-label {
+  display: block;
+  color: #FFFFFF;
+  font-size: 15px;
+  font-weight: 950;
+  line-height: 1.3;
+}
+
+.venue-mode-sub {
+  display: block;
+  margin-top: 3px;
+  color: #666666;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
 }

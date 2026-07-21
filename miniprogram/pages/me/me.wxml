@@ -23,12 +23,19 @@
     <view wx:for="{{items}}" wx:key="label" class="menu-row" bindtap="openMenu" data-target="{{item.target}}">
       <view class="menu-copy">
         <text class="menu-label">{{item.label}}</text>
-        <text class="menu-hint">{{item.hint}}</text>
       </view>
       <view class="menu-meta">
         <text class="menu-value menu-{{item.tone}}">{{item.value}}</text>
         <text class="menu-arrow">›</text>
       </view>
+    </view>
+    <view wx:if="{{isVenueAdmin}}" class="venue-mode-row" bindtap="switchVenueMode">
+      <text class="venue-mode-icon">▣</text>
+      <view class="venue-mode-copy">
+        <text class="venue-mode-label">{{venueModeEntry.label}}</text>
+        <text class="venue-mode-sub">{{venueModeEntry.subLabel}}</text>
+      </view>
+      <text class="menu-arrow">›</text>
     </view>
   </view>
 </view>

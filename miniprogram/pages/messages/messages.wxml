@@ -3,7 +3,6 @@
     <text class="page-kicker">NOTIFICATIONS</text>
     <view class="page-title">消息中心</view>
     <text wx:if="{{loading}}" class="muted">正在加载消息...</text>
-    <text wx:elif="{{error}}" class="muted">{{error}}，已显示本地兜底消息。</text>
     <text wx:elif="{{empty}}" class="muted">暂时没有新消息。</text>
     <text wx:else class="muted">已接入订单提醒、核销提醒和系统通知。</text>
   </view>

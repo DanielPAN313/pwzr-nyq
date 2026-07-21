@@ -144,10 +144,11 @@
 .venue-card {
   display: flex;
   flex-direction: column;
-  gap: 18rpx;
+  gap: 14px;
+  padding: 16px;
   overflow: hidden;
   background: #101b15;
-  border-radius: 30rpx;
+  border-radius: 22px;
   animation: rise-in 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
@@ -161,9 +162,9 @@
 
 .venue-visual {
   position: relative;
-  height: 176rpx;
-  margin: -8rpx -8rpx 0;
-  border-radius: 26rpx;
+  height: 160px;
+  margin: 0;
+  border-radius: 16px;
   background: linear-gradient(135deg, #0f8a4f, #15251b);
   overflow: hidden;
 }
@@ -207,11 +208,38 @@
   font-weight: 900;
 }
 
+.goal-box {
+  position: absolute;
+  top: 58px;
+  width: 20px;
+  height: 44px;
+  border: 2px solid rgba(255, 255, 255, 0.48);
+}
+
+.goal-left {
+  left: 22px;
+  border-left: 0;
+}
+
+.goal-right {
+  right: 22px;
+  border-right: 0;
+}
+
 .card-top {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 20rpx;
+}
+
+.venue-type {
+  display: block;
+  margin-bottom: 6px;
+  color: #999999;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1.2;
 }
 
 .rating {
@@ -225,6 +253,14 @@
   background: #d8ff3e;
   font-size: 23rpx;
   font-weight: 900;
+}
+
+.venue-address {
+  display: block;
+  color: #999999;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.4;
 }
 
 .card-row {
@@ -241,8 +277,8 @@
 
 .price {
   display: block;
-  color: #d8ff3e;
-  font-size: 36rpx;
+  color: #C8FF00;
+  font-size: 18px;
   font-weight: 900;
   line-height: 1.2;
   white-space: nowrap;
@@ -267,10 +303,15 @@
 }
 
 .book-action {
-  min-width: 246rpx;
-  min-height: 78rpx;
-  font-size: 28rpx;
-  line-height: 78rpx;
+  min-width: 0;
+  min-height: 0;
+  height: auto;
+  padding: 10px 24px;
+  border-radius: 8px;
+  color: #000000;
+  background: #C8FF00;
+  font-size: 15px;
+  line-height: 1.2;
 }
 
 @keyframes rise-in {

@@ -39,10 +39,7 @@
     </view>
 
     <view class="section signup-panel">
-      <view>
-        <text class="section-title">报名确认</text>
-        <text class="muted">{{detail.previewOnly ? "这是首页邀请预览，去球局页可选择真实场次。" : "确认后会生成待支付订单，支付后正式占位。"}}</text>
-      </view>
+      <text class="signup-hint">选择场次后生成待支付订单</text>
       <button
         class="primary signup-button"
         bindtap="submitJoinGame"
@@ -70,10 +67,10 @@
       </view>
     </view>
 
-    <view class="section">
+    <view wx:if="{{detail.hasVenueInfo}}" class="section">
       <view class="section-title">场地信息</view>
-      <text class="muted">{{detail.address || "暂无详细地址"}}</text>
-      <text class="muted">{{detail.notes}}</text>
+      <text wx:if="{{detail.address}}" class="muted">{{detail.address}}</text>
+      <text wx:if="{{detail.notes}}" class="muted">{{detail.notes}}</text>
     </view>
 
     <view class="section review-panel">

@@ -3,15 +3,31 @@
     <text class="page-kicker">OPEN MATCHES</text>
     <view class="page-title">附近球局</view>
     <text wx:if="{{loading}}" class="muted">正在加载球局...</text>
-    <text wx:elif="{{error}}" class="muted">{{error}}，已显示本地兜底球局。</text>
     <text wx:elif="{{empty}}" class="muted">暂时没有可报名球局。</text>
-    <text wx:else class="muted">已接入真实球局列表，后续继续补报名和支付。</text>
+    <text wx:else class="muted">找球局、发起球局、球队和我的球局都在这里。</text>
     <view class="filter-row">
       <text class="pill dark">可报名</text>
       <text class="pill">今晚</text>
       <text class="pill">离我近</text>
     </view>
-    <button class="create-button" bindtap="createGame">发起球局</button>
+    <view class="hub-actions">
+      <button class="hub-action primary-action" bindtap="createGame">
+        <text class="hub-action-title">发起球局</text>
+        <text class="hub-action-sub">约人开一场</text>
+      </button>
+      <button class="hub-action" bindtap="goTeams">
+        <text class="hub-action-title">球队</text>
+        <text class="hub-action-sub">固定队伍</text>
+      </button>
+      <button class="hub-action" bindtap="goMyGames">
+        <text class="hub-action-title">我的球局</text>
+        <text class="hub-action-sub">报名/发起</text>
+      </button>
+      <button class="hub-action" bindtap="goRankings">
+        <text class="hub-action-title">排行</text>
+        <text class="hub-action-sub">射手/出勤</text>
+      </button>
+    </view>
   </view>
 
   <view class="search-panel">
@@ -19,7 +35,7 @@
     <input
       class="search-input"
       value="{{keyword}}"
-      placeholder="搜球局 / 场地 / 状态"
+      placeholder="搜索球局、场地或状态"
       placeholder-class="search-placeholder"
       confirm-type="search"
       bindinput="onSearchInput"
@@ -38,28 +54,26 @@
   </view>
 
   <view wx:for="{{games}}" wx:key="title" class="section game-card">
-    <view class="match-head">
-      <view>
-        <text class="card-title">{{item.title}}</text>
-        <text class="muted">{{item.time}} · {{item.venueName}}</text>
+    <view class="game-thumb" bindtap="openGameDetail" data-id="{{item.id}}">
+      <view class="thumb-line thumb-line-a"></view>
+      <view class="thumb-line thumb-line-b"></view>
+      <view class="thumb-ball"></view>
+    </view>
+    <view class="game-body">
+      <view class="game-top-row">
+        <text class="card-title game-title">{{item.title}}</text>
+        <text class="status-chip">{{item.status}}</text>
       </view>
-      <text class="status-chip">{{item.status}}</text>
-    </view>
-    <view class="match-meta">
-      <text class="meta-item">{{item.fee}}</text>
-      <text class="meta-item">实名报名</text>
-      <text class="meta-item">到场核销</text>
-    </view>
-    <view class="card-row">
-      <view class="players">
-        <text class="player-dot"></text>
-        <text class="player-dot"></text>
-        <text class="player-dot empty"></text>
-        <text class="players-text">{{item.status}}</text>
+      <text class="game-line">{{item.time}} · {{item.status}}</text>
+      <text class="game-line">{{item.venueName}}</text>
+      <view class="match-meta">
+        <text class="meta-item">{{item.fee}}</text>
+        <text class="meta-item">实名报名</text>
+        <text class="meta-item">到场核销</text>
       </view>
       <view class="game-actions">
         <button
-          class="secondary small"
+          class="secondary small detail-button"
           bindtap="openGameDetail"
           data-id="{{item.id}}"
         >

@@ -195,10 +195,14 @@ function loadModule(file) {
 
 loadModule(path.join(miniRoot, "app.js"));
 assert(context.getApp().globalData.apiBaseUrl, "miniprogram app.js did not initialize globalData.apiBaseUrl");
-assert(Array.isArray(appJson.tabBar?.list) && appJson.tabBar.list[2]?.pagePath === "pages/rankings/rankings", "rankings should occupy the middle tab bar slot.");
+assert(Array.isArray(appJson.tabBar?.list) && appJson.tabBar.list[2]?.pagePath === "pages/games/games", "games should occupy the middle tab bar slot.");
+context.wx.setStorageSync("nyq_user", { id: 9, username: "venue_admin", role: "venue_admin" });
 
 for (const pagePath of appJson.pages) {
   context.location.href = `http://localhost:4174/${pagePath}`;
+  if (pagePath.startsWith("pages/venue/")) {
+    context.wx.setStorageSync("nyq_user", { id: 9, username: "venue_admin", role: "venue_admin" });
+  }
   const before = registeredPages.length;
   loadModule(path.join(miniRoot, `${pagePath}.js`));
   assert(registeredPages.length === before + 1, `${pagePath}.js did not call Page()`);
@@ -211,13 +215,16 @@ for (const file of fs.readdirSync(path.join(miniRoot, "utils"))) {
   if (file.endsWith(".js")) loadModule(path.join(miniRoot, "utils", file));
 }
 
-assert(registeredPages.length === 17, "Mini Program should register the restored 17-page product flow.");
+assert(registeredPages.length === 20, "Mini Program should register the restored 20-page product flow.");
 for (const pagePath of [
   "pages/venue-detail/venue-detail",
   "pages/create-game/create-game",
   "pages/game-detail/game-detail",
   "pages/rankings/rankings",
+  "pages/teams/teams",
   "pages/venue-admin/venue-admin",
+  "pages/venue/home/index",
+  "pages/venue/scan/index",
   "pages/credit/credit",
   "pages/my-games/my-games",
   "pages/legal/legal",
@@ -228,12 +235,14 @@ for (const pagePath of [
 const homePage = registeredPageByPath.get("pages/home/home");
 assert(homePage, "pages/home/home page instance was not registered.");
 assert(typeof homePage.switchTab === "function", "pages/home/home should expose switchTab method.");
-assert(typeof homePage.openQuickAction === "function", "pages/home/home should expose openQuickAction method.");
 assert(typeof homePage.openHomeGame === "function", "pages/home/home should expose openHomeGame method.");
-assert(Array.isArray(homePage.data.quickActions) && homePage.data.quickActions.length >= 4, "home should expose at least four quick actions.");
-assert(homePage.data.quickActions.some((action) => action.target === "/pages/orders/orders" && action.mode === "page"), "home quick actions should include a page navigation entry for orders.");
-assert(homePage.data.homePanel === 1, "home should default to the recruiting panel.");
-assert(homePage.data.panelTransform === "translateX(-100%)", "home recruiting panel should be visible by default.");
+assert(typeof homePage.onHeroSwiperChange === "function", "pages/home/home should expose onHeroSwiperChange method.");
+assert(typeof homePage.openHeroCard === "function", "pages/home/home should expose openHeroCard method.");
+assert(homePage.data.heroIndex === 0, "home swiper hero should default to the booking page.");
+assert(homePage.data.bookingHero?.venueName === "卡子门足球场", "home booking swiper should feature Kazi Men football venue.");
+assert(homePage.data.gameHero?.slotsText?.includes("缺"), "home game swiper should expose recruiting shortage copy.");
+homePage.onHeroSwiperChange.call(homePage, { detail: { current: 1 } });
+assert(homePage.data.heroIndex === 1, "home swiper change should update heroIndex.");
 homePage.switchTab.call(homePage, {
   currentTarget: {
     dataset: {
@@ -241,7 +250,6 @@ homePage.switchTab.call(homePage, {
     },
   },
 });
-assert(homePage.data.quickActions.some((action) => action.target === "/pages/games/games" && action.mode === "page"), "home quick actions should keep games as a page entry.");
 assert(context.location.search.includes("page=games"), "home.switchTab did not route to games page.");
 assert(context.location.search.includes("path=pages%2Fgames%2Fgames") || context.location.search.includes("path=pages/games/games"), "home.switchTab did not preserve games path.");
 
@@ -257,10 +265,10 @@ assert(venuesPage, "pages/venues/venues page instance was not registered.");
 assert(typeof venuesPage.onSearchInput === "function", "pages/venues/venues should expose onSearchInput method.");
 assert(typeof venuesPage.clearSearch === "function", "pages/venues/venues should expose clearSearch method.");
 assert(typeof venuesPage.openVenueDetail === "function", "pages/venues/venues should expose openVenueDetail method.");
-venuesPage.onSearchInput.call(venuesPage, inputEvent("篮球"));
-assert(venuesPage.data.keyword === "篮球", "venues search did not persist the keyword.");
-assert(venuesPage.data.venues.length >= 1, "venues search should find the fallback basketball venue.");
-assert(venuesPage.data.venues.every((venue) => `${venue.name} ${venue.area} ${venue.sportsText}`.includes("篮球")), "venues search returned a non-matching venue.");
+venuesPage.onSearchInput.call(venuesPage, inputEvent("足球"));
+assert(venuesPage.data.keyword === "足球", "venues search did not persist the keyword.");
+assert(venuesPage.data.venues.length >= 1, "venues search should find the fallback football venue.");
+assert(venuesPage.data.venues.every((venue) => `${venue.name} ${venue.area} ${venue.sportsText}`.includes("足球")), "venues search returned a non-matching venue.");
 venuesPage.clearSearch.call(venuesPage);
 assert(venuesPage.data.keyword === "", "venues clearSearch did not reset the keyword.");
 assert(venuesPage.data.venues.length === venuesPage.data.allVenues.length, "venues clearSearch did not restore the full venue list.");
@@ -272,6 +280,9 @@ assert(typeof gamesPage.clearSearch === "function", "pages/games/games should ex
 assert(typeof gamesPage.openGame === "function", "pages/games/games should expose openGame method.");
 assert(typeof gamesPage.openGameDetail === "function", "pages/games/games should expose openGameDetail method.");
 assert(typeof gamesPage.createGame === "function", "pages/games/games should expose createGame method.");
+assert(typeof gamesPage.goTeams === "function", "pages/games/games should expose goTeams method.");
+assert(typeof gamesPage.goMyGames === "function", "pages/games/games should expose goMyGames method.");
+assert(typeof gamesPage.goRankings === "function", "pages/games/games should expose goRankings method.");
 gamesPage.onSearchInput.call(gamesPage, inputEvent("足球"));
 assert(gamesPage.data.keyword === "足球", "games search did not persist the keyword.");
 assert(gamesPage.data.games.length >= 1, "games search should find the fallback football match.");
@@ -280,6 +291,13 @@ gamesPage.clearSearch.call(gamesPage);
 assert(gamesPage.data.keyword === "", "games clearSearch did not reset the keyword.");
 assert(gamesPage.data.games.length === gamesPage.data.allGames.length, "games clearSearch did not restore the full game list.");
 
+const teamsPage = registeredPageByPath.get("pages/teams/teams");
+assert(teamsPage, "pages/teams/teams page instance was not registered.");
+for (const method of ["loadTeams", "joinTeam", "createGame"]) {
+  assert(typeof teamsPage[method] === "function", `pages/teams/teams should expose ${method} method.`);
+}
+assert(Array.isArray(teamsPage.data.teams) && teamsPage.data.teams.length >= 1, "teams page should expose fallback teams.");
+
 const gameDetailPage = registeredPageByPath.get("pages/game-detail/game-detail");
 assert(gameDetailPage, "pages/game-detail/game-detail page instance was not registered.");
 assert(typeof gameDetailPage.submitJoinGame === "function", "pages/game-detail/game-detail should expose submitJoinGame method.");
@@ -287,7 +305,7 @@ gameDetailPage.onLoad.call(gameDetailPage, {
   id: "invite-preview",
   preview: "1",
   title: encodeURIComponent("首页邀请预览"),
-  venue: encodeURIComponent("江宁大学城篮球馆"),
+  venue: encodeURIComponent("卡子门足球场"),
   desc: encodeURIComponent("今晚 20:00"),
   fee: encodeURIComponent("AA ¥32"),
 });
@@ -338,6 +356,32 @@ assert(Array.isArray(rankingsPage.data.tabs) && rankingsPage.data.tabs.length ==
 assert(Array.isArray(rankingsPage.data.summaryCards) && rankingsPage.data.summaryCards.length === 4, "rankings page should expose four summary cards.");
 assert(Array.isArray(rankingsPage.data.rankRows) && rankingsPage.data.rankRows.length >= 3, "rankings page should expose ranking rows.");
 
+const venueHomePage = registeredPageByPath.get("pages/venue/home/index");
+assert(venueHomePage, "pages/venue/home/index page instance was not registered.");
+for (const method of ["guardVenueAdmin", "returnPlayerMode", "openScanPage", "openConfirmSheet", "closeConfirmSheet", "confirmOrder", "rejectOrder"]) {
+  assert(typeof venueHomePage[method] === "function", `pages/venue/home/index should expose ${method} method.`);
+}
+assert(Array.isArray(venueHomePage.data.stats) && venueHomePage.data.stats.length === 3, "venue home should expose three stats.");
+assert(Array.isArray(venueHomePage.data.schedules) && venueHomePage.data.schedules.length >= 3, "venue home should expose today's schedule rows.");
+context.wx.setStorageSync("nyq_user", { id: 9, role: "venue_admin" });
+assert(venueHomePage.guardVenueAdmin.call(venueHomePage) === true, "venue home should allow venue_admin users.");
+venueHomePage.openConfirmSheet.call(venueHomePage);
+assert(venueHomePage.data.showConfirmSheet === true, "venue home should open the confirm order sheet.");
+venueHomePage.confirmOrder.call(venueHomePage, { currentTarget: { dataset: { id: "o1" } } });
+assert(venueHomePage.data.pendingOrders.every((order) => order.id !== "o1"), "venue home confirm action should remove the handled pending order.");
+context.wx.setStorageSync("nyq_user", { id: 10, role: "player" });
+assert(venueHomePage.guardVenueAdmin.call(venueHomePage) === false, "venue home should reject non venue_admin users.");
+
+const venueScanPage = registeredPageByPath.get("pages/venue/scan/index");
+assert(venueScanPage, "pages/venue/scan/index page instance was not registered.");
+for (const method of ["guardVenueAdmin", "returnVenueHome"]) {
+  assert(typeof venueScanPage[method] === "function", `pages/venue/scan/index should expose ${method} method.`);
+}
+context.wx.setStorageSync("nyq_user", { id: 9, role: "venue_admin" });
+assert(venueScanPage.guardVenueAdmin.call(venueScanPage) === true, "venue scan should allow venue_admin users.");
+context.wx.setStorageSync("nyq_user", { id: 10, role: "player" });
+assert(venueScanPage.guardVenueAdmin.call(venueScanPage) === false, "venue scan should reject non venue_admin users.");
+
 for (const timer of timers.splice(0)) timer();
 
-console.log(`Mini Program runtime check passed: loaded app.js, ${registeredPages.length} pages, restored product pages, search flows, order actions, and credit self-rating.`);
+console.log(`Mini Program runtime check passed: loaded app.js, ${registeredPages.length} pages, restored product pages, venue admin home, search flows, order actions, and credit self-rating.`);

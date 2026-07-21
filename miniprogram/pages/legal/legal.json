@@ -1,3 +1,7 @@
 {
-  "navigationBarTitleText": "合规说明"
+  "navigationBarTitleText": "合规说明",
+  "backgroundColor": "#07120d",
+  "backgroundColorTop": "#07120d",
+  "backgroundColorBottom": "#07120d",
+  "initialRenderingCache": "static"
 }

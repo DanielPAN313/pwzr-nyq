@@ -1,0 +1,112 @@
+page {
+  background: #0A0A0A;
+}
+
+.scan-page {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  background: #0A0A0A;
+  color: #FFFFFF;
+}
+
+.camera-area {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.scan-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding: 0 16px;
+  background: linear-gradient(90deg, #0D3B1E 0%, #1A5C3A 100%);
+  box-sizing: border-box;
+}
+
+.scan-back {
+  width: 86px;
+  color: #FFFFFF;
+  font-size: 14px;
+  line-height: 56px;
+}
+
+.scan-title {
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 56px;
+}
+
+.scan-spacer {
+  width: 86px;
+}
+
+.scan-frame {
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  z-index: 1;
+  width: 238px;
+  height: 238px;
+  border: 1px solid rgba(200, 255, 0, 0.18);
+  transform: translate(-50%, -50%);
+}
+
+.corner {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  border-color: #C8FF00;
+}
+
+.corner-left-top {
+  left: -1px;
+  top: -1px;
+  border-top: 4px solid #C8FF00;
+  border-left: 4px solid #C8FF00;
+}
+
+.corner-right-top {
+  right: -1px;
+  top: -1px;
+  border-top: 4px solid #C8FF00;
+  border-right: 4px solid #C8FF00;
+}
+
+.corner-left-bottom {
+  left: -1px;
+  bottom: -1px;
+  border-bottom: 4px solid #C8FF00;
+  border-left: 4px solid #C8FF00;
+}
+
+.corner-right-bottom {
+  right: -1px;
+  bottom: -1px;
+  border-right: 4px solid #C8FF00;
+  border-bottom: 4px solid #C8FF00;
+}
+
+.scan-tip {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  bottom: 34px;
+  z-index: 2;
+  min-height: 52px;
+  border-radius: 12px;
+  background: rgba(10, 10, 10, 0.82);
+  color: #FFFFFF;
+  font-size: 14px;
+  line-height: 52px;
+  text-align: center;
+}

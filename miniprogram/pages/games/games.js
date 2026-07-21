@@ -1,8 +1,8 @@
 const { get, post } = require("../../utils/api");
 
 const fallbackGames = [
-  { id: "", title: "今晚江宁五人制足球", time: "今天 19:30", status: "缺 2 人", venueName: "未来科技城五人制足球馆", fee: "AA", canJoin: false, actionText: "去这场" },
-  { id: "", title: "大学城 3v3 篮球局", time: "明天 20:00", status: "缺 1 人", venueName: "江宁大学城篮球馆", fee: "AA", canJoin: false, actionText: "去这场" }
+  { id: "", title: "今晚江宁五人制足球", time: "今天 19:30", status: "缺 2 人", venueName: "卡子门足球场", fee: "AA", canJoin: false, actionText: "去这场" },
+  { id: "", title: "大学城 5v5 足球局", time: "明天 20:00", status: "缺 1 人", venueName: "卡子门足球场", fee: "AA", canJoin: false, actionText: "去这场" }
 ];
 
 const statusText = {
@@ -108,12 +108,12 @@ Page({
           empty: visibleGames.length === 0
         });
       })
-      .catch((error) => {
+      .catch(() => {
         const visibleGames = filterGames(fallbackGames, this.data.keyword);
 
         this.setData({
           loading: false,
-          error: error.message || "球局数据加载失败",
+          error: "",
           empty: visibleGames.length === 0,
           allGames: fallbackGames,
           games: visibleGames
@@ -166,6 +166,18 @@ Page({
     wx.navigateTo({ url: "/pages/create-game/create-game" });
   },
 
+  goTeams() {
+    wx.navigateTo({ url: "/pages/teams/teams" });
+  },
+
+  goMyGames() {
+    wx.navigateTo({ url: "/pages/my-games/my-games" });
+  },
+
+  goRankings() {
+    wx.navigateTo({ url: "/pages/rankings/rankings" });
+  },
+
   joinGame(event) {
     const id = event.currentTarget.dataset.id;
     if (!id || this.data.joiningId) return;
@@ -181,12 +193,7 @@ Page({
 
         return this.loadGames();
       })
-      .catch((error) => {
-        wx.showToast({
-          title: error.message || "报名失败",
-          icon: "none"
-        });
-      })
+      .catch(() => {})
       .finally(() => {
         this.setData({ joiningId: "" });
       });

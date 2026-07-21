@@ -114,6 +114,11 @@
   color: #475569;
 }
 
+.status-preview {
+  background: #666666;
+  color: #FFFFFF;
+}
+
 .detail-muted {
   position: relative;
   z-index: 1;
@@ -164,9 +169,9 @@
 
 .signup-panel {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20rpx;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
   border-color: rgba(216, 255, 62, 0.18);
   background: #101b15;
 }
@@ -176,20 +181,28 @@
   min-width: 0;
 }
 
+.signup-hint {
+  display: block;
+  color: #999999;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
 .signup-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  min-width: 218rpx;
-  min-height: 78rpx;
-  padding: 0 28rpx;
-  border-radius: 999rpx;
-  color: #10200f;
-  background: #d8ff3e;
-  font-size: 28rpx;
+  width: 100%;
+  min-height: 48px;
+  height: 48px;
+  padding: 0 16px;
+  border-radius: 8px;
+  color: #000000;
+  background: #C8FF00;
+  font-size: 16px;
   font-weight: 950;
-  line-height: 78rpx;
+  line-height: 48px;
   text-align: center;
   box-sizing: border-box;
 }

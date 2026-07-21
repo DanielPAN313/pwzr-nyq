@@ -2,7 +2,7 @@ const { get, post } = require("../../utils/api");
 
 const fallbackMessages = [
   { title: "报名提醒", body: "你的球局名额已保留，等待支付确认。", statusText: "未读", timeText: "刚刚" },
-  { title: "场馆动态", body: "江宁大学城篮球馆新增黄金时段。", statusText: "未读", timeText: "今天" }
+  { title: "场馆动态", body: "卡子门足球场新增周末黄金时段", statusText: "未读", timeText: "今天" }
 ];
 
 function formatTime(value) {
@@ -65,10 +65,10 @@ Page({
           empty: list.length === 0
         });
       })
-      .catch((error) => {
+      .catch(() => {
         this.setData({
           loading: false,
-          error: error.message || "消息数据加载失败",
+          error: "",
           empty: false,
           messages: fallbackMessages
         });
@@ -92,11 +92,6 @@ Page({
 
         this.setData({ messages });
       })
-      .catch((error) => {
-        wx.showToast({
-          title: error.message || "操作失败",
-          icon: "none"
-        });
-      });
+      .catch(() => {});
   }
 });

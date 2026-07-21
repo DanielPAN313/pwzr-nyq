@@ -1,8 +1,7 @@
 const { get, post } = require("../../utils/api");
 
 const fallbackVenues = [
-  { id: 1, name: "江宁大学城篮球馆", area: "江宁大学城", price: "180/小时", sportsText: "篮球", distance: 1.2, rating: 4.8 },
-  { id: 2, name: "未来科技城五人制足球馆", area: "江宁开发区", price: "260/小时", sportsText: "足球", distance: 2.7, rating: 4.9 }
+  { id: 1, name: "卡子门足球场", area: "南京卡子门", address: "南京市秦淮区卡子门大街", price: "200/小时", sportsText: "足球", distance: 1.2, rating: 4.8 }
 ];
 
 function venueDistance(venue) {
@@ -20,17 +19,27 @@ function venueRating(venue) {
 function mapVenue(venue) {
   const price = venue.price_per_hour || venue.price || 0;
   const sports = Array.isArray(venue.sports) ? venue.sports.join(" / ") : venue.sports;
+  const priceValue = String(price).includes("/小时") ? String(price).replace("/小时", "") : String(price);
+  const priceText = `¥${priceValue}/小时`;
 
   return {
     id: venue.id,
-    name: venue.name || "未命名场馆",
-    area: venue.area || venue.address || "附近",
-    price: `${price}/小时`,
+    name: "卡子门足球场",
+    area: venue.area || "南京卡子门",
+    address: venue.address || venue.area || "南京市秦淮区卡子门大街",
+    price: `${priceValue}/小时`,
+    priceText,
     sportsText: sports || "综合运动",
     distance: venueDistance(venue),
     distanceText: `${venueDistance(venue).toFixed(1)}km`,
     rating: venueRating(venue).toFixed(1)
   };
+}
+
+function normalizeKaziVenues(venues) {
+  const list = Array.isArray(venues) ? venues : [];
+  const kazi = list.find((venue) => String(venue.name || "").includes("卡子门足球场")) || list[0] || fallbackVenues[0];
+  return [mapVenue(kazi)];
 }
 
 function sortVenues(venues, mode) {
@@ -84,8 +93,8 @@ Page({
       { label: "评分最高", mode: "rating" }
     ],
     keyword: "",
-    allVenues: fallbackVenues,
-    venues: sortVenues(fallbackVenues, "nearby")
+    allVenues: normalizeKaziVenues(fallbackVenues),
+    venues: normalizeKaziVenues(fallbackVenues)
   },
 
   onLoad() {
@@ -107,7 +116,7 @@ Page({
 
     return get("/api/sports-app/venues", { showLoading: false })
       .then((venues) => {
-        const list = Array.isArray(venues) ? venues.map(mapVenue) : [];
+        const list = normalizeKaziVenues(venues);
         const allVenues = list.length ? list : [];
         const visibleVenues = buildVenueView(allVenues, this.data.venueMode, this.data.keyword);
 
@@ -119,13 +128,13 @@ Page({
         });
       })
       .catch((error) => {
-        const visibleVenues = buildVenueView(fallbackVenues, this.data.venueMode, this.data.keyword);
+        const visibleVenues = buildVenueView(normalizeKaziVenues(fallbackVenues), this.data.venueMode, this.data.keyword);
 
         this.setData({
           loading: false,
           error: error.message || "场馆数据加载失败",
           empty: visibleVenues.length === 0,
-          allVenues: fallbackVenues,
+          allVenues: normalizeKaziVenues(fallbackVenues),
           venues: visibleVenues
         });
       });

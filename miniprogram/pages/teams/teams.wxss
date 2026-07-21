@@ -1,0 +1,90 @@
+.page-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+  color: #FFFFFF;
+  background: linear-gradient(145deg, #10231a 0%, #0b3d27 52%, #12824f 100%);
+  border-radius: 34rpx;
+}
+
+.page-hero .page-title {
+  margin-bottom: 0;
+  color: #FFFFFF;
+}
+
+.page-hero .muted {
+  color: rgba(247, 251, 245, 0.76);
+}
+
+.create-button,
+.join-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 68rpx;
+  padding: 0 24rpx;
+  border-radius: 999rpx;
+  color: #10200f;
+  background: #C8FF00;
+  font-size: 26rpx;
+  font-weight: 950;
+  line-height: 68rpx;
+}
+
+.create-button {
+  align-self: flex-start;
+}
+
+.team-card {
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+  border-color: rgba(200, 255, 0, 0.12);
+  background: #101b15;
+}
+
+.team-head,
+.team-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+}
+
+.team-tag {
+  flex-shrink: 0;
+  padding: 8rpx 14rpx;
+  border-radius: 999rpx;
+  color: #C8FF00;
+  background: rgba(26, 92, 58, 0.72);
+  font-size: 22rpx;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.team-desc {
+  color: #999999;
+  font-size: 25rpx;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.team-members {
+  color: #FFFFFF;
+  font-size: 30rpx;
+  font-weight: 950;
+}
+
+.join-button {
+  min-width: 148rpx;
+  min-height: 64rpx;
+  color: #C8FF00;
+  background: #1A5C3A;
+  font-size: 24rpx;
+  line-height: 64rpx;
+}
+
+.join-button[disabled] {
+  color: #999999;
+  background: #333333;
+}

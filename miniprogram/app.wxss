@@ -21,6 +21,7 @@ page::after {
 .page {
   min-height: 100vh;
   padding: 28rpx 24rpx 260rpx;
+  background: #07120d;
   box-sizing: border-box;
 }
 

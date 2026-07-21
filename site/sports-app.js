@@ -82,6 +82,8 @@
     'pages/me/me': 'me',
     'pages/orders/orders': 'orders',
     'pages/venue-admin/venue-admin': 'teams',
+    'pages/venue/home/index': 'teams',
+    'pages/venue/scan/index': 'teams',
     'pages/credit/credit': 'credit',
     'pages/my-games/my-games': 'my-games',
     'pages/legal/legal': 'me',
@@ -259,14 +261,8 @@
   var routeTransitionTimer = null;
 
   function flashRouteTransition() {
-    if (!document.body || !document.body.classList) return;
-    document.body.classList.add('is-route-switching');
     if (routeTransitionTimer) window.clearTimeout(routeTransitionTimer);
-    routeTransitionTimer = window.setTimeout(function () {
-      if (document.body && document.body.classList) {
-        document.body.classList.remove('is-route-switching');
-      }
-    }, 180);
+    routeTransitionTimer = null;
   }
 
   function saveProfileDemo(next) {

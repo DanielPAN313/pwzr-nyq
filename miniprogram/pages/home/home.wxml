@@ -5,141 +5,106 @@
     </view>
   </view>
 
-  <view class="hero">
-    <view class="court-panel">
-      <view class="court-glow"></view>
-      <view class="court-line court-line-top"></view>
-      <view class="court-net"></view>
-      <view class="court-line court-line-bottom"></view>
-      <view class="court-ball"></view>
-      <view class="court-copy">
-        <text class="page-kicker">南京样板区</text>
-        <text class="title">Book your court</text>
-        <text class="subtitle">订场、组局、报名、核销，一次完成。</text>
+  <view class="hero-swiper-block">
+    <view class="hero-dots">
+      <view class="hero-dot {{heroIndex === 0 ? 'active' : ''}}"></view>
+      <view class="hero-dot {{heroIndex === 1 ? 'active' : ''}}"></view>
+    </view>
+
+    <swiper
+      class="hero-swiper"
+      current="{{heroIndex}}"
+      duration="360"
+      circular="{{false}}"
+      bindchange="onHeroSwiperChange"
+    >
+      <swiper-item>
+        <view class="hero-slide booking-slide">
+          <view class="slide-glow"></view>
+          <view class="court-lines">
+            <view class="court-line court-line-top"></view>
+            <view class="court-line court-line-middle"></view>
+            <view class="court-line court-line-bottom"></view>
+            <view class="court-center"></view>
+            <view class="court-ball"></view>
+          </view>
+          <view class="slide-copy">
+            <text class="slide-kicker">卡子门足球场</text>
+            <text class="slide-title">本周已订 {{bookingHero.weekBookings}} 场</text>
+            <button class="slide-button booking-button" data-action="bookVenue" bindtap="openHeroCard">立即订场</button>
+          </view>
+        </view>
+      </swiper-item>
+
+      <swiper-item>
+        <view class="hero-slide recruiting-slide">
+          <view class="slide-glow alt"></view>
+          <view class="recruit-mark">
+            <image class="recruit-mark-logo" src="/assets/kazimen-logo-mark.png" mode="aspectFit" />
+          </view>
+          <view class="slide-copy">
+            <text class="slide-kicker hot">正在组局</text>
+            <text class="slide-title">{{gameHero.timeText}} {{gameHero.mode}}</text>
+            <text class="slide-meta">{{gameHero.slotsText}} · {{gameHero.feeText}}</text>
+            <button
+              class="slide-button game-button"
+              data-id="{{gameHero.id}}"
+              data-title="{{gameHero.title}}"
+              data-venue="{{gameHero.venue}}"
+              data-desc="{{gameHero.desc}}"
+              data-fee="{{gameHero.fee}}"
+              bindtap="openHomeGame"
+            >
+              去这场
+            </button>
+          </view>
+        </view>
+      </swiper-item>
+    </swiper>
+
+    <text wx:if="{{heroIndex === 0}}" class="hero-swipe-hint">← 滑动查看正在组局的球局 →</text>
+  </view>
+
+  <view class="section feature-card">
+    <view class="feature-head">
+      <view>
+        <text class="page-title">正在招人</text>
+        <text class="muted">附近还缺人的公开球局，报名即可锁位</text>
       </view>
     </view>
-  </view>
-
-  <view class="quick-grid">
-    <button
-      wx:for="{{quickActions}}"
-      wx:key="label"
-      class="quick-action"
-      bindtap="openQuickAction"
-      data-target="{{item.target}}"
-      data-mode="{{item.mode}}"
-    >
-      <text class="quick-label">{{item.label}}</text>
-      <text class="quick-hint">{{item.hint}}</text>
-    </button>
-  </view>
-
-  <view class="home-tabs">
-    <view class="tab-highlight tab-highlight-{{homePanel}} {{tabMotionClass}}"></view>
-    <button
-      wx:for="{{homePanels}}"
-      wx:key="label"
-      class="home-tab {{homePanel == index ? 'active' : ''}}"
-      data-index="{{index}}"
-      bindtap="switchHomePanel"
-    >
-      <text>{{item.label}}</text>
-    </button>
-  </view>
-
-  <view class="panel-viewport {{panelMotionClass}}">
-    <view class="panel-track" style="transform: {{panelTransform}};">
-      <view class="panel-page">
-        <view class="section feature-card">
-          <view class="feature-head">
-            <view>
-              <text class="page-title">好友邀请</text>
-              <text class="muted">好友发来的私密组局，确认后直接锁位</text>
-            </view>
-            <text class="pill dark">NEW</text>
+    <view class="sample-stack">
+      <view wx:for="{{recruitingGames}}" wx:key="id" class="recruit-card {{item.featured ? 'featured' : ''}}">
+        <view class="recruit-thumb">
+          <image
+            class="recruit-logo"
+            src="/assets/kazimen-logo-mark.png"
+            mode="aspectFit"
+          />
+        </view>
+        <view class="recruit-body">
+          <view class="recruit-top-row">
+            <text class="card-title recruit-title">{{item.title}}</text>
+            <text class="recruit-countdown">倒计时 {{item.countdownText}} 余 {{item.slotsLeft}} 人</text>
           </view>
-          <view class="sample-stack">
-            <view wx:for="{{invitationGames}}" wx:key="id" class="game-sample-card {{item.featured ? 'featured' : ''}}">
-              <view class="priority-badge">
-                <text class="countdown-label">倒计时</text>
-                <text class="countdown-value">{{item.countdownText}}</text>
-                <text class="slots-left">{{item.slotsText}}</text>
-              </view>
-              <view class="game-court basketball"></view>
-              <view class="game-info">
-                <view class="sample-top">
-                  <text class="card-title">{{item.title}}</text>
-                </view>
-                <text class="muted">{{item.desc}}</text>
-                <view class="match-meta">
-                  <text class="meta-item">{{item.venue}}</text>
-                  <text class="meta-item">{{item.mode}}</text>
-                  <text class="meta-item">{{item.fee}}</text>
-                </view>
-                <view class="venue-bottom">
-                  <button
-                    class="book-button"
-                    bindtap="openHomeGame"
-                    data-id="{{item.id}}"
-                    data-title="{{item.title}}"
-                    data-venue="{{item.venue}}"
-                    data-desc="{{item.desc}}"
-                    data-fee="{{item.fee}}"
-                  >
-                    {{item.actionText}}
-                  </button>
-                </view>
-              </view>
-            </view>
+          <text class="recruit-line">{{item.reserveLine}}</text>
+          <view class="recruit-meta-chips">
+            <text class="recruit-chip">{{item.venue}}</text>
+            <text class="recruit-chip">{{item.mode}}</text>
+            <text class="recruit-chip">{{item.fee}}</text>
           </view>
+          <button
+            class="book-button recruit-button"
+            bindtap="openHomeGame"
+            data-id="{{item.id}}"
+            data-title="{{item.title}}"
+            data-venue="{{item.venue}}"
+            data-desc="{{item.desc}}"
+            data-fee="{{item.fee}}"
+          >
+            {{item.actionText}}
+          </button>
         </view>
       </view>
-
-      <view class="panel-page">
-        <view class="section feature-card">
-          <view class="feature-head">
-            <view>
-              <text class="page-title">正在招人</text>
-              <text class="muted">附近还缺人的公开球局，报名即可锁位</text>
-            </view>
-          </view>
-          <view class="sample-stack">
-            <view wx:for="{{recruitingGames}}" wx:key="id" class="game-sample-card {{item.featured ? 'featured' : ''}}">
-              <view class="priority-badge">
-                <text class="countdown-label">倒计时</text>
-                <text class="countdown-value">{{item.countdownText}}</text>
-                <text class="slots-left">{{item.slotsText}}</text>
-              </view>
-              <view class="game-court basketball"></view>
-              <view class="game-info">
-                <view class="sample-top">
-                  <text class="card-title">{{item.title}}</text>
-                </view>
-                <text class="muted">{{item.desc}}</text>
-                <view class="match-meta">
-                  <text class="meta-item">{{item.venue}}</text>
-                  <text class="meta-item">{{item.mode}}</text>
-                  <text class="meta-item">{{item.fee}}</text>
-                </view>
-                <view class="venue-bottom">
-                  <button
-                    class="book-button"
-                    bindtap="openHomeGame"
-                    data-id="{{item.id}}"
-                    data-title="{{item.title}}"
-                    data-venue="{{item.venue}}"
-                    data-desc="{{item.desc}}"
-                    data-fee="{{item.fee}}"
-                  >
-                    {{item.actionText}}
-                  </button>
-                </view>
-              </view>
-            </view>
-          </view>
-        </view>
-      </view>
-
     </view>
   </view>
 </view>

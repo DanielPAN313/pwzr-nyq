@@ -1,0 +1,31 @@
+<view class="page">
+  <view class="section page-hero">
+    <text class="page-kicker">TEAM HUB</text>
+    <view class="page-title">球队</view>
+    <text wx:if="{{loading}}" class="muted">正在加载球队...</text>
+    <text wx:else class="muted">固定队伍、稳定出勤和后续比赛统计会在这里沉淀。</text>
+    <button class="create-button" bindtap="createGame">发起球局</button>
+  </view>
+
+  <view wx:for="{{teams}}" wx:key="name" class="section team-card">
+    <view class="team-head">
+      <view>
+        <text class="card-title">{{item.name}}</text>
+        <text class="muted">{{item.venue}}</text>
+      </view>
+      <text class="team-tag">{{item.tagText}}</text>
+    </view>
+    <text class="team-desc">{{item.description}}</text>
+    <view class="team-foot">
+      <text class="team-members">{{item.memberText}}</text>
+      <button
+        class="join-button"
+        data-id="{{item.id}}"
+        bindtap="joinTeam"
+        disabled="{{item.joined || joiningId === item.id}}"
+      >
+        {{item.joined ? "已加入" : joiningId === item.id ? "申请中" : "加入球队"}}
+      </button>
+    </view>
+  </view>
+</view>

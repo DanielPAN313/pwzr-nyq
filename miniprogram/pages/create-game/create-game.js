@@ -2,7 +2,7 @@ const { get, post } = require("../../utils/api");
 
 const sportOptions = [
   { label: "足球", value: "football" },
-  { label: "篮球", value: "basketball" },
+  { label: "五人制足球", value: "football" },
   { label: "羽毛球", value: "badminton" },
   { label: "网球", value: "tennis" }
 ];

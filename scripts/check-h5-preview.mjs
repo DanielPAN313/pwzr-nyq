@@ -164,6 +164,14 @@ if (appJson) {
     : [];
   const bridgeSource = read("miniapp-bridge.js");
   const sportsSource = read("sports-app.js");
+  const sportsCss = read("sports-app.css");
+
+  if (bridgeSource.includes("classList.add('is-route-switching')") || sportsSource.includes("classList.add('is-route-switching')")) {
+    errors.push("H5 preview route switching must not add is-route-switching because it causes a visible white flash.");
+  }
+  if (/body\.is-route-switching::before\s*\{[^}]*opacity:\s*1/i.test(sportsCss)) {
+    errors.push("sports-app.css must not show a full-screen route switching overlay.");
+  }
 
   for (const pagePath of miniPages) {
     if (!bridgeSource.includes(`'${pagePath}'`) && !bridgeSource.includes(`"${pagePath}"`)) {

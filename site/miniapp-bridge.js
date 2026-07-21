@@ -4,7 +4,7 @@
   var TAB_PAGES = {
     'pages/home/home': 'home',
     'pages/venues/venues': 'venues',
-    'pages/rankings/rankings': 'rankings',
+    'pages/games/games': 'games',
     'pages/messages/messages': 'messages',
     'pages/me/me': 'me',
   };
@@ -15,10 +15,13 @@
     'pages/register/register': 'register',
     'pages/login/login': 'login',
     'pages/orders/orders': 'orders',
+    'pages/rankings/rankings': 'rankings',
     'pages/venue-detail/venue-detail': 'venues',
     'pages/game-detail/game-detail': 'games',
     'pages/create-game/create-game': 'create',
     'pages/venue-admin/venue-admin': 'teams',
+    'pages/venue/home/index': 'venue-home',
+    'pages/venue/scan/index': 'venue-scan',
     'pages/credit/credit': 'credit',
     'pages/my-games/my-games': 'my-games',
     'pages/legal/legal': 'me',
@@ -82,14 +85,8 @@
   }
 
   function flashRouteTransition() {
-    if (!document.body || !document.body.classList) return;
-    document.body.classList.add('is-route-switching');
     if (routeTransitionTimer) window.clearTimeout(routeTransitionTimer);
-    routeTransitionTimer = window.setTimeout(function () {
-      if (document.body && document.body.classList) {
-        document.body.classList.remove('is-route-switching');
-      }
-    }, 180);
+    routeTransitionTimer = null;
   }
 
   function normalizePage(url) {

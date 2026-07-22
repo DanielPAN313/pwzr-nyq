@@ -45,7 +45,7 @@ function mapOrder(order) {
     title: order.title || "场地预约订单",
     venueName: order.venue_name || "卡子门足球场",
     timeText: order.start_time || order.booking_start_time || "时间待确认",
-    statusText: order.status === "checked_in" ? "已到场" : "待核销",
+    statusText: ["checked_in", "verified"].includes(order.status) ? "已到场" : "待核销",
     checkinCode: order.checkin_code || ""
   };
 }

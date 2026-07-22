@@ -320,6 +320,10 @@ const ensureSportsSchema = async () => {
         cancel_note VARCHAR(255) NOT NULL DEFAULT '',
         cancel_penalty INT NOT NULL DEFAULT 0,
         refund_source VARCHAR(30) NOT NULL DEFAULT '',
+        refund_percent INT NOT NULL DEFAULT 0,
+        refund_reason VARCHAR(255) NOT NULL DEFAULT '',
+        refund_requested_at DATETIME NULL,
+        refunded_at DATETIME NULL,
         checked_in_at DATETIME NULL,
         create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (id),
@@ -416,6 +420,18 @@ const ensureSportsSchema = async () => {
       if (error?.code !== 'ER_DUP_FIELDNAME') throw error
     })
     await pool.execute('ALTER TABLE sports_order ADD COLUMN refund_source VARCHAR(30) NOT NULL DEFAULT ""').catch((error) => {
+      if (error?.code !== 'ER_DUP_FIELDNAME') throw error
+    })
+    await pool.execute('ALTER TABLE sports_order ADD COLUMN refund_percent INT NOT NULL DEFAULT 0').catch((error) => {
+      if (error?.code !== 'ER_DUP_FIELDNAME') throw error
+    })
+    await pool.execute('ALTER TABLE sports_order ADD COLUMN refund_reason VARCHAR(255) NOT NULL DEFAULT ""').catch((error) => {
+      if (error?.code !== 'ER_DUP_FIELDNAME') throw error
+    })
+    await pool.execute('ALTER TABLE sports_order ADD COLUMN refund_requested_at DATETIME NULL').catch((error) => {
+      if (error?.code !== 'ER_DUP_FIELDNAME') throw error
+    })
+    await pool.execute('ALTER TABLE sports_order ADD COLUMN refunded_at DATETIME NULL').catch((error) => {
       if (error?.code !== 'ER_DUP_FIELDNAME') throw error
     })
     await pool.execute('ALTER TABLE sports_venue ADD COLUMN temporary_closed TINYINT NOT NULL DEFAULT 0').catch((error) => {
@@ -894,22 +910,27 @@ const serializeGame = (game) => {
 
 const serializeOrder = (order) => {
   const checkinWindow = orderCheckinWindow(order)
-  const cancelRule = ['pending_payment', 'paid', 'offline_paid'].includes(order.status) ? canCancelOrder(order) : null
+  const cancelRule = ['pending_payment', 'pending_pay', 'paid', 'offline_paid', 'pending_verify'].includes(order.status) ? canCancelOrder(order) : null
   return {
     ...order,
     amount: Number(order.amount || 0),
-    can_pay: order.status === 'pending_payment',
+    can_pay: ['pending_payment', 'pending_pay'].includes(order.status),
     can_checkin: checkinWindow.ok,
-    can_request_makeup: ['paid', 'offline_paid'].includes(order.status) && checkinWindow.reason === '核销已超时',
+    can_request_makeup: ['paid', 'offline_paid', 'pending_verify'].includes(order.status) && checkinWindow.reason === '核销已超时',
     checkin_hint: checkinWindow.reason,
     can_cancel: Boolean(cancelRule?.ok),
     cancel_hint: cancelRule?.ok ? cancelRule.note : cancelRule?.error || '',
     cancel_penalty_preview: Number(cancelRule?.penalty || 0),
     refund_required: Boolean(cancelRule?.ok && cancelRule.nextStatus === 'refunding'),
+    can_request_refund: Boolean(cancelRule?.ok && Number(cancelRule.refund_percent || 0) > 0),
     refund_percent: Number(cancelRule?.refund_percent || 0),
     cancel_penalty: Number(order.cancel_penalty || 0),
     cancel_note: order.cancel_note || '',
     refund_source: order.refund_source || '',
+    refund_percent: Number(order.refund_percent || 0),
+    refund_reason: order.refund_reason || '',
+    refund_requested_at: order.refund_requested_at || null,
+    refunded_at: order.refunded_at || null,
   }
 }
 
@@ -946,7 +967,7 @@ const sportsNotificationsForUser = async (pool, user) => {
 const orderPlayableStart = (order) => order.start_time || order.booking_start_time || order.create_time
 const orderPlayableEnd = (order) => order.end_time || order.booking_end_time || order.start_time || order.booking_start_time || order.create_time
 const orderCheckinWindow = (order, now = Date.now()) => {
-  if (!['paid', 'offline_paid'].includes(order.status)) return { ok: false, reason: '订单未支付' }
+  if (!['paid', 'offline_paid', 'pending_verify'].includes(order.status)) return { ok: false, reason: '订单未支付' }
   const startAt = new Date(orderPlayableStart(order)).getTime()
   const endAtRaw = new Date(orderPlayableEnd(order)).getTime()
   if (Number.isNaN(startAt)) return { ok: true, reason: '可核销' }
@@ -957,10 +978,10 @@ const orderCheckinWindow = (order, now = Date.now()) => {
 }
 
 const canCancelOrder = (order) => {
-  if (order.status === 'pending_payment') {
+  if (['pending_payment', 'pending_pay'].includes(order.status)) {
     return { ok: true, nextStatus: 'cancelled', penalty: 0, note: '未支付订单可直接取消' }
   }
-  if (!['paid', 'offline_paid'].includes(order.status)) return { ok: false, error: '订单当前状态不能取消' }
+  if (!['paid', 'offline_paid', 'pending_verify'].includes(order.status)) return { ok: false, error: '订单当前状态不能取消' }
   const startAt = new Date(orderPlayableStart(order)).getTime()
   if (Number.isNaN(startAt)) {
     return { ok: true, nextStatus: 'refunding', refund_percent: 100, penalty: 0, note: '订单已取消，模拟退款处理中' }
@@ -1001,7 +1022,7 @@ const markSportsOrderPaid = async (pool, user, order, source = 'mock') => {
     error.statusCode = 403
     throw error
   }
-  if (order.status !== 'pending_payment') {
+  if (!['pending_payment', 'pending_pay'].includes(order.status)) {
     const error = new Error('订单当前状态不能支付')
     error.statusCode = 409
     throw error
@@ -1042,7 +1063,7 @@ const markSportsOrderPaid = async (pool, user, order, source = 'mock') => {
       [order.user_id, order.username, order.game_id],
     )
   }
-  await pool.execute('UPDATE sports_order SET status = "paid", paid_at = NOW() WHERE id = ?', [order.id])
+  await pool.execute('UPDATE sports_order SET status = "pending_verify", paid_at = NOW() WHERE id = ?', [order.id])
   await trackEvent(pool, user, 'payment_success', {
     entity_type: order.game_id ? 'game' : 'venue',
     entity_id: order.game_id || order.venue_id,
@@ -1055,10 +1076,46 @@ const markSportsOrderPaid = async (pool, user, order, source = 'mock') => {
     order_id: order.id,
     game_id: order.game_id,
   })
-  return { ok: true, order_id: order.id, checkin_code: order.checkin_code, status: 'paid' }
+  return { ok: true, order_id: order.id, checkin_code: order.checkin_code, status: 'pending_verify', payment_status: 'paid' }
+}
+
+const autoProcessMockRefunds = async (pool) => {
+  const [expired] = await pool.execute(
+    `SELECT id, user_id, username, game_id
+     FROM sports_order
+     WHERE status = 'refunding'
+       AND refund_requested_at IS NOT NULL
+       AND refund_requested_at <= DATE_SUB(NOW(), INTERVAL 48 HOUR)
+     LIMIT 100`,
+  )
+  if (!expired.length) return 0
+  const ids = expired.map((order) => Number(order.id)).filter(Boolean)
+  const placeholders = ids.map(() => '?').join(',')
+  await pool.execute(
+    `UPDATE sports_order SET status = 'refunded', refunded_at = NOW(), refund_source = 'mock_auto_48h'
+     WHERE id IN (${placeholders})`,
+    ids,
+  )
+  for (const order of expired) {
+    if (order.game_id) {
+      await pool.execute(
+        'UPDATE sports_signup SET payment_status = "refunded" WHERE game_id = ? AND user_id = ?',
+        [order.game_id, order.user_id],
+      )
+    }
+    await createNotification(pool, { id: order.user_id, username: order.username }, {
+      type: 'refund_completed',
+      title: '模拟退款已自动处理',
+      body: `订单 #${order.id} 的退款申请超过 48 小时未处理，系统已自动同意退款（模拟）。`,
+      order_id: order.id,
+      game_id: order.game_id,
+    })
+  }
+  return expired.length
 }
 
 const sportsVenueAdminDashboard = async (pool, user) => {
+  await autoProcessMockRefunds(pool)
   const [ownedVenues] = await pool.execute(
     `SELECT *
      FROM sports_venue
@@ -1097,10 +1154,10 @@ const sportsVenueAdminDashboard = async (pool, user) => {
   const [[summary]] = await pool.execute(
     `SELECT
        COUNT(CASE WHEN DATE(o.create_time) = CURRENT_DATE() THEN 1 END) AS today_orders,
-       COUNT(CASE WHEN o.status = 'paid' THEN 1 END) AS pending_checkins,
-       COUNT(CASE WHEN o.status = 'checked_in' THEN 1 END) AS checked_in_orders,
-       COALESCE(SUM(CASE WHEN DATE(o.create_time) = CURRENT_DATE() AND o.status IN ('paid', 'checked_in') THEN o.amount ELSE 0 END), 0) AS today_revenue,
-       COALESCE(SUM(CASE WHEN o.status IN ('paid', 'checked_in') THEN o.amount ELSE 0 END), 0) AS revenue
+       COUNT(CASE WHEN o.status IN ('paid', 'offline_paid', 'pending_verify') THEN 1 END) AS pending_checkins,
+       COUNT(CASE WHEN o.status IN ('checked_in', 'verified') THEN 1 END) AS checked_in_orders,
+       COALESCE(SUM(CASE WHEN DATE(o.create_time) = CURRENT_DATE() AND o.status IN ('paid', 'offline_paid', 'pending_verify', 'checked_in', 'verified') THEN o.amount ELSE 0 END), 0) AS today_revenue,
+       COALESCE(SUM(CASE WHEN o.status IN ('paid', 'offline_paid', 'pending_verify', 'checked_in', 'verified') THEN o.amount ELSE 0 END), 0) AS revenue
      FROM sports_order o
      JOIN sports_venue v ON v.id = o.venue_id
      WHERE ${venueWhere}`,
@@ -1180,13 +1237,22 @@ const venueAdminCheckinOrder = async (pool, user, order) => {
       already_checked_in: true,
     }
   }
-  if (!['paid', 'offline_paid'].includes(order.status)) {
+  if (order.status === 'verified') {
+    return {
+      ok: true,
+      order_id: order.id,
+      checkin_code: order.checkin_code,
+      status: 'verified',
+      already_checked_in: true,
+    }
+  }
+  if (!['paid', 'offline_paid', 'pending_verify'].includes(order.status)) {
     const error = new Error('只有已支付订单可以核销')
     error.statusCode = 409
     throw error
   }
 
-  await pool.execute('UPDATE sports_order SET status = "checked_in", checked_in_at = NOW() WHERE id = ?', [order.id])
+  await pool.execute('UPDATE sports_order SET status = "verified", checked_in_at = NOW() WHERE id = ?', [order.id])
   if (order.game_id) {
     await pool.execute('UPDATE sports_signup SET checked_in = 1 WHERE game_id = ? AND user_id = ?', [order.game_id, order.user_id])
     await pool.execute(
@@ -1202,7 +1268,7 @@ const venueAdminCheckinOrder = async (pool, user, order) => {
     order_id: order.id,
     game_id: order.game_id,
   })
-  return { ok: true, order_id: order.id, checkin_code: order.checkin_code, status: 'checked_in' }
+  return { ok: true, order_id: order.id, checkin_code: order.checkin_code, status: 'verified' }
 }
 
 const trackEvent = async (pool, user, eventName, payload = {}) => {
@@ -1726,7 +1792,7 @@ const gameRatingContext = async (pool, gameId, user) => {
     `SELECT o.*, g.start_time, g.end_time
      FROM sports_order o
      LEFT JOIN sports_game g ON g.id = o.game_id
-     WHERE o.game_id = ? AND o.user_id = ? AND o.status IN ('pending_payment', 'paid', 'offline_paid')
+     WHERE o.game_id = ? AND o.user_id = ? AND o.status IN ('pending_payment', 'pending_pay', 'paid', 'offline_paid', 'pending_verify', 'verified', 'refunding')
      ORDER BY o.create_time DESC
      LIMIT 1`,
     [gameId, user.id],
@@ -1763,7 +1829,7 @@ const venueAvailability = async (pool, venueId, dateValue) => {
     `SELECT o.*, g.start_time, g.end_time
      FROM sports_order o
      LEFT JOIN sports_game g ON g.id = o.game_id
-     WHERE o.venue_id = ? AND o.status IN ('pending_payment', 'paid', 'checked_in')
+     WHERE o.venue_id = ? AND o.status IN ('pending_payment', 'pending_pay', 'paid', 'offline_paid', 'pending_verify', 'checked_in', 'verified')
        AND (DATE(o.booking_start_time) = ? OR DATE(g.start_time) = ?)`,
     [venueId, dayLabel, dayLabel],
   )
@@ -2552,6 +2618,7 @@ const handleSportsApi = async (req, res, requestUrl) => {
     if (pathName === '/api/sports-app/me' && req.method === 'GET') return json(res, await sportsProfileForUser(pool, user))
 
     if (pathName === '/api/sports-app/orders' && req.method === 'GET') {
+      await autoProcessMockRefunds(pool)
       const [orders] = await pool.execute(
         `SELECT o.*, g.title, g.start_time, v.name AS venue_name
          FROM sports_order o
@@ -2565,6 +2632,53 @@ const handleSportsApi = async (req, res, requestUrl) => {
       return json(res, orders.map(serializeOrder))
     }
 
+    const paymentQueryMatch = pathName.match(/^\/api\/sports-app\/orders\/(\d+)\/payment-query$/)
+    if (paymentQueryMatch && req.method === 'GET') {
+      const orderId = Number(paymentQueryMatch[1])
+      const [[order]] = await pool.execute('SELECT * FROM sports_order WHERE id = ? AND user_id = ? LIMIT 1', [orderId, user.id])
+      if (!order) return json(res, { ok: false, error: '未找到订单' }, 404)
+      const labels = {
+        pending_payment: '待支付', pending_pay: '待支付', paid: '已支付', offline_paid: '线下已支付',
+        pending_verify: '待核销', checked_in: '已核销', verified: '已核销',
+        refunding: '模拟退款中', refunded: '已退款', cancelled: '已取消',
+      }
+      return json(res, { ok: true, order_id: order.id, status: order.status, status_text: labels[order.status] || '状态已同步' })
+    }
+
+    const requestRefundMatch = pathName.match(/^\/api\/sports-app\/orders\/(\d+)\/refund$/)
+    if (requestRefundMatch && req.method === 'POST') {
+      const orderId = Number(requestRefundMatch[1])
+      const body = await readJson(req)
+      const [[order]] = await pool.execute(
+        `SELECT o.*, g.start_time FROM sports_order o
+         LEFT JOIN sports_game g ON g.id = o.game_id
+         WHERE o.id = ? AND o.user_id = ? LIMIT 1`,
+        [orderId, user.id],
+      )
+      if (!order) return json(res, { ok: false, error: '未找到订单' }, 404)
+      const rule = canCancelOrder(order)
+      if (!rule.ok || Number(rule.refund_percent || 0) <= 0) {
+        return json(res, { ok: false, error: rule.error || '当前时间不支持退款' }, 409)
+      }
+      await pool.execute(
+        `UPDATE sports_order SET status = 'refunding', refund_percent = ?, refund_reason = ?,
+          refund_requested_at = NOW(), refund_source = 'mock_user_request', cancelled_at = NOW(), cancel_note = ?
+         WHERE id = ?`,
+        [Number(rule.refund_percent), text(body.reason || '用户申请退款', 255), rule.note, orderId],
+      )
+      if (order.game_id) {
+        await pool.execute('UPDATE sports_signup SET payment_status = "refunding" WHERE game_id = ? AND user_id = ?', [order.game_id, user.id])
+      }
+      await createNotification(pool, user, {
+        type: 'refund_requested',
+        title: '模拟退款申请已提交',
+        body: `订单 #${orderId} 已申请模拟退款 ${Number(rule.refund_percent)}%，场馆需在 48 小时内处理。`,
+        order_id: orderId,
+        game_id: order.game_id,
+      })
+      return json(res, { ok: true, status: 'refunding', refund_percent: Number(rule.refund_percent), timeout_hours: 48 })
+    }
+
     const requestMakeupMatch = pathName.match(/^\/api\/sports-app\/orders\/(\d+)\/checkin-makeup$/)
     if (requestMakeupMatch && req.method === 'POST') {
       const orderId = Number(requestMakeupMatch[1])
@@ -2576,7 +2690,7 @@ const handleSportsApi = async (req, res, requestUrl) => {
         [orderId, user.id],
       )
       if (!order) return json(res, { ok: false, error: '未找到订单' }, 404)
-      if (!(['paid', 'offline_paid'].includes(order.status) && orderCheckinWindow(order).reason === '核销已超时')) {
+      if (!(['paid', 'offline_paid', 'pending_verify'].includes(order.status) && orderCheckinWindow(order).reason === '核销已超时')) {
         return json(res, { ok: false, error: '当前订单不需要补核销' }, 409)
       }
       const [[existing]] = await pool.execute(
@@ -2614,7 +2728,7 @@ const handleSportsApi = async (req, res, requestUrl) => {
       if (Number(order.manager_user_id || 0) !== Number(user.id)) {
         return json(res, { ok: false, error: '只能核销本场馆订单' }, 403)
       }
-      if (order.status !== 'checked_in') {
+      if (!['checked_in', 'verified'].includes(order.status)) {
         const window = orderCheckinWindow(order)
         if (!window.ok) return json(res, { ok: false, error: window.reason }, 409)
       }
@@ -2775,9 +2889,10 @@ const handleSportsApi = async (req, res, requestUrl) => {
       await pool.execute('UPDATE sports_signup SET payment_status = "refunded" WHERE game_id = ? AND payment_status = "paid"', [gameId])
       await pool.execute(
         `UPDATE sports_order SET
-          status = CASE WHEN status = 'pending_payment' THEN 'cancelled' ELSE 'refunded' END,
-          cancelled_at = NOW(), cancel_note = '场馆取消球局', refund_source = 'venue_cancel_mock'
-         WHERE game_id = ? AND status IN ('pending_payment', 'paid', 'offline_paid', 'refunding')`,
+          status = CASE WHEN status IN ('pending_payment', 'pending_pay') THEN 'cancelled' ELSE 'refunded' END,
+          cancelled_at = NOW(), refunded_at = NOW(), cancel_note = '场馆取消球局',
+          refund_source = 'venue_cancel_mock', refund_percent = 100, refund_reason = '场馆取消球局'
+         WHERE game_id = ? AND status IN ('pending_payment', 'pending_pay', 'paid', 'offline_paid', 'pending_verify', 'refunding')`,
         [gameId],
       )
       for (const player of players) {
@@ -2836,6 +2951,46 @@ const handleSportsApi = async (req, res, requestUrl) => {
         })
       }
       return json(res, { ok: true, notified: players.length, balance: Number(body.balance || 0) })
+    }
+
+    const venueRefundMatch = pathName.match(/^\/api\/sports-app\/venue-admin\/orders\/(\d+)\/refund$/)
+    if (venueRefundMatch && req.method === 'POST') {
+      const orderId = Number(venueRefundMatch[1])
+      const body = await readJson(req)
+      const [[order]] = await pool.execute(
+        `SELECT o.*, v.manager_user_id FROM sports_order o
+         JOIN sports_venue v ON v.id = o.venue_id WHERE o.id = ? LIMIT 1`,
+        [orderId],
+      )
+      if (!order || Number(order.manager_user_id || 0) !== Number(user.id)) {
+        return json(res, { ok: false, error: '未找到可处理的退款订单' }, 404)
+      }
+      if (order.status !== 'refunding') return json(res, { ok: false, error: '订单当前不在退款处理中' }, 409)
+      const approved = body.action !== 'reject'
+      const nextStatus = approved ? 'refunded' : 'cancelled'
+      await pool.execute(
+        `UPDATE sports_order SET status = ?, refunded_at = ?, refund_source = ?, refund_reason = ? WHERE id = ?`,
+        [
+          nextStatus,
+          approved ? new Date() : null,
+          approved ? 'mock_venue_approved' : 'mock_venue_rejected',
+          text(body.note || (approved ? '场馆同意模拟退款' : '场馆拒绝模拟退款'), 255),
+          orderId,
+        ],
+      )
+      if (order.game_id) {
+        await pool.execute('UPDATE sports_signup SET payment_status = ? WHERE game_id = ? AND user_id = ?', [nextStatus, order.game_id, order.user_id])
+      }
+      await createNotification(pool, { id: order.user_id, username: order.username }, {
+        type: approved ? 'refund_completed' : 'refund_rejected',
+        title: approved ? '模拟退款已完成' : '模拟退款未通过',
+        body: approved
+          ? `订单 #${orderId} 已完成 ${Number(order.refund_percent || 0)}% 模拟退款。`
+          : `订单 #${orderId} 的模拟退款申请未通过，请联系场馆。`,
+        order_id: orderId,
+        game_id: order.game_id,
+      })
+      return json(res, { ok: true, status: nextStatus, mock: true })
     }
 
     const venueAdminCheckinMatch = pathName.match(/^\/api\/sports-app\/venue-admin\/orders\/(\d+)\/checkin$/)
@@ -2939,7 +3094,7 @@ const handleSportsApi = async (req, res, requestUrl) => {
       const [[order]] = await pool.execute('SELECT * FROM sports_order WHERE id = ? LIMIT 1', [orderId])
       if (!order) return json(res, { ok: false, error: 'order not found' }, 404)
       if (Number(order.user_id) !== Number(user.id)) return json(res, { ok: false, error: '只能支付自己的订单' }, 403)
-      if (order.status !== 'pending_payment') return json(res, { ok: false, error: '订单当前状态不能支付' }, 409)
+      if (!['pending_payment', 'pending_pay'].includes(order.status)) return json(res, { ok: false, error: '订单当前状态不能支付' }, 409)
       return json(res, createMockPrepay(order))
     }
 
@@ -2984,8 +3139,11 @@ const handleSportsApi = async (req, res, requestUrl) => {
       const cancelPenalty = Number(cancelRule.penalty || 0)
       const refundSource = nextStatus === 'refunding' ? 'mock_refund_pending' : ''
       await pool.execute(
-        'UPDATE sports_order SET status = ?, cancelled_at = NOW(), cancel_note = ?, cancel_penalty = ?, refund_source = ? WHERE id = ?',
-        [nextStatus, cancelRule.note, cancelPenalty, refundSource, orderId],
+        `UPDATE sports_order SET status = ?, cancelled_at = NOW(), cancel_note = ?, cancel_penalty = ?,
+          refund_source = ?, refund_percent = ?, refund_reason = ?,
+          refund_requested_at = CASE WHEN ? = 'refunding' THEN NOW() ELSE refund_requested_at END
+         WHERE id = ?`,
+        [nextStatus, cancelRule.note, cancelPenalty, refundSource, Number(cancelRule.refund_percent || 0), cancelRule.note, nextStatus, orderId],
       )
       if (order.game_id) {
         await pool.execute('UPDATE sports_signup SET payment_status = ? WHERE game_id = ? AND user_id = ?', [nextStatus, order.game_id, order.user_id])
@@ -3017,7 +3175,7 @@ const handleSportsApi = async (req, res, requestUrl) => {
       const [[order]] = await pool.execute('SELECT o.*, g.start_time FROM sports_order o LEFT JOIN sports_game g ON g.id = o.game_id WHERE o.id = ? LIMIT 1', [orderId])
       if (!order) return json(res, { ok: false, error: 'order not found' }, 404)
       if (Number(order.user_id) !== Number(user.id)) return json(res, { ok: false, error: '只能核销自己的订单' }, 403)
-      if (order.status !== 'paid') return json(res, { ok: false, error: '只有已支付订单可以核销' }, 409)
+      if (!['paid', 'offline_paid', 'pending_verify'].includes(order.status)) return json(res, { ok: false, error: '只有已支付订单可以核销' }, 409)
       const checkinWindow = orderCheckinWindow(order)
       if (!checkinWindow.ok) {
         return json(res, { ok: false, error: checkinWindow.reason }, 409)
@@ -3028,23 +3186,23 @@ const handleSportsApi = async (req, res, requestUrl) => {
           return json(res, { ok: false, error: '该场已记为缺席，无法再次核销' }, 409)
         }
       }
-      await pool.execute('UPDATE sports_order SET status = "checked_in", checked_in_at = NOW() WHERE id = ?', [orderId])
+      await pool.execute('UPDATE sports_order SET status = "verified", checked_in_at = NOW() WHERE id = ?', [orderId])
       if (order.game_id) {
         await pool.execute('UPDATE sports_signup SET checked_in = 1 WHERE game_id = ? AND user_id = ?', [order.game_id, order.user_id])
         await pool.execute(
-          'INSERT INTO sports_credit_event (user_id, username, event_type, score_delta, note, related_game_id) VALUES (?, ?, "checkin", 3, "到场核销", ?)',
+          'INSERT INTO sports_credit_event (user_id, username, event_type, score_delta, note, related_game_id) VALUES (?, ?, "checkin", 2, "到场核销", ?)',
           [order.user_id, order.username, order.game_id],
         )
         await trackEvent(pool, { id: order.user_id, username: order.username }, 'checkin_success', { entity_type: 'game', entity_id: order.game_id, metadata: { order_id: orderId } })
         await createNotification(pool, { id: order.user_id, username: order.username }, {
           type: 'checkin_success',
           title: '核销成功',
-          body: '你已完成到场核销，信用分 +3。',
+          body: '你已完成到场核销，信用分 +2。',
           order_id: orderId,
           game_id: order.game_id,
         })
       }
-      return json(res, { ok: true, order_id: orderId, checkin_code: order.checkin_code, status: 'checked_in' })
+      return json(res, { ok: true, order_id: orderId, checkin_code: order.checkin_code, status: 'verified' })
     }
 
     if (pathName === '/api/sports-app/admin/metrics' && req.method === 'GET') {

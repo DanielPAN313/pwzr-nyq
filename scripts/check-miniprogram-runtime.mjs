@@ -215,7 +215,7 @@ for (const file of fs.readdirSync(path.join(miniRoot, "utils"))) {
   if (file.endsWith(".js")) loadModule(path.join(miniRoot, "utils", file));
 }
 
-assert(registeredPages.length === 28, "Mini Program should register the 28-page product flow including P3 venue pages.");
+assert(registeredPages.length === 29, "Mini Program should register the 29-page product flow including the P5 payment callback.");
 for (const pagePath of [
   "pages/venue-detail/venue-detail",
   "pages/create-game/create-game",
@@ -233,6 +233,7 @@ for (const pagePath of [
   "pages/venue/create-game/index",
   "pages/venue/team-balance/index",
   "pages/venue/settings/index",
+  "pages/payment/callback",
   "pages/credit/credit",
   "pages/my-games/my-games",
   "pages/legal/legal",
@@ -433,10 +434,34 @@ assert(gameDetailPage.data.detail?.joinText === "去球局页报名", "preview g
 
 const ordersPage = registeredPageByPath.get("pages/orders/orders");
 assert(ordersPage, "pages/orders/orders page instance was not registered.");
-for (const method of ["goVenues", "goGames", "copyCheckinCode", "payOrder", "cancelOrder", "checkinOrder", "requestMakeup", "openGameReview"]) {
+for (const method of ["goVenues", "goGames", "copyCheckinCode", "payOrder", "requestRefund", "cancelOrder", "checkinOrder", "requestMakeup", "openGameReview"]) {
   assert(typeof ordersPage[method] === "function", `pages/orders/orders should expose ${method} method.`);
 }
 assert(ordersPage.data.orders.every((order) => "canPay" in order && "canCancel" in order && "canCheckin" in order), "orders should expose actionable payment/cancel/checkin flags.");
+
+const orderStatus = loadModule(path.join(miniRoot, "utils", "order-status.js"));
+assert(Object.keys(orderStatus.ORDER_STATUS).length === 8, "order status module should expose the eight P5 states.");
+assert(orderStatus.normalizeOrderStatus("pending_payment") === "pending_pay", "order status should normalize the legacy pending payment state.");
+assert(orderStatus.canTransition("pending_pay", "paid"), "order status should allow pending pay to paid.");
+assert(orderStatus.canTransition("pending_verify", "verified"), "order status should allow pending verify to verified.");
+const payment = loadModule(path.join(miniRoot, "utils", "payment", "index.js"));
+const mockPayment = loadModule(path.join(miniRoot, "utils", "payment", "mock.js"));
+const wechatPayment = loadModule(path.join(miniRoot, "utils", "payment", "wechat.js"));
+assert(payment.USE_MOCK === true && typeof payment.payOrder === "function", "payment entry should default to the mock adapter.");
+assert(typeof mockPayment.mockPay === "function", "mock payment adapter should be loadable.");
+assert(typeof wechatPayment.wechatPay === "function", "wechat payment adapter should remain reserved.");
+const mockPaymentPromise = mockPayment.mockPay({ id: "runtime-order", amount: 88, venueId: "kazimen", gameId: "runtime-game" }, { delayMs: 0 });
+const mockPaymentTimer = timers.pop();
+assert(typeof mockPaymentTimer === "function", "mock payment should schedule an asynchronous result.");
+mockPaymentTimer();
+const mockPaymentResult = await mockPaymentPromise;
+assert(mockPaymentResult.success && mockPaymentResult.orderId === "runtime-order" && mockPaymentResult.amount === 88, "mock payment should return the P5 result contract.");
+assert("transactionId" in mockPaymentResult && "merchantId" in mockPaymentResult, "mock payment should reserve transaction and merchant fields.");
+assert(!fs.readFileSync(path.join(miniRoot, "pages/orders/orders.js"), "utf8").includes("wx.requestPayment"), "pages must not call wx.requestPayment directly.");
+
+const paymentCallbackPage = registeredPageByPath.get("pages/payment/callback");
+assert(paymentCallbackPage && typeof paymentCallbackPage.queryOrder === "function", "payment callback page should query the order status.");
+assert(typeof paymentCallbackPage.goOrders === "function" && typeof paymentCallbackPage.goHome === "function", "payment callback should expose navigation actions.");
 
 const creditPage = registeredPageByPath.get("pages/credit/credit");
 assert(creditPage, "pages/credit/credit page instance was not registered.");
@@ -520,7 +545,7 @@ assert(gameDetailForCancel && typeof gameDetailForCancel.cancelRegistration === 
 
 const venueHomePage = registeredPageByPath.get("pages/venue/home/index");
 assert(venueHomePage, "pages/venue/home/index page instance was not registered.");
-for (const method of ["guardVenueAdmin", "returnPlayerMode", "openScanPage", "openMakeupHandling", "openCreateGame", "openTeamBalance", "openSettings", "editGame", "cancelGame", "onOrderSearchInput", "openConfirmSheet", "closeConfirmSheet", "confirmOrder", "rejectOrder"]) {
+for (const method of ["guardVenueAdmin", "returnPlayerMode", "openScanPage", "openMakeupHandling", "openCreateGame", "openTeamBalance", "openSettings", "editGame", "cancelGame", "processRefund", "onOrderSearchInput", "openConfirmSheet", "closeConfirmSheet", "confirmOrder", "rejectOrder"]) {
   assert(typeof venueHomePage[method] === "function", `pages/venue/home/index should expose ${method} method.`);
 }
 assert(Array.isArray(venueHomePage.data.stats) && venueHomePage.data.stats.length === 3, "venue home should expose three stats.");
@@ -565,4 +590,4 @@ for (const method of ["loadSettings", "updatePrice", "updateSlots", "toggleClose
 
 for (const timer of timers.splice(0)) timer();
 
-console.log(`Mini Program runtime check passed: loaded app.js, ${registeredPages.length} pages, restored product pages, P4 team balance, venue flows, order actions, and credit self-rating.`);
+console.log(`Mini Program runtime check passed: loaded app.js, ${registeredPages.length} pages, restored product pages, P5 payment, P4 team balance, venue flows, and order actions.`);

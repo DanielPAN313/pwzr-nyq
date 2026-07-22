@@ -24,16 +24,17 @@ P0 → P1 → P2.5 → P2 → P3 → P4 → P5 → P6
 | P2 | 已完成 | 球员六维档案、雷达图、位置、他评、信用分 |
 | P3 | 已完成 | 场馆看板、发球局、分队结果、核销、设置 |
 | P4 | 已完成 | 智能分队算法和 `< 15%` 分差目标 |
-| P5 | 下一阶段 | 统一支付预留、模拟支付与退款超时处理 |
-| P6 | 待开始 | 分享邀请、三套文案和统一分享入口 |
+| P5 | 已完成 | 统一支付预留、模拟支付与退款超时处理 |
+| P6 | 下一阶段 | 分享邀请、三套文案和统一分享入口 |
 
 ## 当前页面
 
-小程序现注册 28 个页面。P3 新增：
+小程序现注册 29 个页面。P3/P5 新增：
 
 - `pages/venue/create-game/index`
 - `pages/venue/team-balance/index`
 - `pages/venue/settings/index`
+- `pages/payment/callback`
 
 场馆主入口继续使用 `pages/venue/home/index`，扫码和补核销继续使用 `pages/venue/scan/index`，旧 `pages/venue-admin/venue-admin` 仅保留兼容入口。
 

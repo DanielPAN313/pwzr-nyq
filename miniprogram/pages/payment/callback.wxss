@@ -1,0 +1,13 @@
+page { background: #07120d; }
+.callback-page { min-height: 100vh; padding: 72px 24px 40px; color: #fff; text-align: center; box-sizing: border-box; }
+.result-mark { width: 72px; height: 72px; margin: 0 auto 18px; border: 2px solid #c8ff00; border-radius: 50%; color: #c8ff00; font-size: 42px; line-height: 68px; }
+.result-title { display: block; font-size: 26px; font-weight: 700; }
+.mode-pill { display: inline-block; margin-top: 12px; padding: 5px 9px; border-radius: 4px; background: #24362c; color: #c8ff00; font-size: 12px; }
+.amount { display: block; margin-top: 22px; font-size: 36px; font-weight: 800; }
+.result-details { margin-top: 26px; padding: 8px 16px; border: 1px solid #244133; border-radius: 8px; background: #0b1c14; }
+.detail-row { display: flex; align-items: center; justify-content: space-between; min-height: 46px; border-bottom: 1px solid #244133; color: #aebdb3; font-size: 13px; }
+.detail-row:last-child { border-bottom: 0; }
+.mock-note { display: block; margin: 16px 0 24px; color: #ffbd69; font-size: 12px; line-height: 18px; }
+.primary-button, .secondary-button { border-radius: 6px; font-size: 14px; font-weight: 700; }
+.primary-button { background: #c8ff00; color: #07120d; }
+.secondary-button { margin-top: 10px; border: 1px solid #365444; background: transparent; color: #fff; }

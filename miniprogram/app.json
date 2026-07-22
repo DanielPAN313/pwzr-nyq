@@ -25,6 +25,7 @@
     "pages/venue/create-game/index",
     "pages/venue/team-balance/index",
     "pages/venue/settings/index",
+    "pages/payment/callback",
     "pages/credit/credit",
     "pages/my-games/my-games",
     "pages/legal/legal"

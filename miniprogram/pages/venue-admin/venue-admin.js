@@ -21,7 +21,10 @@ const fallbackDashboard = {
 const statusText = {
   pending_payment: "待支付",
   paid: "待到场",
+  pending_verify: "待核销",
   checked_in: "已核销",
+  verified: "已核销",
+  refunding: "模拟退款中",
   cancelled: "已取消",
   refunded: "已退款"
 };
@@ -46,14 +49,14 @@ function buildAdminSteps(canMaintainVenue) {
 function orderStep(order) {
   const status = order.status || "";
 
-  if (status === "paid" && order.canCheckin) {
+  if (["paid", "pending_verify"].includes(status) && order.canCheckin) {
     return {
       tone: "success",
       text: "用户已支付，到场后可确认核销。"
     };
   }
 
-  if (status === "paid") {
+  if (["paid", "pending_verify"].includes(status)) {
     return {
       tone: "info",
       text: "订单已支付，但当前账号不能核销该订单。"
@@ -67,7 +70,7 @@ function orderStep(order) {
     };
   }
 
-  if (status === "checked_in") {
+  if (["checked_in", "verified"].includes(status)) {
     return {
       tone: "muted",
       text: "订单已完成到场核销。"

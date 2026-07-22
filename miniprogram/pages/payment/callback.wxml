@@ -1,0 +1,14 @@
+<view class="callback-page">
+  <view class="result-mark">{{success ? '✓' : '!'}}</view>
+  <text class="result-title">{{success ? '支付完成' : '支付未完成'}}</text>
+  <text class="mode-pill">{{modeText}}</text>
+  <text class="amount">{{amountText}}</text>
+  <view class="result-details">
+    <view class="detail-row"><text>订单号</text><text>{{orderId || '本地订单'}}</text></view>
+    <view class="detail-row"><text>支付时间</text><text>{{payTime}}</text></view>
+    <view class="detail-row"><text>同步状态</text><text>{{syncText}}</text></view>
+  </view>
+  <text class="mock-note" wx:if="{{modeText === '模拟支付'}}">当前为开发阶段模拟支付，不会产生真实扣款。</text>
+  <button class="primary-button" bindtap="goOrders">查看订单</button>
+  <button class="secondary-button" bindtap="goHome">返回首页</button>
+</view>

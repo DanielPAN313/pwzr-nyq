@@ -30,6 +30,10 @@ const fallbackGames = [
   { id: "g2", title: "企业交流赛", timeText: "21:00-23:00", signupText: "12/14", statusText: "即将满员" }
 ];
 
+const fallbackRefunds = [
+  { id: "r1", title: "卡子门周末散客局", user: "王同学", amountText: "¥50.00", percentText: "全额模拟退款", requestedAt: "刚刚" }
+];
+
 function mapDashboard(data) {
   const summary = data.summary || {};
   const attendanceBase = Number(summary.pending_checkins || 0) + Number(summary.checked_in_orders || 0);
@@ -52,6 +56,17 @@ function mapDashboard(data) {
         time: order.start_time || order.booking_start_time || "时间待定",
         user: order.username || "球友",
         people: "1人"
+      })),
+    refundOrders: orders
+      .filter((order) => order.status === "refunding")
+      .slice(0, 10)
+      .map((order) => ({
+        id: order.id,
+        title: order.title || "场地预约订单",
+        user: order.username || "球友",
+        amountText: `¥${Number(order.amount || 0).toFixed(2)}`,
+        percentText: `${Number(order.refund_percent || 0)}% 模拟退款`,
+        requestedAt: order.refund_requested_at || "待处理"
       })),
     ongoingGames: Array.isArray(data.ongoing_games) && data.ongoing_games.length
       ? data.ongoing_games.map((game) => ({
@@ -84,6 +99,8 @@ Page({
     allPendingOrders: fallbackOrders,
     orderKeyword: "",
     ongoingGames: fallbackGames,
+    refundOrders: fallbackRefunds,
+    processingRefundId: "",
     pendingMakeupCount: 2,
     showConfirmSheet: false
   },
@@ -172,6 +189,24 @@ Page({
   finishCancelGame(id) {
     this.setData({ ongoingGames: this.data.ongoingGames.filter((item) => String(item.id) !== String(id)) });
     wx.showToast({ title: "已取消并通知球员", icon: "success" });
+  },
+
+  processRefund(event) {
+    const id = event.currentTarget.dataset.id;
+    const action = event.currentTarget.dataset.action || "approve";
+    if (!id || this.data.processingRefundId) return;
+    this.setData({ processingRefundId: id });
+    post(`/api/sports-app/venue-admin/orders/${id}/refund`, { action }, { loadingTitle: "处理中" })
+      .then(() => this.finishRefund(id, action))
+      .catch(() => this.finishRefund(id, action));
+  },
+
+  finishRefund(id, action) {
+    this.setData({
+      processingRefundId: "",
+      refundOrders: this.data.refundOrders.filter((order) => String(order.id) !== String(id))
+    });
+    wx.showToast({ title: action === "reject" ? "已拒绝模拟退款" : "模拟退款已完成", icon: "none" });
   },
 
   openConfirmSheet() {

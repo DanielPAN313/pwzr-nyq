@@ -87,6 +87,7 @@
     'pages/venue/create-game/index': 'teams',
     'pages/venue/team-balance/index': 'teams',
     'pages/venue/settings/index': 'teams',
+    'pages/payment/callback': 'orders',
     'pages/credit/credit': 'credit',
     'pages/my-games/my-games': 'my-games',
     'pages/legal/legal': 'me',

@@ -1,5 +1,7 @@
 const { get, post } = require("../../utils/api");
 const { setPendingPaymentCount } = require("../../utils/tab-bar-state");
+const { payOrder: startPayment } = require("../../utils/payment/index");
+const { normalizeOrderStatus, orderStatusLabel } = require("../../utils/order-status");
 
 const fallbackOrders = [
   {
@@ -19,17 +21,6 @@ const fallbackOrders = [
   }
 ];
 
-const statusText = {
-  pending_payment: "待支付",
-  pending_pay: "待支付",
-  paid: "已支付",
-  offline_paid: "线下已支付",
-  refunding: "模拟退款中",
-  checked_in: "已核销",
-  cancelled: "已取消",
-  refunded: "已退款"
-};
-
 function formatTime(value) {
   if (!value) return "";
 
@@ -46,6 +37,7 @@ function formatTime(value) {
 
 function mapOrder(order) {
   const amount = Number(order.amount || 0);
+  const normalizedStatus = normalizeOrderStatus(order.status);
 
   return {
     id: order.id,
@@ -53,16 +45,20 @@ function mapOrder(order) {
     venueName: order.venue_name || "场馆待定",
     amountText: `¥${amount}`,
     status: order.status,
-    statusText: statusText[order.status] || order.status || "未知状态",
+    normalizedStatus,
+    statusText: orderStatusLabel(order.status),
     checkinCode: order.checkin_code || "------",
     hint: order.checkin_hint || (order.can_pay ? "请完成支付后正式占位。" : "请按订单时间到场核销。"),
     timeText: formatTime(order.start_time || order.booking_start_time || order.create_time),
     canPay: Boolean(order.can_pay),
-    canCancel: Boolean(order.can_cancel) || ["pending_payment", "pending_pay", "paid", "offline_paid"].includes(order.status),
+    canCancel: ["pending_payment", "pending_pay"].includes(order.status) || (Boolean(order.can_cancel) && !order.can_request_refund),
     canCheckin: Boolean(order.can_checkin),
     canRequestMakeup: Boolean(order.can_request_makeup),
     canCopyCode: Boolean(order.checkin_code),
-    canReview: Boolean(order.game_id && ["checked_in", "review_open", "completed"].includes(order.status)),
+    canReview: Boolean(order.game_id && ["checked_in", "verified", "review_open", "completed"].includes(order.status)),
+    canRefund: Boolean(order.can_request_refund),
+    amount,
+    venueId: order.venue_id,
     gameId: order.game_id,
     cancelHint: order.cancel_hint || "",
     cancelPenaltyPreview: Number(order.cancel_penalty_preview || 0)
@@ -146,18 +142,17 @@ Page({
 
     this.setData({ payingId: id });
 
-    post(`/api/sports-app/orders/${id}/prepay`, {}, { loadingTitle: "准备支付" })
-      .then((prepay) => new Promise((resolve, reject) => {
-        wx.requestPayment({
-          ...(prepay.pay_params || {}),
-          success: resolve,
-          fail: reject
+    const order = this.data.orders.find((item) => String(item.id) === String(id));
+    startPayment({
+      id,
+      amount: order?.amount || 0,
+      venueId: order?.venueId || "kazimen",
+      gameId: order?.gameId || ""
+    })
+      .then((result) => {
+        wx.navigateTo({
+          url: `/pages/payment/callback?orderId=${encodeURIComponent(id)}&amount=${encodeURIComponent(result.amount)}&mode=${result.mode}&success=1`
         });
-      }))
-      .then(() => post(`/api/sports-app/orders/${id}/pay/confirm`, {}, { loadingTitle: "确认支付" }))
-      .then(() => {
-        wx.showToast({ title: "支付成功", icon: "success" });
-        return this.loadOrders();
       })
       .catch(() => {
         wx.showToast({ title: "支付未完成，请稍后重试", icon: "none" });
@@ -165,6 +160,27 @@ Page({
       .finally(() => {
         this.setData({ payingId: "" });
       });
+  },
+
+  requestRefund(event) {
+    const id = event.currentTarget.dataset.id;
+    if (!id || this.data.cancellingId) return;
+    wx.showModal({
+      title: "申请模拟退款",
+      content: "退款金额将按距开场时间计算：24 小时以上全退，2-24 小时退 50%，2 小时内不退款。",
+      confirmText: "提交申请",
+      success: (result) => {
+        if (!result.confirm) return;
+        this.setData({ cancellingId: id });
+        post(`/api/sports-app/orders/${id}/refund`, { reason: "用户申请退款" }, { loadingTitle: "提交中" })
+          .then(() => {
+            wx.showToast({ title: "模拟退款申请已提交", icon: "success" });
+            return this.loadOrders();
+          })
+          .catch(() => wx.showToast({ title: "申请已记录，稍后同步", icon: "none" }))
+          .finally(() => this.setData({ cancellingId: "" }));
+      }
+    });
   },
 
   cancelOrder(event) {

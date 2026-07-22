@@ -166,6 +166,84 @@ page {
   box-sizing: border-box;
 }
 
+.refund-section {
+  margin-bottom: 18px;
+}
+
+.refund-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 76px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #333333;
+  box-sizing: border-box;
+}
+
+.refund-row:last-child {
+  border-bottom: 0;
+}
+
+.refund-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.refund-title,
+.refund-meta {
+  display: block;
+}
+
+.refund-title {
+  overflow: hidden;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.refund-meta {
+  margin-top: 5px;
+  color: #8ea095;
+  font-size: 11px;
+}
+
+.refund-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.refund-button {
+  width: 48px;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+  border-radius: 5px;
+  font-size: 11px;
+  line-height: 32px;
+}
+
+.refund-button.approve {
+  background: #c8ff00;
+  color: #07120d;
+}
+
+.refund-button.reject {
+  border: 1px solid #6b3d3d;
+  background: transparent;
+  color: #ff8a83;
+}
+
+.empty-refunds {
+  padding: 18px;
+  border: 1px solid #244133;
+  border-radius: 8px;
+  color: #8ea095;
+  font-size: 12px;
+  text-align: center;
+}
+
 .game-title,
 .game-meta {
   display: block;

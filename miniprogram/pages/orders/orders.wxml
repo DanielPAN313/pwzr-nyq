@@ -58,7 +58,7 @@
         data-id="{{item.id}}"
         disabled="{{payingId === item.id}}"
       >
-        {{payingId === item.id ? "支付中" : "去支付"}}
+        {{payingId === item.id ? "支付中" : "模拟支付"}}
       </button>
       <button
         wx:if="{{item.canCheckin}}"
@@ -85,6 +85,15 @@
         disabled="{{requestingMakeupId === item.id}}"
       >
         {{requestingMakeupId === item.id ? "提交中" : "申请补核销"}}
+      </button>
+      <button
+        wx:if="{{item.canRefund}}"
+        class="action-button"
+        bindtap="requestRefund"
+        data-id="{{item.id}}"
+        disabled="{{cancellingId === item.id}}"
+      >
+        {{cancellingId === item.id ? "提交中" : "申请退款"}}
       </button>
       <button
         wx:if="{{item.canReview}}"

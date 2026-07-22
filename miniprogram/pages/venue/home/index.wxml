@@ -42,6 +42,26 @@
     </view>
   </view>
 
+  <view class="schedule-section refund-section">
+    <view class="section-heading-row">
+      <text class="section-title">待处理退款</text>
+      <text class="section-count">{{refundOrders.length}} 笔</text>
+    </view>
+    <view wx:if="{{refundOrders.length}}" class="schedule-card">
+      <view wx:for="{{refundOrders}}" wx:key="id" class="refund-row">
+        <view class="refund-main">
+          <text class="refund-title">{{item.title}}</text>
+          <text class="refund-meta">{{item.user}} · {{item.amountText}} · {{item.percentText}}</text>
+        </view>
+        <view class="refund-actions">
+          <button class="refund-button approve" data-id="{{item.id}}" data-action="approve" loading="{{processingRefundId === item.id}}" bindtap="processRefund">同意</button>
+          <button class="refund-button reject" data-id="{{item.id}}" data-action="reject" bindtap="processRefund">拒绝</button>
+        </view>
+      </view>
+    </view>
+    <view wx:else class="empty-refunds">暂无待处理退款</view>
+  </view>
+
   <view class="stats-grid">
     <view wx:for="{{stats}}" wx:key="label" class="stat-item">
       <text class="stat-value">{{item.value}}</text>

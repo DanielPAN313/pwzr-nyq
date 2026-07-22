@@ -294,6 +294,8 @@ assert(typeof gamesPage.createGame === "function", "pages/games/games should exp
 assert(typeof gamesPage.goTeams === "function", "pages/games/games should expose goTeams method.");
 assert(typeof gamesPage.goMyGames === "function", "pages/games/games should expose goMyGames method.");
 assert(typeof gamesPage.goRankings === "function", "pages/games/games should expose goRankings method.");
+assert(typeof gamesPage.onShareAppMessage === "function", "pages/games/games should expose onShareAppMessage method.");
+assert(typeof gamesPage.copyInvitePath === "function", "pages/games/games should expose copyInvitePath method.");
 gamesPage.onSearchInput.call(gamesPage, inputEvent("足球"));
 assert(gamesPage.data.keyword === "足球", "games search did not persist the keyword.");
 assert(gamesPage.data.games.length >= 1, "games search should find the fallback football match.");
@@ -301,6 +303,15 @@ assert(gamesPage.data.games.every((game) => `${game.title} ${game.venueName} ${g
 gamesPage.clearSearch.call(gamesPage);
 assert(gamesPage.data.keyword === "", "games clearSearch did not reset the keyword.");
 assert(gamesPage.data.games.length === gamesPage.data.allGames.length, "games clearSearch did not restore the full game list.");
+
+const share = loadModule(path.join(miniRoot, "utils", "share.js"));
+assert(Object.keys(share.SHARE_TEMPLATES).length === 3, "share module should expose three invitation templates.");
+assert(share.SHARE_TEMPLATES.casual === "今晚 8 点卡子门足球场缺 3 人，AA 50 元/人，一起来踢？", "casual share copy should match the PRD template.");
+assert(share.SHARE_TEMPLATES.event === "卡子门周末赛事局，7v7 对抗，已有 10 人报名，速来组队！", "event share copy should match the PRD template.");
+assert(share.SHARE_TEMPLATES.default === "我在宁约球组了个局，一起来踢场球？", "default share copy should match the PRD template.");
+const eventShare = share.buildSharePayload({ id: 88, matchType: "event" }, 19);
+assert(eventShare.title === share.SHARE_TEMPLATES.event, "event games should select the event invitation copy.");
+assert(eventShare.path.includes("id=88") && eventShare.path.includes("inviter=19"), "share path should carry game id and inviter.");
 
 const teamsPage = registeredPageByPath.get("pages/teams/teams");
 assert(teamsPage, "pages/teams/teams page instance was not registered.");
@@ -421,6 +432,7 @@ assert(playerProfileReviewsPage.data.reviews.length >= 1, "player profile review
 const gameDetailPage = registeredPageByPath.get("pages/game-detail/game-detail");
 assert(gameDetailPage, "pages/game-detail/game-detail page instance was not registered.");
 assert(typeof gameDetailPage.submitJoinGame === "function", "pages/game-detail/game-detail should expose submitJoinGame method.");
+assert(typeof gameDetailPage.onShareAppMessage === "function" && typeof gameDetailPage.copyInvitePath === "function", "game detail should expose share and copy invitation actions.");
 gameDetailPage.onLoad.call(gameDetailPage, {
   id: "invite-preview",
   preview: "1",
@@ -431,6 +443,8 @@ gameDetailPage.onLoad.call(gameDetailPage, {
 });
 assert(gameDetailPage.data.detail?.previewOnly === true, "game detail should support home invitation preview mode.");
 assert(gameDetailPage.data.detail?.joinText === "去球局页报名", "preview game detail should guide users to signup.");
+const detailShare = gameDetailPage.onShareAppMessage.call(gameDetailPage, { target: { dataset: { template: "default" } } });
+assert(detailShare.title === share.SHARE_TEMPLATES.default && detailShare.path.includes("inviter="), "game detail should return a valid default share payload.");
 
 const ordersPage = registeredPageByPath.get("pages/orders/orders");
 assert(ordersPage, "pages/orders/orders page instance was not registered.");
@@ -590,4 +604,4 @@ for (const method of ["loadSettings", "updatePrice", "updateSlots", "toggleClose
 
 for (const timer of timers.splice(0)) timer();
 
-console.log(`Mini Program runtime check passed: loaded app.js, ${registeredPages.length} pages, restored product pages, P5 payment, P4 team balance, venue flows, and order actions.`);
+console.log(`Mini Program runtime check passed: loaded app.js, ${registeredPages.length} pages, restored product pages, P6 sharing, P5 payment, P4 team balance, and venue flows.`);

@@ -13,7 +13,7 @@ function wechatPay(order, options = {}) {
   const prepay = options.prepay || {};
   if (!prepay.pay_params) return Promise.reject(new Error("微信支付参数未配置"));
 
-  // TODO: 正式启用前，后端必须完成商户签名、支付回调验签和订单查询。
+  // TODO: Phase X 微信支付。正式启用前，后端必须完成商户签名、支付回调验签和订单查询。
   return requestWechatPayment(prepay.pay_params).then((result) => ({
     success: true,
     mode: "wechat",

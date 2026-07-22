@@ -90,6 +90,10 @@
           {{joiningId === item.id && item.id ? "报名中" : item.actionText}}
         </button>
       </view>
+      <view class="invite-actions">
+        <button class="invite-share" open-type="share" data-id="{{item.id}}">邀请好友</button>
+        <text class="invite-copy" data-id="{{item.id}}" bindtap="copyInvitePath">复制邀请路径</text>
+      </view>
     </view>
   </view>
 </view>

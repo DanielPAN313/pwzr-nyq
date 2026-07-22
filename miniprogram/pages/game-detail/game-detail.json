@@ -4,5 +4,6 @@
   "backgroundColor": "#07120d",
   "backgroundColorTop": "#07120d",
   "backgroundColorBottom": "#07120d",
-  "initialRenderingCache": "static"
+  "initialRenderingCache": "static",
+  "enableShareAppMessage": true
 }

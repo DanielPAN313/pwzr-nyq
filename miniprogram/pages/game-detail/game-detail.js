@@ -1,6 +1,7 @@
 const { get, post } = require("../../utils/api");
 const { getStoredUser } = require("../../utils/auth");
 const { appendLocalNotification } = require("../../utils/notifications");
+const { buildSharePayload } = require("../../utils/share");
 
 const statusText = {
   forming: "待成局",
@@ -124,7 +125,12 @@ function mapDetail(detail) {
   const notes = game.notes || "";
 
   return {
+    id: game.id,
     title: game.title || "未命名球局",
+    matchType: game.match_type || game.game_type || game.type || "casual",
+    joinedCount: playerCount,
+    feeAmount: fee,
+    format: game.format || game.mode || "5v5",
     statusText: statusText[game.status] || game.status || "未知状态",
     statusTone: step.tone,
     venueName,
@@ -249,7 +255,8 @@ Page({
     submittingReview: false,
     reviewHint: "",
     error: "",
-    detail: null
+    detail: null,
+    inviter: ""
   },
 
   onLoad(query) {
@@ -258,11 +265,32 @@ Page({
     const previewOnly = query && query.preview && !/^\d+$/.test(id);
     this.setData({
       id,
+      inviter: query?.inviter || "",
       reviewHint,
       detail: previewOnly ? mapPreviewDetail(query || {}) : null
     });
+    wx.showShareMenu({ withShareTicket: true, menus: ["shareAppMessage"] });
     if (previewOnly) return;
     this.loadDetail();
+  },
+
+  onShareAppMessage(event) {
+    const user = getStoredUser() || {};
+    const templateType = event?.target?.dataset?.template || "";
+    return buildSharePayload({
+      ...(this.data.detail || {}),
+      id: this.data.id || this.data.detail?.id
+    }, user.id || user.username || "nyq-player", templateType);
+  },
+
+  copyInvitePath() {
+    const payload = this.onShareAppMessage({ target: { dataset: {} } });
+    wx.setClipboardData({
+      data: payload.path,
+      success() {
+        wx.showToast({ title: "邀请路径已复制", icon: "success" });
+      }
+    });
   },
 
   onPullDownRefresh() {

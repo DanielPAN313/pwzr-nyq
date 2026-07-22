@@ -1,4 +1,6 @@
 const { get, post } = require("../../utils/api");
+const { getStoredUser } = require("../../utils/auth");
+const { buildSharePayload } = require("../../utils/share");
 
 const fallbackGames = [
   { id: "", title: "今晚江宁五人制足球", time: "今天 19:30", status: "缺 2 人", venueName: "卡子门足球场", mode: "5v5", fee: "AA", typeText: "散客局", typeTone: "casual", canJoin: false, actionText: "去这场" },
@@ -49,6 +51,10 @@ function mapGame(game) {
     fee: fee ? `¥${fee}/人` : "免费/AA",
     typeText: eventGame ? "赛事局" : "散客局",
     typeTone: eventGame ? "event" : "casual",
+    matchType: eventGame ? "event" : "casual",
+    joinedCount: joined,
+    capacity,
+    feeAmount: fee,
     canJoin,
     actionText: "去这场"
   };
@@ -86,7 +92,28 @@ Page({
   },
 
   onLoad() {
+    wx.showShareMenu({ withShareTicket: true, menus: ["shareAppMessage"] });
     this.loadGames();
+  },
+
+  onShareAppMessage(event) {
+    const id = event?.target?.dataset?.id;
+    const game = this.data.allGames.find((item) => String(item.id) === String(id)) || this.data.games[0] || {};
+    const user = getStoredUser() || {};
+    return buildSharePayload(game, user.id || user.username || "nyq-player");
+  },
+
+  copyInvitePath(event) {
+    const id = event.currentTarget.dataset.id;
+    const game = this.data.allGames.find((item) => String(item.id) === String(id)) || {};
+    const user = getStoredUser() || {};
+    const payload = buildSharePayload(game, user.id || user.username || "nyq-player");
+    wx.setClipboardData({
+      data: payload.path,
+      success() {
+        wx.showToast({ title: "邀请路径已复制", icon: "success" });
+      }
+    });
   },
 
   onShow() {

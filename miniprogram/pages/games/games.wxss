@@ -377,6 +377,31 @@
   flex-shrink: 0;
 }
 
+.invite-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 9px;
+}
+
+.invite-share {
+  min-height: 30px;
+  margin: 0;
+  padding: 0 12px;
+  border: 1px solid rgba(216, 255, 62, 0.32);
+  border-radius: 6px;
+  background: #17231c;
+  color: #d8ff3e;
+  font-size: 11px;
+  line-height: 30px;
+}
+
+.invite-copy {
+  color: rgba(247, 251, 245, 0.68);
+  font-size: 11px;
+  line-height: 30px;
+}
+
 .secondary.small {
   color: #999999;
   background: #17231c;

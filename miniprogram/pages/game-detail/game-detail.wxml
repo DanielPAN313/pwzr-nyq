@@ -38,6 +38,17 @@
       <text class="step-text">{{detail.stepText}}</text>
     </view>
 
+    <view class="section share-panel">
+      <view>
+        <text class="section-title">邀请球友</text>
+        <text class="muted">分享到微信好友或群，邀请路径会保留球局和邀请人。</text>
+      </view>
+      <view class="share-actions">
+        <button class="primary share-button" open-type="share" data-template="">邀请好友</button>
+        <button class="secondary copy-button" bindtap="copyInvitePath">复制邀请路径</button>
+      </view>
+    </view>
+
     <view class="section signup-panel">
       <text class="signup-hint">选择场次后生成待支付订单</text>
       <button

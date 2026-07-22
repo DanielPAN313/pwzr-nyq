@@ -2796,13 +2796,18 @@ const handleSportsApi = async (req, res, requestUrl) => {
       const gameId = Number(venueGamePlayersMatch[1])
       const [players] = await pool.execute(
         `SELECT s.user_id AS id, s.username AS name,
-           CASE WHEN COALESCE(r.composite_score, 0) <= 5 THEN ROUND(COALESCE(r.composite_score, 2.5) * 20)
-                ELSE ROUND(r.composite_score) END AS score,
-           '待定' AS position
+           ROUND(COALESCE(
+             (p.speed + p.passing + p.defense + p.shooting + p.dribbling + p.stamina) / 6,
+             CASE WHEN r.composite_score <= 5 THEN r.composite_score * 20 ELSE r.composite_score END,
+             50
+           )) AS score,
+           p.preferred_positions_json AS positions,
+           r.level_label
          FROM sports_signup s
          JOIN sports_game g ON g.id = s.game_id
          JOIN sports_venue v ON v.id = g.venue_id
          LEFT JOIN sports_player_rating_summary r ON r.user_id = s.user_id
+         LEFT JOIN sports_player_profile p ON p.user_id = s.user_id
          WHERE s.game_id = ? AND s.payment_status = 'paid' AND v.manager_user_id = ?
          ORDER BY score DESC`,
         [gameId, user.id],

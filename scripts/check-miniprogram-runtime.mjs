@@ -381,6 +381,27 @@ const blockedProfileEdit = playerRating.saveLocalProfile(runtimeProfile, Date.UT
 assert(firstProfileSave.ok && initialWindowEdit.ok, "profile should allow the first save and one edit within 24 hours.");
 assert(blockedProfileEdit.ok === false && blockedProfileEdit.policy.mode === "cooldown", "profile should enter the 15-day cooldown after the extra edit.");
 
+const teamBalance = loadModule(path.join(miniRoot, "utils", "team-balance.js"));
+const balancePlayers = [
+  { id: 1, name: "P1", score: 92, positions: ["门将"] },
+  { id: 2, name: "P2", score: 88, positions: ["门将"] },
+  { id: 3, name: "P3", score: 82, positions: ["中后卫"] },
+  { id: 4, name: "P4", score: 78, positions: ["边后卫"] },
+  { id: 5, name: "P5", score: 73, positions: ["中场"] },
+  { id: 6, name: "P6", score: 69, positions: ["前腰"] },
+  { id: 7, name: "P7", score: 64, positions: ["前锋"] },
+  { id: 8, name: "P8", score: 60, positions: ["前锋"] },
+  { id: 9, name: "P9", score: 55, positions: ["边锋"] },
+  { id: 10, name: "P10", positions: ["前锋"] },
+];
+const snakeTeams = teamBalance.snakeDistribute(teamBalance.normalizePlayers(balancePlayers).sort((a, b) => b.score - a.score));
+assert(snakeTeams.redTeam[0].id === 1 && snakeTeams.blueTeam[0].id === 2 && snakeTeams.blueTeam[1].id === 3 && snakeTeams.redTeam[1].id === 4, "team balance should use the 1 red, 2 blue, 3 blue, 4 red snake order.");
+const balancedResult = teamBalance.balanceTeams(balancePlayers, { format: "5v5" });
+assert(Math.abs(balancedResult.redTeam.length - balancedResult.blueTeam.length) <= 1, "team balance roster sizes should differ by at most one.");
+assert(balancedResult.differencePercent < 15, "team balance score difference should stay below 15 percent for a balanceable roster.");
+assert(balancedResult.redTeam.some((player) => player.primaryRole === "goalkeeper") && balancedResult.blueTeam.some((player) => player.primaryRole === "goalkeeper"), "team balance should split available goalkeepers across both teams.");
+assert(teamBalance.normalizePlayer({ id: "new-player" }).score === 50, "team balance should default unrated players to score 50.");
+
 const playerProfileEditPage = registeredPageByPath.get("pages/player-profile/edit/index");
 assert(playerProfileEditPage, "player profile edit page should be registered.");
 for (const method of ["loadProfile", "onDimensionChange", "togglePosition", "drawRadar", "saveProfile"]) {
@@ -533,6 +554,9 @@ const venueTeamBalancePage = registeredPageByPath.get("pages/venue/team-balance/
 for (const method of ["loadPlayers", "applyTeams", "rebalance", "selectPlayer", "swapPlayers", "saveAndNotify"]) {
   assert(typeof venueTeamBalancePage[method] === "function", `venue team balance should expose ${method}.`);
 }
+venueTeamBalancePage.applyTeams.call(venueTeamBalancePage, balancePlayers);
+assert(venueTeamBalancePage.data.redTeam.length === 5 && venueTeamBalancePage.data.blueTeam.length === 5, "venue team balance page should display two complete 5v5 teams.");
+assert(venueTeamBalancePage.data.differenceText.endsWith("%"), "venue team balance page should display the score difference percentage.");
 
 const venueSettingsPage = registeredPageByPath.get("pages/venue/settings/index");
 for (const method of ["loadSettings", "updatePrice", "updateSlots", "toggleClosed", "saveSettings"]) {
@@ -541,4 +565,4 @@ for (const method of ["loadSettings", "updatePrice", "updateSlots", "toggleClose
 
 for (const timer of timers.splice(0)) timer();
 
-console.log(`Mini Program runtime check passed: loaded app.js, ${registeredPages.length} pages, restored product pages, P3 venue flows, search flows, order actions, and credit self-rating.`);
+console.log(`Mini Program runtime check passed: loaded app.js, ${registeredPages.length} pages, restored product pages, P4 team balance, venue flows, order actions, and credit self-rating.`);

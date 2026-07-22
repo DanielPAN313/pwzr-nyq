@@ -10,11 +10,17 @@ page { background: #07120d; }
 .balance-value { color: #c8ff00; font-size: 28px; font-weight: 800; }
 .summary-label { margin-top: 4px; color: #8ea095; font-size: 11px; }
 .balance-main { border-right: 1px solid #244133; border-left: 1px solid #244133; }
+.balance-check { margin-top: 10px; padding: 12px; border-left: 3px solid #c8ff00; background: #10271b; }
+.balance-check.warning { border-left-color: #ff9800; background: #2b2212; }
+.check-title, .check-note { display: block; }
+.check-title { font-size: 13px; font-weight: 700; }
+.check-note { margin-top: 4px; color: #8ea095; font-size: 11px; line-height: 17px; }
 .teams-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; margin-top: 14px; }
 .team-column { min-width: 0; padding: 12px 9px; border: 1px solid #244133; border-radius: 8px; background: #0b1c14; }
 .red-column { border-top: 3px solid #ff5f57; }
 .blue-column { border-top: 3px solid #4a90d9; }
 .team-title { display: block; margin-bottom: 10px; font-size: 16px; font-weight: 700; }
+.position-risk { display: block; min-height: 30px; margin: -4px 0 8px; color: #ffb14a; font-size: 10px; line-height: 15px; }
 .player-row { display: flex; align-items: center; justify-content: space-between; min-height: 52px; margin-top: 7px; padding: 8px; border: 1px solid #244133; border-radius: 6px; background: #07120d; box-sizing: border-box; }
 .player-row.selected { border-color: #c8ff00; background: #182c1f; }
 .player-name, .player-position { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

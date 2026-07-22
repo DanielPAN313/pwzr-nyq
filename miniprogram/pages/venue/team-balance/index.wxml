@@ -11,9 +11,15 @@
     <view><text class="summary-value">{{blueScore}}</text><text class="summary-label">蓝队总分</text></view>
   </view>
 
+  <view class="balance-check {{needsManualAdjustment ? 'warning' : ''}}">
+    <text class="check-title">两队分差 {{differenceText}}</text>
+    <text class="check-note">{{balanceHint}}</text>
+  </view>
+
   <view class="teams-grid">
     <view class="team-column red-column">
       <text class="team-title">红队</text>
+      <text wx:if="{{positionRiskTexts.red}}" class="position-risk">{{positionRiskTexts.red}}</text>
       <view wx:for="{{redTeam}}" wx:key="id" class="player-row {{selected && selected.id === item.id ? 'selected' : ''}}" data-team="red" data-id="{{item.id}}" bindtap="selectPlayer">
         <view><text class="player-name">{{item.name}}</text><text class="player-position">{{item.position}}</text></view>
         <text class="player-score">{{item.score}}</text>
@@ -21,6 +27,7 @@
     </view>
     <view class="team-column blue-column">
       <text class="team-title">蓝队</text>
+      <text wx:if="{{positionRiskTexts.blue}}" class="position-risk">{{positionRiskTexts.blue}}</text>
       <view wx:for="{{blueTeam}}" wx:key="id" class="player-row {{selected && selected.id === item.id ? 'selected' : ''}}" data-team="blue" data-id="{{item.id}}" bindtap="selectPlayer">
         <view><text class="player-name">{{item.name}}</text><text class="player-position">{{item.position}}</text></view>
         <text class="player-score">{{item.score}}</text>

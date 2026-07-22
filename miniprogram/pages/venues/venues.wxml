@@ -46,7 +46,7 @@
           <text class="venue-type">{{item.sportsText}}</text>
           <text class="card-title">{{item.name}}</text>
         </view>
-        <text class="rating">{{item.rating}}</text>
+        <text class="rating">{{item.rating}} ⭐</text>
       </view>
       <text class="venue-address">{{item.address}}</text>
       <view class="card-row">
@@ -62,4 +62,5 @@
       </view>
     </view>
   </view>
+  <text class="venue-coming">更多场馆陆续接入中</text>
 </view>

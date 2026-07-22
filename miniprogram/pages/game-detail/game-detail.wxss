@@ -207,6 +207,25 @@
   box-sizing: border-box;
 }
 
+.cancel-button {
+  width: 100%;
+  min-height: 44px;
+  height: 44px;
+  border: 1px solid rgba(180, 35, 24, 0.72);
+  border-radius: 8px;
+  color: #ffb4ab;
+  background: transparent;
+  font-size: 14px;
+  line-height: 44px;
+}
+
+.cancel-status {
+  display: block;
+  color: #ffb4ab;
+  font-size: 12px;
+  text-align: center;
+}
+
 .info-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

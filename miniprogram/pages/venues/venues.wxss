@@ -255,6 +255,14 @@
   font-weight: 900;
 }
 
+.venue-coming {
+  display: block;
+  padding: 8px 0 20px;
+  color: #666666;
+  font-size: 12px;
+  text-align: center;
+}
+
 .venue-address {
   display: block;
   color: #999999;

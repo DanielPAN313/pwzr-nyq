@@ -15,28 +15,100 @@
   color: rgba(255, 255, 255, 0.76);
 }
 
+.message-swipe {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 16rpx;
+}
+
 .message-card {
+  position: relative;
+  z-index: 1;
   display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 18rpx;
+  min-height: 132rpx;
+  margin-bottom: 0;
+  transition: transform 180ms ease;
+}
+
+.message-swipe-open .message-card {
+  transform: translateX(-132rpx);
+}
+
+.message-delete {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 124rpx;
+  height: 100%;
+  color: #ffffff;
+  background: #b42318;
+  font-size: 25rpx;
+  font-weight: 900;
+}
+
+.message-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 12rpx;
+  color: #10200f;
+  background: #d8ff3e;
+  font-size: 24rpx;
+  font-weight: 950;
+}
+
+.message-icon-checkin_notification { background: #9be7c0; }
+.message-icon-team_notification { background: #f7c66b; }
+.message-icon-review_reminder { background: #b8d4ff; }
+.message-icon-credit_change { background: #d7b5ff; }
+.message-icon-system_announcement { background: #d8dde3; }
+
+.message-content {
+  display: flex;
+  flex: 1;
+  min-width: 0;
   flex-direction: column;
-  gap: 14rpx;
+  gap: 12rpx;
 }
 
 .message-head,
 .message-foot {
   display: flex;
   align-items: center;
+}
+
+.message-head {
+  justify-content: space-between;
   gap: 12rpx;
+}
+
+.message-body {
+  line-height: 1.45;
 }
 
 .message-foot {
   justify-content: space-between;
 }
 
-.message-dot {
+.message-time,
+.message-status {
+  color: #999999;
+  font-size: 21rpx;
+}
+
+.message-unread-dot {
   flex-shrink: 0;
-  width: 18rpx;
-  height: 18rpx;
+  width: 14rpx;
+  height: 14rpx;
   border-radius: 50%;
-  background: #d9f76e;
-  box-shadow: 0 0 0 8rpx rgba(217, 247, 110, 0.18);
+  background: #ff4d4f;
 }

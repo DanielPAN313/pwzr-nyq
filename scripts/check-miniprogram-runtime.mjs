@@ -241,6 +241,8 @@ assert(typeof homePage.openHeroCard === "function", "pages/home/home should expo
 assert(homePage.data.heroIndex === 0, "home swiper hero should default to the booking page.");
 assert(homePage.data.bookingHero?.venueName === "卡子门足球场", "home booking swiper should feature Kazi Men football venue.");
 assert(homePage.data.gameHero?.slotsText?.includes("缺"), "home game swiper should expose recruiting shortage copy.");
+assert(Array.isArray(homePage.data.attendancePreview) && homePage.data.attendancePreview.length >= 3, "home should expose an attendance preview.");
+assert(typeof homePage.openAttendanceRanking === "function", "home should expose attendance ranking entry.");
 homePage.onHeroSwiperChange.call(homePage, { detail: { current: 1 } });
 assert(homePage.data.heroIndex === 1, "home swiper change should update heroIndex.");
 homePage.switchTab.call(homePage, {
@@ -380,9 +382,20 @@ assert(rankingsPage, "pages/rankings/rankings page instance was not registered."
 for (const method of ["loadRankings", "changeTab", "goGames"]) {
   assert(typeof rankingsPage[method] === "function", `pages/rankings/rankings should expose ${method} method.`);
 }
-assert(Array.isArray(rankingsPage.data.tabs) && rankingsPage.data.tabs.length === 2, "rankings page should expose two leaderboard tabs.");
+assert(Array.isArray(rankingsPage.data.tabs) && rankingsPage.data.tabs.length === 1 && rankingsPage.data.tabs[0].key === "attendance", "rankings page should expose attendance only.");
 assert(Array.isArray(rankingsPage.data.summaryCards) && rankingsPage.data.summaryCards.length === 4, "rankings page should expose four summary cards.");
 assert(Array.isArray(rankingsPage.data.rankRows) && rankingsPage.data.rankRows.length >= 3, "rankings page should expose ranking rows.");
+assert(rankingsPage.data.activeTab === "attendance" && rankingsPage.data.rankTitle === "出勤榜", "rankings should default to attendance.");
+
+const messagesPage = registeredPageByPath.get("pages/messages/messages");
+assert(messagesPage, "pages/messages/messages page instance was not registered.");
+for (const method of ["onTouchStart", "onTouchEnd", "removeMessage", "openMessage", "markReadById"]) {
+  assert(typeof messagesPage[method] === "function", `messages page should expose ${method} method.`);
+}
+assert(messagesPage.data.messages.every((item) => item.icon && item.type), "messages should expose typed message rows.");
+
+const gameDetailForCancel = registeredPageByPath.get("pages/game-detail/game-detail");
+assert(gameDetailForCancel && typeof gameDetailForCancel.cancelRegistration === "function", "game detail should expose cancel registration.");
 
 const venueHomePage = registeredPageByPath.get("pages/venue/home/index");
 assert(venueHomePage, "pages/venue/home/index page instance was not registered.");

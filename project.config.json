@@ -2,8 +2,8 @@
   "description": "宁约球微信小程序",
   "miniprogramRoot": "miniprogram/",
   "compileType": "miniprogram",
-  "appid": "touristappid",
-  "projectname": "nyq-miniprogram",
+  "appid": "wx0b0841d41aea1d2d",
+  "projectname": "ningyueqiu-test",
   "setting": {
     "urlCheck": false,
     "es6": true,

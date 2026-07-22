@@ -23,6 +23,12 @@ const nearbyGames = [
   { id: "nearby-3", countdownSeconds: 1820, slotsLeft: 3, distanceText: "距你 2.4km" }
 ];
 
+const fallbackAttendance = [
+  { id: "attendance-1", rank: 1, name: "王一鸣", attendanceText: "14 次", rateText: "100%" },
+  { id: "attendance-2", rank: 2, name: "赵子墨", attendanceText: "13 次", rateText: "97%" },
+  { id: "attendance-3", rank: 3, name: "孙晨", attendanceText: "12 次", rateText: "96%" }
+];
+
 const feedCopy = {
   recruiting: {
     title: "正在招人",
@@ -50,6 +56,8 @@ function mapHomeGame(game, index) {
     ? `${String(start.getHours()).padStart(2, "0")}:${String(start.getMinutes()).padStart(2, "0")}`
     : "20:00";
   const fee = Number(game.fee_per_person || 0);
+  const typeValue = game.game_type || game.match_type || game.type || "casual";
+  const eventGame = ["event", "tournament", "赛事局"].includes(typeValue);
 
   return {
     id: game.id || `game-${index}`,
@@ -61,8 +69,22 @@ function mapHomeGame(game, index) {
     hostName,
     timeText,
     actionText: homeGameTemplate.actionText,
+    typeText: eventGame ? "赛事局" : "散客局",
+    typeTone: eventGame ? "event" : "casual",
     countdownSeconds: gameCountdownSeconds(game),
     slotsLeft
+  };
+}
+
+function mapAttendancePreview(item, index) {
+  const attendance = Number(item.attendance ?? item.attendance_count ?? item.value ?? 0);
+  const rate = Number(item.rate ?? item.attendance_rate ?? item.percent ?? 0);
+  return {
+    id: item.id || `attendance-${index}`,
+    rank: index + 1,
+    name: item.name || item.username || "球友",
+    attendanceText: `${attendance} 次`,
+    rateText: `${rate || 0}%`
   };
 }
 
@@ -95,7 +117,9 @@ const recruitingCardTemplate = {
   mode: "5v5",
   fee: "AA ¥32",
   thumbLabel: "招",
-  actionText: "查看邀请"
+  actionText: "查看邀请",
+  typeText: "散客局",
+  typeTone: "casual"
 };
 
 const bookingHeroTemplate = {
@@ -158,6 +182,7 @@ Page({
     homeFeedSubtitle: feedCopy.recruiting.subtitle,
     bookingHero: bookingHeroTemplate,
     gameHero: buildGameHero(),
+    attendancePreview: fallbackAttendance,
     recruitingGames: buildRecruitingCards(recruitingGames),
     nearbyGames: buildRecruitingCards(nearbyGames),
     displayedGames: buildRecruitingCards(recruitingGames)
@@ -166,6 +191,21 @@ Page({
   onLoad() {
     this.startHomeCountdown();
     this.loadBootstrap();
+    this.loadAttendancePreview();
+  },
+
+  loadAttendancePreview() {
+    return get("/api/sports-app/rankings", { showLoading: false })
+      .then((payload) => {
+        const source = Array.isArray(payload?.attendance) ? payload.attendance : [];
+        if (!source.length) return;
+        this.setData({ attendancePreview: source.slice(0, 3).map(mapAttendancePreview) });
+      })
+      .catch(() => {});
+  },
+
+  openAttendanceRanking() {
+    wx.navigateTo({ url: "/pages/rankings/rankings" });
   },
 
   onShow() {

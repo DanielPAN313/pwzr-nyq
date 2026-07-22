@@ -20,7 +20,10 @@ const fallbackOrders = [
 
 const statusText = {
   pending_payment: "待支付",
+  pending_pay: "待支付",
   paid: "已支付",
+  offline_paid: "线下已支付",
+  refunding: "模拟退款中",
   checked_in: "已核销",
   cancelled: "已取消",
   refunded: "已退款"
@@ -54,7 +57,7 @@ function mapOrder(order) {
     hint: order.checkin_hint || (order.can_pay ? "请完成支付后正式占位。" : "请按订单时间到场核销。"),
     timeText: formatTime(order.start_time || order.booking_start_time || order.create_time),
     canPay: Boolean(order.can_pay),
-    canCancel: Boolean(order.can_cancel),
+    canCancel: Boolean(order.can_cancel) || ["pending_payment", "pending_pay", "paid", "offline_paid"].includes(order.status),
     canCheckin: Boolean(order.can_checkin),
     canCopyCode: Boolean(order.checkin_code),
     canReview: Boolean(order.game_id && ["checked_in", "review_open", "completed"].includes(order.status)),

@@ -1,9 +1,6 @@
 const { get } = require("../../utils/api");
 
-const tabs = [
-  { key: "scorers", label: "射手榜" },
-  { key: "attendance", label: "出勤榜" }
-];
+const tabs = [{ key: "attendance", label: "出勤榜" }];
 
 const fallbackSummary = {
   total_goals: 128,
@@ -38,16 +35,15 @@ function formatCount(value, suffix) {
 }
 
 function buildSummaryCards(summary, scorers, attendance) {
-  const goals = summary.total_goals ?? scorers.reduce((sum, item) => sum + safeNumber(item.goals), 0);
   const totalAttendance = summary.total_attendance ?? attendance.reduce((sum, item) => sum + safeNumber(item.attendance), 0);
-  const activePlayers = summary.active_players ?? Math.max(scorers.length, attendance.length);
+  const activePlayers = summary.active_players ?? attendance.length;
   const avgRate = summary.avg_attendance_rate ?? 91;
 
   return [
-    { label: "累计进球", value: formatCount(goals, " 球") },
     { label: "累计出勤", value: formatCount(totalAttendance, " 次") },
     { label: "活跃球友", value: formatCount(activePlayers, " 人") },
-    { label: "平均到场率", value: `${safeNumber(avgRate, 91)}%` }
+    { label: "平均到场率", value: `${safeNumber(avgRate, 91)}%` },
+    { label: "更新频率", value: "T+1" }
   ];
 }
 
@@ -87,15 +83,12 @@ function mapAttendance(item, index) {
   };
 }
 
-function buildView(activeTab, scorers, attendance) {
-  const rows = activeTab === "attendance" ? attendance : scorers;
+function buildView(_activeTab, _scorers, attendance) {
+  const rows = attendance;
   return {
-    activeTab,
-    rankTitle: activeTab === "attendance" ? "出勤榜" : "射手榜",
-    rankHint:
-      activeTab === "attendance"
-        ? "按到场次数排序，适合看谁最稳定、最守约。"
-        : "按进球数排序，适合看谁的终结能力更强。",
+    activeTab: "attendance",
+    rankTitle: "出勤榜",
+    rankHint: "按核销后的到场次数排序，每日 00:00 更新。",
     rankRows: rows,
     podiumRows: rows.slice(0, 3)
   };
@@ -108,14 +101,14 @@ Page({
     sourceLabel: "演示数据",
     bannerText: "当前显示演示榜单，接入后会按报名、核销和互评自动统计。",
     tabs,
-    activeTab: "scorers",
+    activeTab: "attendance",
     summaryCards: buildSummaryCards(fallbackSummary, fallbackScorers, fallbackAttendance),
-    rankTitle: "射手榜",
-    rankHint: "按进球数排序，适合看谁的终结能力更强。",
+    rankTitle: "出勤榜",
+    rankHint: "按核销后的到场次数排序，每日 00:00 更新。",
     scorerRows: fallbackScorers.map(mapScorer),
     attendanceRows: fallbackAttendance.map(mapAttendance),
-    rankRows: fallbackScorers.map(mapScorer),
-    podiumRows: fallbackScorers.map(mapScorer).slice(0, 3)
+    rankRows: fallbackAttendance.map(mapAttendance),
+    podiumRows: fallbackAttendance.map(mapAttendance).slice(0, 3)
   },
 
   onLoad() {
@@ -173,7 +166,7 @@ Page({
   },
 
   changeTab(event) {
-    const key = event.currentTarget.dataset.key || "scorers";
+    const key = "attendance";
     const scorers = Array.isArray(this.data.scorerRows) ? this.data.scorerRows : fallbackScorers.map(mapScorer);
     const attendance = Array.isArray(this.data.attendanceRows) ? this.data.attendanceRows : fallbackAttendance.map(mapAttendance);
 

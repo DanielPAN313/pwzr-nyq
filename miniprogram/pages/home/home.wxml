@@ -29,8 +29,8 @@
             <view class="court-ball"></view>
           </view>
           <view class="slide-copy">
-            <text class="slide-kicker">卡子门足球场</text>
-            <text class="slide-title">本周已订 {{bookingHero.weekBookings}} 场</text>
+            <text class="slide-title">一键约场</text>
+            <text class="slide-meta">今晚还有空场，来踢一场？</text>
             <button class="slide-button booking-button" data-action="bookVenue" bindtap="openHeroCard">立即订场</button>
           </view>
         </view>
@@ -63,6 +63,24 @@
     </swiper>
 
     <text wx:if="{{heroIndex === 0}}" class="hero-swipe-hint">← 滑动查看正在组局的球局 →</text>
+  </view>
+
+  <view class="attendance-section" bindtap="openAttendanceRanking">
+    <view class="attendance-head">
+      <view>
+        <text class="attendance-title">出勤榜</text>
+        <text class="attendance-subtitle">按核销到场记录，次日更新</text>
+      </view>
+      <text class="attendance-link">完整榜单 ›</text>
+    </view>
+    <view class="attendance-list">
+      <view wx:for="{{attendancePreview}}" wx:key="id" class="attendance-row">
+        <text class="attendance-rank">{{item.rank}}</text>
+        <text class="attendance-name">{{item.name}}</text>
+        <text class="attendance-count">{{item.attendanceText}}</text>
+        <text class="attendance-rate">{{item.rateText}}</text>
+      </view>
+    </view>
   </view>
 
   <view class="section feature-card">
@@ -99,7 +117,10 @@
         </view>
         <view class="recruit-body">
           <view class="recruit-top-row">
-            <text class="card-title recruit-title">{{item.title}}</text>
+            <view class="recruit-heading">
+              <text class="game-type game-type-{{item.typeTone}}">{{item.typeText}}</text>
+              <text class="card-title recruit-title">{{item.title}}</text>
+            </view>
             <text class="recruit-countdown">倒计时 {{item.countdownText}} 余 {{item.slotsLeft}} 人</text>
           </view>
           <text class="recruit-line">{{item.reserveLine}}</text>

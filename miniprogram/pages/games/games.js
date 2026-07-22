@@ -1,8 +1,8 @@
 const { get, post } = require("../../utils/api");
 
 const fallbackGames = [
-  { id: "", title: "今晚江宁五人制足球", time: "今天 19:30", status: "缺 2 人", venueName: "卡子门足球场", fee: "AA", canJoin: false, actionText: "去这场" },
-  { id: "", title: "大学城 5v5 足球局", time: "明天 20:00", status: "缺 1 人", venueName: "卡子门足球场", fee: "AA", canJoin: false, actionText: "去这场" }
+  { id: "", title: "今晚江宁五人制足球", time: "今天 19:30", status: "缺 2 人", venueName: "卡子门足球场", mode: "5v5", fee: "AA", typeText: "散客局", typeTone: "casual", canJoin: false, actionText: "去这场" },
+  { id: "", title: "卡子门周末对抗赛", time: "明天 20:00", status: "缺 1 人", venueName: "卡子门足球场", mode: "7v7", fee: "AA", typeText: "赛事局", typeTone: "event", canJoin: false, actionText: "去这场" }
 ];
 
 const statusText = {
@@ -36,6 +36,8 @@ function mapGame(game) {
   const missing = capacity > joined ? `缺 ${capacity - joined} 人` : "已满员";
   const fee = Number(game.fee_per_person || 0);
   const canJoin = Boolean(game.id) && !game.is_joined && ["forming", "open"].includes(game.status);
+  const typeValue = game.game_type || game.match_type || game.type || "casual";
+  const eventGame = ["event", "tournament", "赛事局"].includes(typeValue);
 
   return {
     id: game.id,
@@ -43,7 +45,10 @@ function mapGame(game) {
     time: formatGameTime(game.start_time),
     status: statusText[game.status] || missing,
     venueName: game.venue_name || game.area || "场地待定",
+    mode: game.mode || game.format || (capacity ? `${capacity}人局` : "5v5"),
     fee: fee ? `¥${fee}/人` : "免费/AA",
+    typeText: eventGame ? "赛事局" : "散客局",
+    typeTone: eventGame ? "event" : "casual",
     canJoin,
     actionText: "去这场"
   };
@@ -60,6 +65,8 @@ function filterGames(games, keyword) {
       game.time,
       game.status,
       game.venueName,
+      game.typeText,
+      game.mode,
       game.fee
     ].join(" ").toLowerCase();
 

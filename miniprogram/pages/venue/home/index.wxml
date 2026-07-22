@@ -17,7 +17,10 @@
     <view class="schedule-card">
       <view wx:for="{{schedules}}" wx:key="id" class="schedule-row">
         <text class="schedule-time">{{item.time}}</text>
-        <text class="schedule-project">{{item.project}}</text>
+        <view class="schedule-project-wrap">
+          <text class="schedule-type schedule-type-{{item.typeTone}}">{{item.typeText}}</text>
+          <text class="schedule-project">{{item.project}}</text>
+        </view>
         <text class="schedule-status status-{{item.statusTone}}">{{item.status}}</text>
         <text class="schedule-people">{{item.people}}</text>
       </view>

@@ -25,7 +25,7 @@
       </button>
       <button class="hub-action" bindtap="goRankings">
         <text class="hub-action-title">排行</text>
-        <text class="hub-action-sub">射手/出勤</text>
+        <text class="hub-action-sub">出勤榜</text>
       </button>
     </view>
   </view>
@@ -61,14 +61,16 @@
     </view>
     <view class="game-body">
       <view class="game-top-row">
-        <text class="card-title game-title">{{item.title}}</text>
+        <view class="game-heading">
+          <text class="game-type game-type-{{item.typeTone}}">{{item.typeText}}</text>
+          <text class="card-title game-title">{{item.title}}</text>
+        </view>
         <text class="status-chip">{{item.status}}</text>
       </view>
-      <text class="game-line">{{item.time}} · {{item.status}}</text>
-      <text class="game-line">{{item.venueName}}</text>
+      <text class="game-line">发起人 · {{item.time}}</text>
+      <text class="game-line">{{item.venueName}} · {{item.mode}} · {{item.fee}}</text>
       <view class="match-meta">
-        <text class="meta-item">{{item.fee}}</text>
-        <text class="meta-item">实名报名</text>
+        <text class="meta-item">AA</text>
         <text class="meta-item">到场核销</text>
       </view>
       <view class="game-actions">

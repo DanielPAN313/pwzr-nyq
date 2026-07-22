@@ -172,8 +172,6 @@ const CREDIT_PUBLIC_JOIN_MIN = 80
 const CREDIT_ACTION_MIN = 60
 const CREDIT_RECOVERY_TARGET = 60
 const CREDIT_RECOVERY_PER_WEEK = 5
-const CREDIT_LATE_CANCEL_24H = -5
-const CREDIT_LATE_CANCEL_1H = -20
 const CREDIT_NO_SHOW_PENALTY = -20
 const CREDIT_EVENT_WINDOW = 7 * 24 * 60 * 60 * 1000
 const ratingDimensions = ['technique', 'physical', 'tactics', 'defense', 'attitude']
@@ -759,7 +757,7 @@ const serializeGame = (game) => {
 
 const serializeOrder = (order) => {
   const checkinWindow = orderCheckinWindow(order)
-  const cancelRule = ['pending_payment', 'paid'].includes(order.status) ? canCancelOrder(order) : null
+  const cancelRule = ['pending_payment', 'paid', 'offline_paid'].includes(order.status) ? canCancelOrder(order) : null
   return {
     ...order,
     amount: Number(order.amount || 0),
@@ -769,7 +767,8 @@ const serializeOrder = (order) => {
     can_cancel: Boolean(cancelRule?.ok),
     cancel_hint: cancelRule?.ok ? cancelRule.note : cancelRule?.error || '',
     cancel_penalty_preview: Number(cancelRule?.penalty || 0),
-    refund_required: Boolean(cancelRule?.ok && cancelRule.nextStatus === 'refunded'),
+    refund_required: Boolean(cancelRule?.ok && cancelRule.nextStatus === 'refunding'),
+    refund_percent: Number(cancelRule?.refund_percent || 0),
     cancel_penalty: Number(order.cancel_penalty || 0),
     cancel_note: order.cancel_note || '',
     refund_source: order.refund_source || '',
@@ -823,19 +822,19 @@ const canCancelOrder = (order) => {
   if (order.status === 'pending_payment') {
     return { ok: true, nextStatus: 'cancelled', penalty: 0, note: '未支付订单可直接取消' }
   }
-  if (order.status !== 'paid') return { ok: false, error: '订单当前状态不能取消' }
+  if (!['paid', 'offline_paid'].includes(order.status)) return { ok: false, error: '订单当前状态不能取消' }
   const startAt = new Date(orderPlayableStart(order)).getTime()
   if (Number.isNaN(startAt)) {
-    return { ok: true, nextStatus: 'refunded', penalty: 0, note: '订单已取消' }
+    return { ok: true, nextStatus: 'refunding', refund_percent: 100, penalty: 0, note: '订单已取消，模拟退款处理中' }
   }
-  const diff = startAt - Date.now()
-  if (diff <= 60 * 60 * 1000) {
-    return { ok: true, nextStatus: 'refunded', penalty: CREDIT_LATE_CANCEL_1H, note: '开场/预订前 1 小时内取消，信用分 -20' }
+  const diffHours = (startAt - Date.now()) / (60 * 60 * 1000)
+  if (diffHours <= 2) {
+    return { ok: true, nextStatus: 'cancelled', refund_percent: 0, penalty: -8, note: '开场前 2 小时内取消，信用分 -8，不退款' }
   }
-  if (diff <= 24 * 60 * 60 * 1000) {
-    return { ok: true, nextStatus: 'refunded', penalty: CREDIT_LATE_CANCEL_24H, note: '开局/预订前 24 小时内取消，信用分 -5' }
+  if (diffHours <= 24) {
+    return { ok: true, nextStatus: 'refunding', refund_percent: 50, penalty: -3, note: '开场前 2-24 小时取消，信用分 -3，模拟退款 50%' }
   }
-  return { ok: true, nextStatus: 'refunded', penalty: 0, note: '订单已取消' }
+  return { ok: true, nextStatus: 'refunding', refund_percent: 100, penalty: 0, note: '开场前 24 小时以上取消，模拟退款 100%' }
 }
 
 const createMockPrepay = (order) => ({
@@ -1393,6 +1392,15 @@ const gameRatingContext = async (pool, gameId, user) => {
     'SELECT * FROM sports_signup WHERE game_id = ? AND user_id = ? AND payment_status = "paid" LIMIT 1',
     [gameId, user.id],
   )
+  const [[myOrder]] = await pool.execute(
+    `SELECT o.*, g.start_time, g.end_time
+     FROM sports_order o
+     LEFT JOIN sports_game g ON g.id = o.game_id
+     WHERE o.game_id = ? AND o.user_id = ? AND o.status IN ('pending_payment', 'paid', 'offline_paid')
+     ORDER BY o.create_time DESC
+     LIMIT 1`,
+    [gameId, user.id],
+  )
   const now = Date.now()
   const endAt = new Date(game.end_time).getTime()
   const reviewOpen = Boolean(mySignup?.checked_in) && now >= endAt && now <= endAt + 24 * 60 * 60 * 1000
@@ -1401,7 +1409,8 @@ const gameRatingContext = async (pool, gameId, user) => {
     [gameId, user.id],
   )
   return {
-    game,
+    game: { ...game, is_joined: Boolean(mySignup || myOrder) },
+    current_order: myOrder ? serializeOrder(myOrder) : null,
     players: players.map((player) => ({
       ...player,
       composite_score: Number(player.composite_score || 3),
@@ -2145,7 +2154,7 @@ const handleSportsApi = async (req, res, requestUrl) => {
       if (!cancelRule.ok) return json(res, { ok: false, error: cancelRule.error }, 409)
       const nextStatus = cancelRule.nextStatus
       const cancelPenalty = Number(cancelRule.penalty || 0)
-      const refundSource = nextStatus === 'refunded' ? 'mock_refund_reserved' : ''
+      const refundSource = nextStatus === 'refunding' ? 'mock_refund_pending' : ''
       await pool.execute(
         'UPDATE sports_order SET status = ?, cancelled_at = NOW(), cancel_note = ?, cancel_penalty = ?, refund_source = ? WHERE id = ?',
         [nextStatus, cancelRule.note, cancelPenalty, refundSource, orderId],
@@ -2159,19 +2168,19 @@ const handleSportsApi = async (req, res, requestUrl) => {
           [order.user_id, order.username, cancelPenalty, cancelRule.note, order.game_id || null],
         )
       }
-      await trackEvent(pool, user, nextStatus === 'refunded' ? 'refund_success' : 'order_cancelled', {
+      await trackEvent(pool, user, nextStatus === 'refunding' ? 'refund_requested' : 'order_cancelled', {
         entity_type: order.game_id ? 'game' : 'venue',
         entity_id: order.game_id || order.venue_id,
         metadata: { order_id: orderId, penalty: cancelPenalty, next_status: nextStatus, refund_source: refundSource },
       })
       await createNotification(pool, user, {
-        type: nextStatus === 'refunded' ? 'refund_success' : 'order_cancelled',
-        title: nextStatus === 'refunded' ? '订单已退款' : '订单已取消',
-        body: `订单 #${orderId} 已更新为${nextStatus === 'refunded' ? '已退款' : '已取消'}。${cancelPenalty !== 0 ? ` ${cancelRule.note}` : ''}`,
+        type: 'order_cancelled',
+        title: nextStatus === 'refunding' ? '报名已取消，退款处理中' : '报名已取消',
+        body: `订单 #${orderId} 已更新为${nextStatus === 'refunding' ? '退款处理中' : '已取消'}。${cancelPenalty !== 0 ? ` ${cancelRule.note}` : ''}`,
         order_id: orderId,
         game_id: order.game_id,
       })
-      return json(res, { ok: true, status: nextStatus, penalty: cancelPenalty, note: cancelRule.note, refund_source: refundSource })
+      return json(res, { ok: true, status: nextStatus, penalty: cancelPenalty, refund_percent: Number(cancelRule.refund_percent || 0), note: cancelRule.note, refund_source: refundSource })
     }
 
     const checkinMatch = pathName.match(/^\/api\/sports-app\/orders\/(\d+)\/checkin$/)

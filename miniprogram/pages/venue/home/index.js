@@ -10,10 +10,10 @@ const fallbackStats = [
 ];
 
 const fallbackSchedules = [
-  { id: "s1", time: "09:00", project: "五人制约场", status: "已确认", statusTone: "confirmed", people: "10人" },
-  { id: "s2", time: "14:00", project: "青少年训练", status: "待确认", statusTone: "pending", people: "16人" },
-  { id: "s3", time: "19:30", project: "周末球局", status: "已确认", statusTone: "confirmed", people: "12人" },
-  { id: "s4", time: "21:00", project: "企业包场", status: "待确认", statusTone: "pending", people: "18人" }
+  { id: "s1", time: "09:00", project: "五人制约场", typeText: "散客局", typeTone: "casual", status: "已确认", statusTone: "confirmed", people: "10人" },
+  { id: "s2", time: "14:00", project: "青少年训练", typeText: "赛事局", typeTone: "event", status: "待确认", statusTone: "pending", people: "16人" },
+  { id: "s3", time: "19:30", project: "周末球局", typeText: "散客局", typeTone: "casual", status: "已确认", statusTone: "confirmed", people: "12人" },
+  { id: "s4", time: "21:00", project: "企业包场", typeText: "赛事局", typeTone: "event", status: "待确认", statusTone: "pending", people: "18人" }
 ];
 
 const fallbackOrders = [

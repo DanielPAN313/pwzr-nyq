@@ -122,6 +122,29 @@ page {
   white-space: nowrap;
 }
 
+.schedule-project-wrap {
+  min-width: 0;
+}
+
+.schedule-type {
+  display: inline-block;
+  margin-right: 5px;
+  padding: 2px 4px;
+  border-radius: 3px;
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.schedule-type-casual {
+  background: #4a90d9;
+}
+
+.schedule-type-event {
+  background: #ff9800;
+}
+
 .schedule-status {
   font-size: 12px;
   line-height: 1.3;

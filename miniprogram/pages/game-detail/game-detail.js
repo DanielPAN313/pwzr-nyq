@@ -1,5 +1,6 @@
 const { get, post } = require("../../utils/api");
 const { getStoredUser } = require("../../utils/auth");
+const { appendLocalNotification } = require("../../utils/notifications");
 
 const statusText = {
   forming: "待成局",
@@ -114,7 +115,10 @@ function mapDetail(detail) {
   const missingCount = Math.max(capacity - playerCount, 0);
   const progressPercent = capacity ? Math.min(Math.round((playerCount / capacity) * 100), 100) : 0;
   const step = gameStep(game, players, currentUser.id, Boolean(detail.review_open), reviewablePlayers);
-  const canJoin = Boolean(game.id) && !game.is_joined && ["forming", "open"].includes(game.status) && missingCount > 0;
+  const currentOrder = detail.current_order || detail.order || null;
+  const orderStatus = currentOrder ? (currentOrder.status === "pending_pay" ? "pending_payment" : currentOrder.status) : "";
+  const canJoin = Boolean(game.id) && !game.is_joined && !currentOrder && ["forming", "open"].includes(game.status) && missingCount > 0;
+  const cancelRule = buildCancelRule(currentOrder, game.start_time);
   const venueName = "卡子门足球场";
   const address = game.address || "";
   const notes = game.notes || "";
@@ -144,11 +148,48 @@ function mapDetail(detail) {
     progressPercent,
     canJoin,
     joinText: canJoin ? "提交报名" : game.is_joined ? "已报名" : "暂不可报名",
+    currentOrder,
+    orderId: currentOrder?.id || "",
+    orderStatus,
+    canCancel: Boolean(cancelRule?.canCancel),
+    cancelLabel: cancelRule?.label || "取消报名",
+    cancelContent: cancelRule?.content || "取消后将释放报名名额，确定取消？",
+    cancelStatusText: cancelRule?.statusText || "",
     players,
     reviewablePlayers,
     playerCount,
     reviewOpen: Boolean(detail.review_open),
     reviewedCount: reviewedIds.length
+  };
+}
+
+function buildCancelRule(order, startTime) {
+  if (!order) return null;
+  const status = order.status === "pending_pay" ? "pending_payment" : order.status;
+  if (!["pending_payment", "paid", "offline_paid"].includes(status)) return null;
+  if (order.can_cancel === false) return { canCancel: false, statusText: "当前时间不可取消" };
+  if (status === "pending_payment") {
+    return {
+      canCancel: true,
+      label: "取消报名",
+      statusText: "未支付订单将直接取消",
+      content: "取消后将扣除信用分 0 分，退款 0%（无需退款），确定取消？"
+    };
+  }
+  const startAt = new Date(order.start_time || startTime).getTime();
+  const hours = Number.isNaN(startAt) ? 48 : (startAt - Date.now()) / (60 * 60 * 1000);
+  const refundPercent = hours > 24 ? 100 : hours > 2 ? 50 : 0;
+  const penalty = hours > 24 ? 0 : hours > 2 ? 3 : 8;
+  const amount = Number(order.amount || 0);
+  const refundAmount = Math.round(amount * refundPercent) / 100;
+  return {
+    canCancel: true,
+    label: hours > 2 ? "取消并申请退款" : "取消报名（不退款）",
+    statusText: refundPercent ? `模拟退款 ${refundPercent}%` : "取消后不退款",
+    content: `取消后将扣除信用分 ${penalty} 分，退款 ${refundPercent}%（¥${refundAmount.toFixed(2)}），确定取消？`,
+    refundPercent,
+    penalty,
+    refundAmount
   };
 }
 
@@ -276,6 +317,55 @@ Page({
       .finally(() => {
         this.setData({ joiningId: "" });
       });
+  },
+
+  cancelRegistration() {
+    const detail = this.data.detail;
+    const orderId = detail?.orderId;
+    if (!detail || !orderId || !detail.canCancel || this.data.joiningId) return;
+
+    wx.showModal({
+      title: "确认取消报名？",
+      content: detail.cancelContent,
+      confirmText: "确定取消",
+      confirmColor: "#b42318",
+      success: (result) => {
+        if (!result.confirm) return;
+        this.setData({ joiningId: `cancel-${orderId}` });
+        post(`/api/sports-app/orders/${orderId}/cancel`, {}, { loadingTitle: "取消中" })
+          .then((payload) => {
+            appendLocalNotification({
+              type: "order_cancelled",
+              title: "报名已取消",
+              body: `您已取消报名，信用分 -${Math.abs(Number(payload.penalty) || 0)}${payload.status === "refunding" ? "，模拟退款处理中" : ""}`,
+              orderId,
+              gameId: this.data.id
+            });
+            wx.showToast({ title: payload.status === "refunding" ? "已提交取消" : "报名已取消", icon: "success" });
+            return this.loadDetail();
+          })
+          .catch(() => {
+            appendLocalNotification({
+              type: "order_cancelled",
+              title: "报名已取消",
+              body: `您已取消报名，信用分 -${detail.cancelContent.includes("8 分") ? 8 : detail.cancelContent.includes("3 分") ? 3 : 0}`,
+              orderId,
+              gameId: this.data.id
+            });
+            this.setData({
+              detail: {
+                ...detail,
+                canCancel: false,
+                canJoin: false,
+                orderStatus: "cancelled",
+                cancelStatusText: "已取消"
+              }
+            });
+            wx.showToast({ title: "报名已取消（本地演示）", icon: "success" });
+          })
+          .finally(() => this.setData({ joiningId: "" }));
+      }
+    });
   },
 
   loadDetail() {

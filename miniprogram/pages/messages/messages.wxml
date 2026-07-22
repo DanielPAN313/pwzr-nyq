@@ -4,24 +4,24 @@
     <view class="page-title">消息中心</view>
     <text wx:if="{{loading}}" class="muted">正在加载消息...</text>
     <text wx:elif="{{empty}}" class="muted">暂时没有新消息。</text>
-    <text wx:else class="muted">已接入订单提醒、核销提醒和系统通知。</text>
+    <text wx:else class="muted">订单、核销、分队、评价和信用提醒都在这里。</text>
   </view>
 
-  <view
-    wx:for="{{messages}}"
-    wx:key="title"
-    class="section message-card"
-    bindtap="markRead"
-    data-id="{{item.id}}"
-  >
-    <view class="message-head">
-      <text class="message-dot"></text>
-      <text class="card-title">{{item.title}}</text>
-    </view>
-    <text class="muted">{{item.body}}</text>
-    <view class="message-foot">
-      <text class="pill">{{item.statusText}}</text>
-      <text class="muted">{{item.timeText}}</text>
+  <view wx:for="{{messages}}" wx:key="id" class="message-swipe {{swipedId === item.id ? 'message-swipe-open' : ''}}" data-id="{{item.id}}" bindtouchstart="onTouchStart" bindtouchend="onTouchEnd">
+    <view class="message-delete" data-id="{{item.id}}" catchtap="removeMessage">删除</view>
+    <view class="section message-card" bindtap="openMessage" data-id="{{item.id}}">
+      <view class="message-icon message-icon-{{item.type}}">{{item.icon}}</view>
+      <view class="message-content">
+        <view class="message-head">
+          <text class="card-title">{{item.title}}</text>
+          <text wx:if="{{item.unread}}" class="message-unread-dot"></text>
+        </view>
+        <text class="muted message-body">{{item.body}}</text>
+        <view class="message-foot">
+          <text class="message-time">{{item.timeText}}</text>
+          <text class="message-status">{{item.statusText}}</text>
+        </view>
+      </view>
     </view>
   </view>
 </view>

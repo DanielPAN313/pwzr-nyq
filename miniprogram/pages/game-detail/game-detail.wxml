@@ -47,6 +47,15 @@
       >
         {{joiningId ? "报名中" : detail.joinText}}
       </button>
+      <button
+        wx:if="{{detail.canCancel}}"
+        class="secondary cancel-button"
+        bindtap="cancelRegistration"
+        disabled="{{joiningId}}"
+      >
+        {{detail.cancelLabel}}
+      </button>
+      <text wx:if="{{detail.cancelStatusText}}" class="cancel-status">{{detail.cancelStatusText}}</text>
     </view>
 
     <view class="section info-grid">

@@ -11,6 +11,8 @@
     "pages/team-detail/team-detail",
     "pages/team-create/team-create",
     "pages/team-games/team-games",
+    "pages/player-profile/edit/index",
+    "pages/player-profile/reviews/index",
     "pages/rankings/rankings",
     "pages/create-game/create-game",
     "pages/game-detail/game-detail",

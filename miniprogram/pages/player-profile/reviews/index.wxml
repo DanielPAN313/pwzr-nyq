@@ -1,0 +1,66 @@
+<view class="page reviews-page">
+  <view class="review-hero">
+    <view>
+      <text class="page-kicker">PEER REVIEW</text>
+      <text class="hero-title">球友眼中的你</text>
+      <text class="hero-note">最近有效评价会参与综合实力分计算。</text>
+    </view>
+    <view class="hero-score">
+      <text class="hero-score-value">{{starAverageText}}</text>
+      <text class="hero-score-label">平均星级</text>
+    </view>
+  </view>
+
+  <view class="summary-grid">
+    <view class="summary-item">
+      <text class="summary-value">{{reviewCount}}</text>
+      <text class="summary-label">评价数量</text>
+    </view>
+    <view class="summary-item">
+      <text class="summary-value">{{peerScoreText}}</text>
+      <text class="summary-label">他评综合分</text>
+    </view>
+    <view class="summary-item">
+      <text class="summary-value">{{effectivePeerGames}}</text>
+      <text class="summary-label">当前计权场次</text>
+    </view>
+  </view>
+
+  <view class="section radar-section">
+    <text class="section-title">他评六维平均</text>
+    <canvas wx:if="{{canvasSupported}}" type="2d" canvas-id="peerRadar" id="peerRadar" class="radar-canvas" width="320" height="270"></canvas>
+    <view wx:else class="fallback-bars">
+      <view wx:for="{{peerDimensions}}" wx:key="key" class="fallback-row">
+        <view class="fallback-copy"><text>{{item.label}}</text><text>{{item.value}}</text></view>
+        <view class="fallback-track"><view class="fallback-fill" style="width: {{item.value}}%;"></view></view>
+      </view>
+    </view>
+  </view>
+
+  <view class="review-heading">
+    <text class="section-title">评价记录</text>
+    <text class="review-heading-note">1-2 星计入差评规则</text>
+  </view>
+
+  <view wx:if="{{loading}}" class="section loading-panel">
+    <view class="loading-line lg"></view>
+    <view class="loading-line md"></view>
+  </view>
+
+  <view wx:for="{{reviews}}" wx:key="id" class="section review-card {{item.isNegative ? 'negative' : ''}}">
+    <view class="review-top">
+      <view>
+        <text class="review-name">{{item.nickname}}</text>
+        <text class="review-venue">{{item.venue}}</text>
+      </view>
+      <view class="star-row">
+        <text wx:for="{{item.stars}}" wx:for-item="filled" wx:key="index" class="star {{filled ? 'filled' : ''}}">★</text>
+      </view>
+    </view>
+    <text class="review-content">{{item.content}}</text>
+    <view class="review-foot">
+      <text>{{item.time}}</text>
+      <text wx:if="{{item.isNegative}}" class="negative-tag">差评记录</text>
+    </view>
+  </view>
+</view>

@@ -215,7 +215,7 @@ for (const file of fs.readdirSync(path.join(miniRoot, "utils"))) {
   if (file.endsWith(".js")) loadModule(path.join(miniRoot, "utils", file));
 }
 
-assert(registeredPages.length === 23, "Mini Program should register the 23-page product flow including P2.5 team pages.");
+assert(registeredPages.length === 25, "Mini Program should register the 25-page product flow including P2 player profile pages.");
 for (const pagePath of [
   "pages/venue-detail/venue-detail",
   "pages/create-game/create-game",
@@ -225,6 +225,8 @@ for (const pagePath of [
   "pages/team-detail/team-detail",
   "pages/team-create/team-create",
   "pages/team-games/team-games",
+  "pages/player-profile/edit/index",
+  "pages/player-profile/reviews/index",
   "pages/venue-admin/venue-admin",
   "pages/venue/home/index",
   "pages/venue/scan/index",
@@ -348,6 +350,49 @@ const testTeamGame = teamStats.saveLocalGame({
 const signedTeamGame = teamStats.signupLocalGame(testTeamGame.id);
 assert(signedTeamGame.joined === true && signedTeamGame.signupCount === 3, "team game fallback signup should update joined state and count.");
 
+const playerRating = loadModule(path.join(miniRoot, "utils", "player-rating.js"));
+assert(playerRating.ratingDimensions.length === 6, "player rating should expose six football dimensions.");
+assert(playerRating.positionOptions.length === 8, "player profile should expose eight selectable positions.");
+const runtimeProfile = playerRating.normalizeProfile({
+  speed: 50,
+  passing: 60,
+  defense: 70,
+  shooting: 80,
+  dribbling: 90,
+  stamina: 100,
+  positions: ["前锋", "中场"],
+});
+const newPlayerRating = playerRating.calculateRating(runtimeProfile, []);
+assert(newPlayerRating.compositeScore === 75, "new player composite should equal the six-dimension self average.");
+const veteranRating = playerRating.calculateRating(runtimeProfile, [{
+  starScore: 5,
+  time: "2026-07-20 20:00",
+  dimensions: { speed: 100, passing: 100, defense: 100, shooting: 100, dribbling: 100, stamina: 100 },
+}]);
+assert(veteranRating.compositeDimensions[0].value === 80, "veteran score should weight self 40% and recent peer rating 60%.");
+context.wx.removeStorageSync(playerRating.PROFILE_EDIT_META_KEY);
+context.wx.removeStorageSync(playerRating.PROFILE_STORAGE_KEY);
+const firstProfileSave = playerRating.saveLocalProfile(runtimeProfile, Date.UTC(2026, 6, 23, 0, 0, 0));
+const initialWindowEdit = playerRating.saveLocalProfile(runtimeProfile, Date.UTC(2026, 6, 23, 1, 0, 0));
+const blockedProfileEdit = playerRating.saveLocalProfile(runtimeProfile, Date.UTC(2026, 6, 23, 2, 0, 0));
+assert(firstProfileSave.ok && initialWindowEdit.ok, "profile should allow the first save and one edit within 24 hours.");
+assert(blockedProfileEdit.ok === false && blockedProfileEdit.policy.mode === "cooldown", "profile should enter the 15-day cooldown after the extra edit.");
+
+const playerProfileEditPage = registeredPageByPath.get("pages/player-profile/edit/index");
+assert(playerProfileEditPage, "player profile edit page should be registered.");
+for (const method of ["loadProfile", "onDimensionChange", "togglePosition", "drawRadar", "saveProfile"]) {
+  assert(typeof playerProfileEditPage[method] === "function", `player profile edit should expose ${method}.`);
+}
+assert(playerProfileEditPage.data.dimensions.length === 6, "player profile edit should expose six sliders.");
+assert(playerProfileEditPage.data.positionItems.length === 8, "player profile edit should expose eight positions.");
+
+const playerProfileReviewsPage = registeredPageByPath.get("pages/player-profile/reviews/index");
+assert(playerProfileReviewsPage, "player profile reviews page should be registered.");
+for (const method of ["loadReviews", "syncReviews", "drawRadar"]) {
+  assert(typeof playerProfileReviewsPage[method] === "function", `player profile reviews should expose ${method}.`);
+}
+assert(playerProfileReviewsPage.data.reviews.length >= 1, "player profile reviews should expose fallback review records.");
+
 const gameDetailPage = registeredPageByPath.get("pages/game-detail/game-detail");
 assert(gameDetailPage, "pages/game-detail/game-detail page instance was not registered.");
 assert(typeof gameDetailPage.submitJoinGame === "function", "pages/game-detail/game-detail should expose submitJoinGame method.");
@@ -392,6 +437,10 @@ const mePage = registeredPageByPath.get("pages/me/me");
 assert(mePage, "pages/me/me page instance was not registered.");
 assert(Array.isArray(mePage.data.profileStats) && mePage.data.profileStats.length === 3, "me page should expose three profile stats.");
 assert(typeof mePage.data.profileTag === "string" && mePage.data.profileTag.length > 0, "me page should expose a profile tag.");
+assert(Array.isArray(mePage.data.playerDimensions) && mePage.data.playerDimensions.length === 6, "me page should expose the six-dimension profile summary.");
+for (const method of ["loadPlayerProfile", "drawPlayerRadar", "editPlayerProfile", "openPlayerReviews"]) {
+  assert(typeof mePage[method] === "function", `me page should expose ${method}.`);
+}
 for (const target of ["/pages/my-games/my-games", "/pages/credit/credit", "/pages/legal/legal"]) {
   assert(mePage.data.items.some((item) => item.target === target), `me menu should expose ${target}.`);
 }
@@ -473,4 +522,4 @@ assert(venueScanPage.guardVenueAdmin.call(venueScanPage) === false, "venue scan 
 
 for (const timer of timers.splice(0)) timer();
 
-console.log(`Mini Program runtime check passed: loaded app.js, ${registeredPages.length} pages, restored product pages, venue admin home, search flows, order actions, and credit self-rating.`);
+console.log(`Mini Program runtime check passed: loaded app.js, ${registeredPages.length} pages, restored product pages, P2 player profile, venue admin home, search flows, order actions, and credit self-rating.`);

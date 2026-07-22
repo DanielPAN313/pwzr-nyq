@@ -1,5 +1,13 @@
 const { get } = require("../../utils/api");
 const { getStoredUser } = require("../../utils/auth");
+const {
+  calculateRating,
+  drawRadarChart,
+  getStoredProfile,
+  getStoredReviews,
+  storeProfileFromServer,
+  storeReviewsFromServer
+} = require("../../utils/player-rating");
 
 const fallbackItems = [
   { label: "我的订单", value: "0 单", target: "/pages/orders/orders", tone: "default", hint: "查看支付、核销和取消" },
@@ -46,6 +54,17 @@ function buildProfileHint(summary) {
   return `信用分 ${next.credit_score || 100}，已参与 ${next.played || 0} 场球局。`;
 }
 
+function buildPlayerProfileState(profile, reviews) {
+  const rating = calculateRating(profile, reviews);
+  return {
+    playerCompositeScore: rating.compositeScoreText,
+    playerLevelLabel: rating.levelLabel,
+    playerDimensions: rating.compositeDimensions,
+    playerPositions: profile.positions,
+    playerPeerCount: rating.peerCount
+  };
+}
+
 Page({
   data: {
     loading: false,
@@ -56,21 +75,71 @@ Page({
     profileTag: "开发版本体验用户",
     items: fallbackItems,
     isVenueAdmin: false,
-    venueModeEntry
+    venueModeEntry,
+    canvasSupported: true,
+    ...buildPlayerProfileState(getStoredProfile(), getStoredReviews())
   },
 
   onLoad() {
     this.loadProfile();
+    this.loadPlayerProfile();
+  },
+
+  onReady() {
+    this.drawPlayerRadar();
   },
 
   onShow() {
     if (typeof this.getTabBar === "function" && this.getTabBar()) {
       this.getTabBar().setData({ selected: 4 });
     }
+    this.syncPlayerProfile(getStoredProfile(), getStoredReviews());
+  },
+
+  syncPlayerProfile(profile, reviews) {
+    this.setData(buildPlayerProfileState(profile, reviews));
+    const draw = () => this.drawPlayerRadar();
+    if (typeof wx.nextTick === "function") wx.nextTick(draw);
+    else setTimeout(draw, 0);
+  },
+
+  loadPlayerProfile() {
+    this.syncPlayerProfile(getStoredProfile(), getStoredReviews());
+    const profilePromise = get("/api/sports-app/player-profile", { showLoading: false })
+      .then((result) => storeProfileFromServer(result && result.profile ? result.profile : result))
+      .catch(() => getStoredProfile());
+    const reviewPromise = get("/api/sports-app/player-profile/reviews", { showLoading: false })
+      .then((result) => storeReviewsFromServer(result && result.reviews ? result.reviews : result))
+      .catch(() => getStoredReviews());
+    return Promise.all([profilePromise, reviewPromise]).then(([profile, reviews]) => {
+      this.syncPlayerProfile(profile, reviews);
+    });
+  },
+
+  drawPlayerRadar() {
+    if (typeof wx.createCanvasContext !== "function") {
+      this.setData({ canvasSupported: false });
+      return;
+    }
+    try {
+      const context = wx.createCanvasContext("mePlayerRadar", this);
+      const rendered = drawRadarChart(context, this.data.playerDimensions, { width: 300, height: 250 });
+      if (!rendered) this.setData({ canvasSupported: false });
+    } catch (_error) {
+      this.setData({ canvasSupported: false });
+    }
+  },
+
+  editPlayerProfile() {
+    wx.navigateTo({ url: "/pages/player-profile/edit/index" });
+  },
+
+  openPlayerReviews() {
+    wx.navigateTo({ url: "/pages/player-profile/reviews/index" });
   },
 
   onPullDownRefresh() {
-    this.loadProfile().finally(() => wx.stopPullDownRefresh());
+    Promise.all([this.loadProfile(), this.loadPlayerProfile()]).finally(() => wx.stopPullDownRefresh());
   },
 
   loadProfile() {

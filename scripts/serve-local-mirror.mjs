@@ -175,6 +175,8 @@ const CREDIT_RECOVERY_PER_WEEK = 5
 const CREDIT_NO_SHOW_PENALTY = -20
 const CREDIT_EVENT_WINDOW = 7 * 24 * 60 * 60 * 1000
 const ratingDimensions = ['technique', 'physical', 'tactics', 'defense', 'attitude']
+const playerProfileDimensions = ['speed', 'passing', 'defense', 'shooting', 'dribbling', 'stamina']
+const playerPositions = ['前锋', '边锋', '前腰', '中场', '后腰', '边后卫', '中后卫', '门将']
 const ratingPresets = {
   beginner: 1,
   casual: 2,
@@ -206,6 +208,34 @@ const ratingLabel = (score) => {
   if (value >= 3.0) return '进阶'
   if (value >= 2.0) return '业余'
   return '入门'
+}
+
+const clampPlayerProfileScore = (value) => Math.max(0, Math.min(100, Math.round(Number(value ?? 50))))
+
+const normalizePlayerProfileBody = (body) => {
+  const profile = {}
+  for (const key of playerProfileDimensions) profile[key] = clampPlayerProfileScore(body[key])
+  const rawPositions = Array.isArray(body.positions)
+    ? body.positions
+    : String(body.preferred_positions || '').split(',')
+  profile.positions = rawPositions
+    .map((item) => text(item, 20))
+    .filter((item, index, list) => playerPositions.includes(item) && list.indexOf(item) === index)
+  return profile
+}
+
+const averagePlayerProfile = (profile) => {
+  const total = playerProfileDimensions.reduce((sum, key) => sum + clampPlayerProfileScore(profile[key]), 0)
+  return Math.round((total / playerProfileDimensions.length) * 10) / 10
+}
+
+const playerProfileLabel = (score) => {
+  const value = Number(score || 0)
+  if (value >= 85) return '核心球员'
+  if (value >= 70) return '稳定主力'
+  if (value >= 55) return '进阶球员'
+  if (value >= 40) return '休闲球员'
+  return '新手球员'
 }
 
 const ensureSportsSchema = async () => {
@@ -430,6 +460,26 @@ const ensureSportsSchema = async () => {
         defense_peer DECIMAL(3,1) NULL,
         attitude_peer DECIMAL(3,1) NULL,
         trend_json TEXT NULL,
+        update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (user_id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `)
+    await pool.execute(`
+      CREATE TABLE IF NOT EXISTS sports_player_profile (
+        user_id INT UNSIGNED NOT NULL,
+        username VARCHAR(50) NOT NULL,
+        speed TINYINT UNSIGNED NOT NULL DEFAULT 50,
+        passing TINYINT UNSIGNED NOT NULL DEFAULT 50,
+        defense TINYINT UNSIGNED NOT NULL DEFAULT 50,
+        shooting TINYINT UNSIGNED NOT NULL DEFAULT 50,
+        dribbling TINYINT UNSIGNED NOT NULL DEFAULT 50,
+        stamina TINYINT UNSIGNED NOT NULL DEFAULT 50,
+        average_score DECIMAL(4,1) NOT NULL DEFAULT 50.0,
+        preferred_positions_json TEXT NULL,
+        first_edit_at DATETIME NULL,
+        last_profile_edit_at DATETIME NULL,
+        extra_edit_used TINYINT NOT NULL DEFAULT 0,
+        create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         PRIMARY KEY (user_id)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
@@ -1186,6 +1236,76 @@ const ensureRatingSummary = async (pool, user) => {
   return created
 }
 
+const serializePlayerProfile = (row) => {
+  const profile = row || {}
+  const result = {
+    user_id: Number(profile.user_id || 0),
+    username: profile.username || '',
+    positions: parseJsonList(profile.preferred_positions_json),
+    average_score: Number(profile.average_score || 50),
+    first_edit_at: profile.first_edit_at || null,
+    last_profile_edit_at: profile.last_profile_edit_at || null,
+    extra_edit_used: Boolean(profile.extra_edit_used),
+    update_time: profile.update_time || null,
+  }
+  for (const key of playerProfileDimensions) result[key] = clampPlayerProfileScore(profile[key])
+  result.level_label = playerProfileLabel(result.average_score)
+  return result
+}
+
+const ensurePlayerProfile = async (pool, user) => {
+  const [[existing]] = await pool.execute(
+    'SELECT * FROM sports_player_profile WHERE user_id = ? LIMIT 1',
+    [user.id],
+  )
+  if (existing) return serializePlayerProfile(existing)
+  await pool.execute(
+    `INSERT INTO sports_player_profile
+      (user_id, username, speed, passing, defense, shooting, dribbling, stamina, average_score, preferred_positions_json)
+     VALUES (?, ?, 50, 50, 50, 50, 50, 50, 50.0, '[]')`,
+    [user.id, user.username],
+  )
+  const [[created]] = await pool.execute('SELECT * FROM sports_player_profile WHERE user_id = ? LIMIT 1', [user.id])
+  return serializePlayerProfile(created)
+}
+
+const playerProfileReviews = async (pool, userId) => {
+  const [rows] = await pool.execute(
+    `SELECT r.*, v.name AS venue_name
+     FROM sports_player_peer_rating r
+     LEFT JOIN sports_game g ON g.id = r.game_id
+     LEFT JOIN sports_venue v ON v.id = g.venue_id
+     WHERE r.target_user_id = ? AND r.status = 'valid'
+     ORDER BY r.create_time DESC
+     LIMIT 30`,
+    [userId],
+  )
+  return rows.map((row) => {
+    const starScore = Math.max(1, Math.min(5, Math.round(Number(row.average_score || 3))))
+    return {
+      id: row.id,
+      game_id: row.game_id,
+      nickname: row.anonymous ? '匿名球友' : row.rater_username,
+      star_score: starScore,
+      content: starScore <= 2
+        ? '本场配合体验有待改进。'
+        : starScore >= 4
+          ? '本场配合顺畅，期待下次继续同场。'
+          : '已完成本场有效互评。',
+      time: row.create_time,
+      venue: row.venue_name || '宁约球合作场馆',
+      dimensions: {
+        speed: clampPlayerProfileScore(Number(row.physical || 3) * 20),
+        passing: clampPlayerProfileScore(Number(row.tactics || 3) * 20),
+        defense: clampPlayerProfileScore(Number(row.defense || 3) * 20),
+        shooting: clampPlayerProfileScore(Number(row.technique || 3) * 20),
+        dribbling: clampPlayerProfileScore(((Number(row.technique || 3) + Number(row.tactics || 3)) / 2) * 20),
+        stamina: clampPlayerProfileScore(((Number(row.physical || 3) + Number(row.attitude || 3)) / 2) * 20),
+      },
+    }
+  })
+}
+
 const recalculatePlayerRating = async (pool, userId, username) => {
   const [[self]] = await pool.execute(
     'SELECT * FROM sports_player_self_rating WHERE user_id = ? LIMIT 1',
@@ -1915,6 +2035,84 @@ const handleSportsApi = async (req, res, requestUrl) => {
       return json(res, { ok: true, id: result.insertId, quality_score: qualityScore }, 201)
     }
 
+    if (pathName === '/api/sports-app/player-profile' && req.method === 'GET') {
+      const profile = await ensurePlayerProfile(pool, user)
+      const reviews = await playerProfileReviews(pool, user.id)
+      return json(res, { ok: true, profile, reviews })
+    }
+
+    if (pathName === '/api/sports-app/player-profile/reviews' && req.method === 'GET') {
+      return json(res, { ok: true, reviews: await playerProfileReviews(pool, user.id) })
+    }
+
+    if (pathName === '/api/sports-app/player-profile' && req.method === 'POST') {
+      const body = await readJsonBody(req)
+      const profile = normalizePlayerProfileBody(body)
+      if (!profile.positions.length) return json(res, { ok: false, error: '请至少选择一个擅长位置' }, 400)
+      const [[existing]] = await pool.execute('SELECT * FROM sports_player_profile WHERE user_id = ? LIMIT 1', [user.id])
+      const now = Date.now()
+      const day = 24 * 60 * 60 * 1000
+      let firstEditAt = new Date(now)
+      let extraEditUsed = 0
+
+      if (existing?.first_edit_at) {
+        const firstAt = new Date(existing.first_edit_at).getTime()
+        const initialWindowEnd = firstAt + day
+        if (!Number(existing.extra_edit_used) && now < initialWindowEnd) {
+          firstEditAt = existing.first_edit_at
+          extraEditUsed = 1
+        } else {
+          const lastAt = new Date(existing.last_profile_edit_at || existing.first_edit_at).getTime()
+          const cooldownStart = Number(existing.extra_edit_used) ? lastAt : initialWindowEnd
+          const nextEditableAt = cooldownStart + 15 * day
+          if (now < nextEditableAt) {
+            const remainingDays = Math.max(1, Math.ceil((nextEditableAt - now) / day))
+            return json(res, { ok: false, error: `档案仍在冷却期，${remainingDays} 天后可修改` }, 429)
+          }
+          firstEditAt = new Date(now)
+          extraEditUsed = 1
+        }
+      }
+
+      const average = averagePlayerProfile(profile)
+      await pool.execute(
+        `INSERT INTO sports_player_profile
+          (user_id, username, speed, passing, defense, shooting, dribbling, stamina, average_score,
+           preferred_positions_json, first_edit_at, last_profile_edit_at, extra_edit_used)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ON DUPLICATE KEY UPDATE
+           username = VALUES(username),
+           speed = VALUES(speed),
+           passing = VALUES(passing),
+           defense = VALUES(defense),
+           shooting = VALUES(shooting),
+           dribbling = VALUES(dribbling),
+           stamina = VALUES(stamina),
+           average_score = VALUES(average_score),
+           preferred_positions_json = VALUES(preferred_positions_json),
+           first_edit_at = VALUES(first_edit_at),
+           last_profile_edit_at = VALUES(last_profile_edit_at),
+           extra_edit_used = VALUES(extra_edit_used)`,
+        [
+          user.id,
+          user.username,
+          profile.speed,
+          profile.passing,
+          profile.defense,
+          profile.shooting,
+          profile.dribbling,
+          profile.stamina,
+          average,
+          JSON.stringify(profile.positions),
+          firstEditAt,
+          new Date(now),
+          extraEditUsed,
+        ],
+      )
+      const [[saved]] = await pool.execute('SELECT * FROM sports_player_profile WHERE user_id = ? LIMIT 1', [user.id])
+      return json(res, { ok: true, profile: serializePlayerProfile(saved) })
+    }
+
     if (pathName === '/api/sports-app/rating/self' && req.method === 'GET') {
       return json(res, await ensureRatingSummary(pool, user))
     }
@@ -2230,22 +2428,45 @@ const handleSportsApi = async (req, res, requestUrl) => {
               review.anonymous === false ? 0 : 1,
             ],
           )
-          savedTargets.push({ id: targetId, username: target.username })
+          savedTargets.push({ id: targetId, username: target.username, average })
         } catch (error) {
           if (error?.code !== 'ER_DUP_ENTRY') throw error
         }
       }
       for (const target of savedTargets) {
         await recalculatePlayerRating(pool, target.id, target.username)
-        await pool.execute(
-          `INSERT INTO sports_credit_event (user_id, username, event_type, score_delta, note, related_game_id)
-           VALUES (?, ?, 'peer_praise', 1, '获得队友好评', ?)` ,
-          [target.id, target.username, gameId],
+        const [[poorReviewCount]] = await pool.execute(
+          `SELECT COUNT(*) AS total FROM sports_player_peer_rating
+           WHERE game_id = ? AND target_user_id = ? AND status = 'valid' AND average_score <= 2`,
+          [gameId, target.id],
         )
+        const hasMultiplePoorReviews = Number(poorReviewCount?.total || 0) >= 2
+        if (hasMultiplePoorReviews) {
+          const [[existingPenalty]] = await pool.execute(
+            `SELECT id FROM sports_credit_event
+             WHERE user_id = ? AND related_game_id = ? AND event_type = 'peer_complaint' LIMIT 1`,
+            [target.id, gameId],
+          )
+          if (!existingPenalty) {
+            await pool.execute(
+              `INSERT INTO sports_credit_event (user_id, username, event_type, score_delta, note, related_game_id)
+               VALUES (?, ?, 'peer_complaint', -5, '单场收到至少 2 条差评，信用分 -5', ?)`,
+              [target.id, target.username, gameId],
+            )
+          }
+        } else if (Number(target.average) >= 4) {
+          await pool.execute(
+            `INSERT INTO sports_credit_event (user_id, username, event_type, score_delta, note, related_game_id)
+             VALUES (?, ?, 'peer_praise', 1, '获得队友好评', ?)`,
+            [target.id, target.username, gameId],
+          )
+        }
         await createNotification(pool, target, {
           type: 'rating_updated',
           title: '你收到新的赛后互评',
-          body: '综合实力分已根据有效互评重新计算。',
+          body: hasMultiplePoorReviews
+            ? '本场收到多条差评，信用分已按规则扣减 5 分。'
+            : '综合实力分已根据有效互评重新计算。',
           game_id: gameId,
         })
       }

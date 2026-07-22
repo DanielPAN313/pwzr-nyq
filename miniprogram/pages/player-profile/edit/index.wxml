@@ -1,0 +1,95 @@
+<view class="page profile-edit-page">
+  <view class="edit-status {{editPolicy.canEdit ? 'available' : 'locked'}}">
+    <view>
+      <text class="status-label">档案修改规则</text>
+      <text class="status-title">{{editPolicy.hint}}</text>
+    </view>
+    <text class="status-chip">{{editPolicy.canEdit ? "可编辑" : "冷却中"}}</text>
+  </view>
+
+  <view class="rating-overview">
+    <view>
+      <text class="page-kicker">PLAYER PROFILE</text>
+      <text class="overview-title">六维实力问卷</text>
+      <text class="overview-note">综合分结合自评与最近 5 场有效他评。</text>
+    </view>
+    <view class="score-block">
+      <text class="score-value">{{compositeText}}</text>
+      <text class="score-label">{{levelLabel}}</text>
+    </view>
+  </view>
+
+  <view class="section radar-section">
+    <view class="section-head">
+      <view>
+        <text class="section-title">能力轮廓</text>
+        <text class="section-note">六维平均 {{averageText}}</text>
+      </view>
+    </view>
+    <canvas wx:if="{{canvasSupported}}" type="2d" canvas-id="profileRadar" id="profileRadar" class="radar-canvas" width="320" height="270"></canvas>
+    <view wx:else class="fallback-bars">
+      <view wx:for="{{dimensions}}" wx:key="key" class="fallback-row">
+        <view class="fallback-copy">
+          <text>{{item.label}}</text>
+          <text>{{item.value}}</text>
+        </view>
+        <view class="fallback-track"><view class="fallback-fill" style="width: {{item.value}}%;"></view></view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-head">
+      <view>
+        <text class="section-title">六维自评</text>
+        <text class="section-note">拖动滑块，分值范围 0-100</text>
+      </view>
+      <text class="average-pill">平均 {{averageText}}</text>
+    </view>
+    <view wx:for="{{dimensions}}" wx:key="key" class="dimension-row">
+      <view class="dimension-head">
+        <text class="dimension-name">{{item.label}}</text>
+        <text class="dimension-value">{{item.value}}</text>
+      </view>
+      <slider
+        min="0"
+        max="100"
+        step="1"
+        value="{{item.value}}"
+        data-key="{{item.key}}"
+        bindchanging="onDimensionChange"
+        bindchange="onDimensionChange"
+        disabled="{{!editPolicy.canEdit}}"
+        activeColor="#d8ff3e"
+        backgroundColor="rgba(247,251,245,0.12)"
+        blockColor="#ffffff"
+        blockSize="18"
+      />
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-head">
+      <view>
+        <text class="section-title">擅长位置</text>
+        <text class="section-note">可多选，至少选择一个位置</text>
+      </view>
+    </view>
+    <view class="position-grid">
+      <button
+        wx:for="{{positionItems}}"
+        wx:key="key"
+        class="position-option {{item.selected ? 'selected' : ''}}"
+        data-position="{{item.key}}"
+        bindtap="togglePosition"
+        disabled="{{!editPolicy.canEdit}}"
+      >
+        {{item.label}}
+      </button>
+    </view>
+  </view>
+
+  <button class="save-button" bindtap="saveProfile" disabled="{{saving || !editPolicy.canEdit}}">
+    {{saving ? "保存中" : editPolicy.canEdit ? "保存实力档案" : "档案修改冷却中"}}
+  </button>
+</view>

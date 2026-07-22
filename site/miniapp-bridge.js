@@ -30,6 +30,8 @@
     'pages/team-detail/team-detail': 'team-detail',
     'pages/team-create/team-create': 'team-create',
     'pages/team-games/team-games': 'team-games',
+    'pages/player-profile/edit/index': 'me',
+    'pages/player-profile/reviews/index': 'me',
     'pages/ai/ai': 'ai',
     'pages/data/data': 'data',
     'pages/favorites/favorites': 'favorites',
@@ -1044,6 +1046,28 @@
       window.setTimeout(function () {
         if (typeof callback === 'function') callback();
       }, 0);
+    },
+
+    createCanvasContext: function (canvasId) {
+      var canvas = document.querySelector('[canvas-id="' + canvasId + '"]') || document.querySelector('#' + canvasId);
+      var context = canvas && typeof canvas.getContext === 'function' ? canvas.getContext('2d') : null;
+      var wrapper = {
+        clearRect: function (x, y, width, height) { if (context) context.clearRect(x, y, width, height); },
+        setLineWidth: function (value) { if (context) context.lineWidth = value; },
+        setStrokeStyle: function (value) { if (context) context.strokeStyle = value; },
+        setFillStyle: function (value) { if (context) context.fillStyle = value; },
+        setFontSize: function (value) { if (context) context.font = value + 'px sans-serif'; },
+        setTextAlign: function (value) { if (context) context.textAlign = value; },
+        beginPath: function () { if (context) context.beginPath(); },
+        moveTo: function (x, y) { if (context) context.moveTo(x, y); },
+        lineTo: function (x, y) { if (context) context.lineTo(x, y); },
+        closePath: function () { if (context) context.closePath(); },
+        stroke: function () { if (context) context.stroke(); },
+        fill: function () { if (context) context.fill(); },
+        fillText: function (value, x, y) { if (context) context.fillText(value, x, y); },
+        draw: function () {},
+      };
+      return wrapper;
     },
 
     startPullDownRefresh: function (options) {

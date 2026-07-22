@@ -92,6 +92,8 @@
     'pages/team-detail/team-detail': 'teams',
     'pages/team-create/team-create': 'teams',
     'pages/team-games/team-games': 'teams',
+    'pages/player-profile/edit/index': 'me',
+    'pages/player-profile/reviews/index': 'me',
     'pages/ai/ai': 'ai',
     'pages/data/data': 'data',
     'pages/favorites/favorites': 'favorites',

@@ -15,6 +15,40 @@
     </view>
   </view>
 
+  <view class="section player-profile-section">
+    <view class="player-profile-head">
+      <view>
+        <text class="section-title">球员实力档案</text>
+        <text class="section-hint">自评 40% + 最近 5 场他评 60%</text>
+      </view>
+      <view class="player-score">
+        <text class="player-score-value">{{playerCompositeScore}}</text>
+        <text class="player-score-label">{{playerLevelLabel}}</text>
+      </view>
+    </view>
+
+    <canvas wx:if="{{canvasSupported}}" type="2d" canvas-id="mePlayerRadar" id="mePlayerRadar" class="player-radar" width="300" height="250"></canvas>
+
+    <view class="dimension-bars">
+      <view wx:for="{{playerDimensions}}" wx:key="key" class="dimension-item">
+        <view class="dimension-copy">
+          <text>{{item.label}}</text>
+          <text>{{item.value}}</text>
+        </view>
+        <view class="dimension-track"><view class="dimension-fill" style="width: {{item.value}}%;"></view></view>
+      </view>
+    </view>
+
+    <view class="position-row">
+      <text wx:for="{{playerPositions}}" wx:key="*this" class="position-tag">{{item}}</text>
+    </view>
+
+    <view class="profile-action-row">
+      <button class="profile-action primary-action" bindtap="editPlayerProfile">编辑实力档案</button>
+      <button class="profile-action secondary-action" bindtap="openPlayerReviews">他人评价 {{playerPeerCount}}</button>
+    </view>
+  </view>
+
   <view class="section menu-section">
     <view class="section-head">
       <text class="section-title">功能入口</text>

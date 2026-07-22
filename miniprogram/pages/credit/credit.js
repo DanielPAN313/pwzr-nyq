@@ -31,6 +31,8 @@ const eventTypeText = {
   checkin: "到场核销",
   create_game: "发起真实球局",
   review_submitted: "提交赛后互评",
+  peer_praise: "获得队友好评",
+  peer_complaint: "被多人差评",
   no_show: "无故缺席",
   late_cancel: "临近开赛取消",
   auto_recovery: "信用自动恢复",

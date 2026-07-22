@@ -354,6 +354,13 @@
   line-height: 68rpx;
 }
 
+.credit-disabled {
+  border-color: #4d5b52 !important;
+  background: #39433d !important;
+  color: #a4aea7 !important;
+  box-shadow: none !important;
+}
+
 .review-panel button {
   min-height: 82rpx;
   border-radius: 18rpx;

@@ -65,9 +65,10 @@ Page({
   loadVenues() {
     return get("/api/sports-app/venue-admin", { showLoading: false })
       .then((data) => {
-        const venues = Array.isArray(data.venues) && data.venues.length
-          ? data.venues.map((item) => ({ id: item.id, name: item.name, area: item.area || "" }))
-          : fallbackVenues;
+        const kazi = Array.isArray(data.venues)
+          ? data.venues.find((item) => String(item.name || "").includes("卡子门足球场"))
+          : null;
+        const venues = kazi ? [{ id: kazi.id, name: "卡子门足球场", area: kazi.area || "" }] : fallbackVenues;
         this.setData({ venues });
       })
       .catch(() => this.setData({ venues: fallbackVenues }));

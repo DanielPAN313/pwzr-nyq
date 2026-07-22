@@ -53,6 +53,20 @@
   line-height: 1;
 }
 
+.score-text {
+  display: block;
+  margin-top: 12rpx;
+  color: #ffffff;
+  font-size: 58rpx;
+  font-weight: 950;
+  line-height: 1.2;
+}
+
+.event-copy {
+  min-width: 0;
+  flex: 1;
+}
+
 .score-track {
   position: relative;
   z-index: 1;

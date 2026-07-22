@@ -72,7 +72,7 @@ function mapGame(game, user) {
     isJoined: Boolean(game.is_joined),
     title: game.title || "未命名球局",
     time: formatGameTime(game.start_time),
-    venueName: game.venue_name || game.area || "场地待定",
+    venueName: "卡子门足球场",
     roleText: isCreator ? "我发起" : "我报名",
     statusText: statusText[game.status] || game.status || "未知状态",
     fee: fee ? `¥${fee}/人` : "免费/AA",

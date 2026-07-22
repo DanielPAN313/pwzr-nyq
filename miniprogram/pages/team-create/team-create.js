@@ -3,9 +3,7 @@ const { getStoredUser } = require("../../utils/auth");
 const { saveLocalTeam } = require("../../utils/team-stats");
 
 const fallbackVenues = [
-  { id: "venue-kazimen", name: "卡子门足球场", area: "雨花台" },
-  { id: "venue-future", name: "未来科技城五人制足球馆", area: "江宁开发区" },
-  { id: "venue-baijiahu", name: "百家湖运动中心", area: "百家湖" }
+  { id: "venue-kazimen", name: "卡子门足球场", area: "雨花台" }
 ];
 
 const activityOptions = [
@@ -66,7 +64,8 @@ Page({
   loadVenues() {
     return get("/api/sports-app/venues", { showLoading: false })
       .then((venues) => {
-        const list = Array.isArray(venues) && venues.length ? venues.map(mapVenue) : fallbackVenues;
+        const kazi = Array.isArray(venues) ? venues.find((venue) => String(venue.name || "").includes("卡子门足球场")) : null;
+        const list = kazi ? [mapVenue(kazi)] : fallbackVenues;
         this.setData({ venues: list, venueIndex: 0 });
       })
       .catch(() => {

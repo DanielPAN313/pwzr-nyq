@@ -1,6 +1,7 @@
 const { get, post } = require("../../utils/api");
 const { getStoredUser } = require("../../utils/auth");
 const { buildSharePayload } = require("../../utils/share");
+const { evaluateCreditAccess, loadCreditAccess } = require("../../utils/credit-access");
 
 const fallbackGames = [
   { id: "", title: "今晚江宁五人制足球", time: "今天 19:30", status: "缺 2 人", venueName: "卡子门足球场", mode: "5v5", fee: "AA", typeText: "散客局", typeTone: "casual", canJoin: false, actionText: "去这场" },
@@ -46,7 +47,7 @@ function mapGame(game) {
     title: game.title || "未命名球局",
     time: formatGameTime(game.start_time),
     status: statusText[game.status] || missing,
-    venueName: game.venue_name || game.area || "场地待定",
+    venueName: "卡子门足球场",
     mode: game.mode || game.format || (capacity ? `${capacity}人局` : "5v5"),
     fee: fee ? `¥${fee}/人` : "免费/AA",
     typeText: eventGame ? "赛事局" : "散客局",
@@ -55,8 +56,27 @@ function mapGame(game) {
     joinedCount: joined,
     capacity,
     feeAmount: fee,
+    creatorUserId: game.creator_user_id || "",
     canJoin,
+    baseCanJoin: canJoin,
     actionText: "去这场"
+  };
+}
+
+function applyGameAccess(game, access) {
+  const source = game || {};
+  const casual = source.matchType === "casual" || source.typeTone === "casual";
+  const currentUser = getStoredUser() || {};
+  const ownGameBlocked = casual && access.creditScore < 80 && source.creatorUserId && String(source.creatorUserId) === String(currentUser.id || "");
+  const creditBlocked = casual && (access.joinBlockedByCredit || ownGameBlocked);
+  const profileBlocked = casual && !access.profileReady;
+  return {
+    ...source,
+    creditBlocked,
+    ownGameBlocked,
+    profileBlocked,
+    canJoin: Boolean(source.baseCanJoin ?? source.canJoin) && !creditBlocked && !profileBlocked,
+    actionText: ownGameBlocked ? "仅可报名他人球局" : creditBlocked ? "信用分不足" : profileBlocked ? "先填档案" : source.actionText || "去这场"
   };
 }
 
@@ -87,12 +107,14 @@ Page({
     error: "",
     empty: false,
     keyword: "",
+    access: evaluateCreditAccess(100, false),
     allGames: fallbackGames,
     games: fallbackGames
   },
 
   onLoad() {
     wx.showShareMenu({ withShareTicket: true, menus: ["shareAppMessage"] });
+    this.refreshCreditAccess();
     this.loadGames();
   },
 
@@ -117,9 +139,22 @@ Page({
   },
 
   onShow() {
+    this.refreshCreditAccess();
     if (typeof this.getTabBar === "function" && this.getTabBar()) {
       this.getTabBar().setData({ selected: 2 });
     }
+  },
+
+  refreshCreditAccess() {
+    return loadCreditAccess().then((access) => {
+      const allGames = this.data.allGames.map((game) => applyGameAccess(game, access));
+      this.setData({
+        access,
+        allGames,
+        games: filterGames(allGames, this.data.keyword)
+      });
+      return access;
+    });
   },
 
   onPullDownRefresh() {
@@ -132,7 +167,7 @@ Page({
     return get("/api/sports-app/games", { showLoading: false })
       .then((games) => {
         const list = Array.isArray(games) ? games.map(mapGame) : [];
-        const allGames = list.length ? list : [];
+        const allGames = (list.length ? list : []).map((game) => applyGameAccess(game, this.data.access));
         const visibleGames = filterGames(allGames, this.data.keyword);
 
         this.setData({
@@ -143,13 +178,14 @@ Page({
         });
       })
       .catch(() => {
-        const visibleGames = filterGames(fallbackGames, this.data.keyword);
+        const allGames = fallbackGames.map((game) => applyGameAccess(game, this.data.access));
+        const visibleGames = filterGames(allGames, this.data.keyword);
 
         this.setData({
           loading: false,
           error: "",
           empty: visibleGames.length === 0,
-          allGames: fallbackGames,
+          allGames,
           games: visibleGames
         });
       });
@@ -178,6 +214,19 @@ Page({
 
   openGame(event) {
     const id = event.currentTarget.dataset.id;
+    const game = this.data.allGames.find((item) => String(item.id) === String(id)) || null;
+    if (game?.ownGameBlocked) {
+      this.showOwnGameBlocked();
+      return;
+    }
+    if (game?.creditBlocked) {
+      this.showCreditBlocked();
+      return;
+    }
+    if (game?.profileBlocked) {
+      this.showProfileRequired();
+      return;
+    }
     if (!id) {
       wx.showToast({ title: "体验数据暂不支持报名", icon: "none" });
       return;
@@ -197,7 +246,45 @@ Page({
   },
 
   createGame() {
+    if (this.data.access.createBlockedByCredit) {
+      wx.showModal({
+        title: "暂不能发起散客球局",
+        content: this.data.access.createHint,
+        showCancel: false
+      });
+      return;
+    }
     wx.navigateTo({ url: "/pages/create-game/create-game" });
+  },
+
+  showCreditBlocked() {
+    wx.showModal({
+      title: "信用分不足",
+      content: "信用分不足，无法报名。可通过按时到场踢球恢复（+2 分/次）",
+      confirmText: "查看信用分",
+      success(result) {
+        if (result.confirm) wx.navigateTo({ url: "/pages/credit/credit" });
+      }
+    });
+  },
+
+  showOwnGameBlocked() {
+    wx.showModal({
+      title: "当前仅可报名他人球局",
+      content: "信用分 60-79 分期间，可报名他人发起的散客球局；达到 80 分后恢复发起和本人球局能力。",
+      showCancel: false
+    });
+  },
+
+  showProfileRequired() {
+    wx.showModal({
+      title: "先完成球员档案",
+      content: "报名散客球局前，需要填写六维实力和擅长位置。",
+      confirmText: "去填写",
+      success(result) {
+        if (result.confirm) wx.navigateTo({ url: "/pages/player-profile/edit/index" });
+      }
+    });
   },
 
   goTeams() {
@@ -214,6 +301,10 @@ Page({
 
   joinGame(event) {
     const id = event.currentTarget.dataset.id;
+    const game = this.data.allGames.find((item) => String(item.id) === String(id));
+    if (game?.ownGameBlocked) return this.showOwnGameBlocked();
+    if (game?.creditBlocked) return this.showCreditBlocked();
+    if (game?.profileBlocked) return this.showProfileRequired();
     if (!id || this.data.joiningId) return;
 
     this.setData({ joiningId: id });

@@ -11,9 +11,9 @@
       <text class="pill">离我近</text>
     </view>
     <view class="hub-actions">
-      <button class="hub-action primary-action" bindtap="createGame">
+      <button class="hub-action primary-action {{access.createBlockedByCredit ? 'credit-disabled' : ''}}" bindtap="createGame">
         <text class="hub-action-title">发起球局</text>
-        <text class="hub-action-sub">约人开一场</text>
+        <text class="hub-action-sub">{{access.createBlockedByCredit ? '信用分需达到 80' : '约人开一场'}}</text>
       </button>
       <button class="hub-action" bindtap="goTeams">
         <text class="hub-action-title">球队</text>
@@ -82,7 +82,7 @@
           详情
         </button>
         <button
-          class="primary small join-button"
+          class="primary small join-button {{item.creditBlocked || item.profileBlocked ? 'credit-disabled' : ''}}"
           bindtap="openGame"
           data-id="{{item.id}}"
           disabled="{{joiningId === item.id && item.id}}"

@@ -52,7 +52,7 @@ Page({
     date: dateText(3),
     minDate: dateText(),
     startTime: "19:30",
-    venueOptions: ["球队主场", "卡子门足球场", "未来科技城五人制足球馆", "百家湖运动中心"],
+    venueOptions: ["球队主场", "卡子门足球场"],
     venueIndex: 0,
     opponentName: "",
     capacity: 12,
@@ -90,7 +90,7 @@ Page({
       createOpen: isCaptain && this.data.createOpen,
       allGames,
       games,
-      venueOptions: [team.homeVenue, "卡子门足球场", "未来科技城五人制足球馆", "百家湖运动中心"]
+      venueOptions: ["卡子门足球场"]
     });
     wx.setNavigationBarTitle({ title: `${team.name} · 比赛` });
   },

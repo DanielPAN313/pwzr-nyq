@@ -12,7 +12,7 @@ const fallbackVenue = {
 function mapVenue(venue) {
   return {
     id: venue.id,
-    name: venue.name || "卡子门足球场",
+    name: "卡子门足球场",
     pricePerHour: Number(venue.price_per_hour || 0),
     contact: venue.contact || "",
     openSlotsText: Array.isArray(venue.open_slots) ? venue.open_slots.join(", ") : ""

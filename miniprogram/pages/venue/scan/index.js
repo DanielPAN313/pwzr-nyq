@@ -43,7 +43,7 @@ function mapOrder(order) {
     username: order.username || "球友",
     phoneText: order.phone_text || order.phone || "手机号已验证",
     title: order.title || "场地预约订单",
-    venueName: order.venue_name || "卡子门足球场",
+    venueName: "卡子门足球场",
     timeText: order.start_time || order.booking_start_time || "时间待确认",
     statusText: ["checked_in", "verified"].includes(order.status) ? "已到场" : "待核销",
     checkinCode: order.checkin_code || ""

@@ -303,6 +303,9 @@ assert(gamesPage.data.games.every((game) => `${game.title} ${game.venueName} ${g
 gamesPage.clearSearch.call(gamesPage);
 assert(gamesPage.data.keyword === "", "games clearSearch did not reset the keyword.");
 assert(gamesPage.data.games.length === gamesPage.data.allGames.length, "games clearSearch did not restore the full game list.");
+for (const method of ["refreshCreditAccess", "showCreditBlocked", "showOwnGameBlocked", "showProfileRequired"]) {
+  assert(typeof gamesPage[method] === "function", `games should expose ${method} for credit/profile gating.`);
+}
 
 const share = loadModule(path.join(miniRoot, "utils", "share.js"));
 assert(Object.keys(share.SHARE_TEMPLATES).length === 3, "share module should expose three invitation templates.");
@@ -392,6 +395,7 @@ const initialWindowEdit = playerRating.saveLocalProfile(runtimeProfile, Date.UTC
 const blockedProfileEdit = playerRating.saveLocalProfile(runtimeProfile, Date.UTC(2026, 6, 23, 2, 0, 0));
 assert(firstProfileSave.ok && initialWindowEdit.ok, "profile should allow the first save and one edit within 24 hours.");
 assert(blockedProfileEdit.ok === false && blockedProfileEdit.policy.mode === "cooldown", "profile should enter the 15-day cooldown after the extra edit.");
+assert(playerRating.hasCompletedPlayerProfile() === true, "a submitted player profile should be recognized as complete.");
 
 const teamBalance = loadModule(path.join(miniRoot, "utils", "team-balance.js"));
 const balancePlayers = [
@@ -433,6 +437,9 @@ const gameDetailPage = registeredPageByPath.get("pages/game-detail/game-detail")
 assert(gameDetailPage, "pages/game-detail/game-detail page instance was not registered.");
 assert(typeof gameDetailPage.submitJoinGame === "function", "pages/game-detail/game-detail should expose submitJoinGame method.");
 assert(typeof gameDetailPage.onShareAppMessage === "function" && typeof gameDetailPage.copyInvitePath === "function", "game detail should expose share and copy invitation actions.");
+for (const method of ["refreshCreditAccess", "showCreditBlocked", "showOwnGameBlocked", "showProfileRequired"]) {
+  assert(typeof gameDetailPage[method] === "function", `game detail should expose ${method} for credit/profile gating.`);
+}
 gameDetailPage.onLoad.call(gameDetailPage, {
   id: "invite-preview",
   preview: "1",
@@ -479,22 +486,25 @@ assert(typeof paymentCallbackPage.goOrders === "function" && typeof paymentCallb
 
 const creditPage = registeredPageByPath.get("pages/credit/credit");
 assert(creditPage, "pages/credit/credit page instance was not registered.");
-for (const method of ["loadCredit", "goOrders", "goMyGames", "onRatingChange", "applyRatingPreset", "submitSelfRating", "syncRatingState"]) {
+for (const method of ["loadCredit", "goOrders", "goMyGames"]) {
   assert(typeof creditPage[method] === "function", `pages/credit/credit should expose ${method} method.`);
 }
-assert(Array.isArray(creditPage.data.ratingDimensions) && creditPage.data.ratingDimensions.length === 5, "credit page should expose five rating dimensions.");
-assert(Array.isArray(creditPage.data.ratingPresets) && creditPage.data.ratingPresets.length === 5, "credit page should expose rating presets.");
-assert(Array.isArray(creditPage.data.ratingSummaryCards) && creditPage.data.ratingSummaryCards.length === 3, "credit page should expose summary cards for self-rating.");
-creditPage.onRatingChange.call(creditPage, {
-  detail: { value: 5 },
-  currentTarget: { dataset: { key: "technique" } },
-});
-assert(creditPage.data.ratingForm.technique === 5, "credit rating slider should update the targeted dimension.");
-creditPage.applyRatingPreset.call(creditPage, {
-  currentTarget: { dataset: { score: 2 } },
-});
-assert(creditPage.data.ratingForm.technique === 2 && creditPage.data.ratingForm.attitude === 2, "credit rating preset should apply the same score to all dimensions.");
-assert(creditPage.data.ratingDraftAverage === "2.0", "credit rating preset should refresh the preview average.");
+assert(creditPage.data.scoreText === "信用分：100/100", "credit page should show the simple XX/100 score format.");
+assert(creditPage.data.creditRules.some((item) => item.text.includes("-15")), "credit rules should expose the no-show -15 penalty.");
+const creditWxml = fs.readFileSync(path.join(miniRoot, "pages/credit/credit.wxml"), "utf8");
+assert(!creditWxml.includes("score-track") && !creditWxml.includes("rating-panel"), "credit page should not show levels, progress, or the old strength rating form.");
+assert(creditWxml.includes("关联球局"), "credit records should display their related game title.");
+
+const creditAccess = loadModule(path.join(miniRoot, "utils", "credit-access.js"));
+assert(creditAccess.clampCredit(120) === 100 && creditAccess.clampCredit(-5) === 0, "credit access should hard-clamp scores to 0-100.");
+assert(creditAccess.evaluateCreditAccess(59, true).canJoinCasual === false, "score 59 should block casual signup.");
+assert(creditAccess.evaluateCreditAccess(60, true).canJoinCasual === true, "score 60 should allow another user's casual game.");
+assert(creditAccess.evaluateCreditAccess(79, true).canCreateCasual === false, "score 79 should block creating a casual game.");
+assert(creditAccess.evaluateCreditAccess(80, true).canCreateCasual === true, "score 80 should allow creating a casual game.");
+
+const createGamePage = registeredPageByPath.get("pages/create-game/create-game");
+assert(typeof createGamePage.refreshCreditAccess === "function", "player create game should load the credit gate.");
+assert(createGamePage.data.access.canCreateCasual === true, "player create game should default to an available local credit state.");
 
 const mePage = registeredPageByPath.get("pages/me/me");
 assert(mePage, "pages/me/me page instance was not registered.");
@@ -536,6 +546,13 @@ assert(auth.getLandingPath() === "/pages/venue/home/index", "venue admin identit
 
 const pageSources = appJson.pages.map((pagePath) => fs.readFileSync(path.join(miniRoot, `${pagePath}.js`), "utf8"));
 assert(pageSources.every((source) => !/\b(?:error|err)\.message\b/.test(source)), "page code must not expose raw technical error messages.");
+const visibleMiniSource = appJson.pages.map((pagePath) => `${fs.readFileSync(path.join(miniRoot, `${pagePath}.js`), "utf8")}\n${fs.readFileSync(path.join(miniRoot, `${pagePath}.wxml`), "utf8")}`).join("\n");
+for (const oldVenue of ["南京航空航天大学足球场", "九龙湖体育公园", "未来科技城五人制足球馆", "百家湖运动中心"]) {
+  assert(!visibleMiniSource.includes(oldVenue), `visible mini program content should not retain old venue ${oldVenue}.`);
+}
+assert(fs.readFileSync(path.join(miniRoot, "pages/game-detail/game-detail.wxml"), "utf8").includes('open-type="share"'), "game detail should expose a native share button.");
+assert(fs.readFileSync(path.join(miniRoot, "pages/games/games.wxml"), "utf8").includes('open-type="share"'), "game cards should expose native share buttons.");
+assert(fs.readFileSync(path.join(miniRoot, "utils/payment/wechat.js"), "utf8").includes("TODO: Phase X 微信支付"), "wechat payment adapter should keep the explicit phase TODO.");
 
 const rankingsPage = registeredPageByPath.get("pages/rankings/rankings");
 assert(rankingsPage, "pages/rankings/rankings page instance was not registered.");
@@ -553,6 +570,10 @@ for (const method of ["onTouchStart", "onTouchEnd", "removeMessage", "openMessag
   assert(typeof messagesPage[method] === "function", `messages page should expose ${method} method.`);
 }
 assert(messagesPage.data.messages.every((item) => item.icon && item.type), "messages should expose typed message rows.");
+const messagesSource = fs.readFileSync(path.join(miniRoot, "pages/messages/messages.js"), "utf8");
+for (const type of ["refund_requested", "refund_completed", "refund_rejected", "payment_success", "team_balance", "rating_updated"]) {
+  assert(messagesSource.includes(type), `messages should classify ${type}.`);
+}
 
 const gameDetailForCancel = registeredPageByPath.get("pages/game-detail/game-detail");
 assert(gameDetailForCancel && typeof gameDetailForCancel.cancelRegistration === "function", "game detail should expose cancel registration.");

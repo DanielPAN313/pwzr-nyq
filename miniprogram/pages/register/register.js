@@ -8,7 +8,7 @@ function normalizeUser(rawUser) {
     username,
     nickName: rawUser.nickName || rawUser.name || username,
     avatarUrl: rawUser.avatarUrl || "",
-    creditScore: rawUser.creditScore || 100
+    creditScore: rawUser.creditScore ?? 100
   };
 }
 

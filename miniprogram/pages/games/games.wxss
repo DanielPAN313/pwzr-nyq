@@ -86,6 +86,13 @@
   color: rgba(16, 32, 15, 0.66);
 }
 
+.credit-disabled {
+  border-color: #4d5b52 !important;
+  background: #39433d !important;
+  color: #a4aea7 !important;
+  box-shadow: none !important;
+}
+
 .search-panel {
   display: flex;
   align-items: center;

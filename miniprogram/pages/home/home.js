@@ -63,7 +63,7 @@ function mapHomeGame(game, index) {
     id: game.id || `game-${index}`,
     title: game.title || homeGameTemplate.title,
     desc: `${slotsLeft} 个名额 · ${timeText}`,
-    venue: game.venue_name || game.area || homeGameTemplate.venue,
+    venue: "卡子门足球场",
     mode: capacity ? `${capacity}人局` : homeGameTemplate.mode,
     fee: fee ? `¥${fee}/人` : homeGameTemplate.fee,
     hostName,

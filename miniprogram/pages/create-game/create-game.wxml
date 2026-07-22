@@ -35,6 +35,11 @@
     </view>
   </view>
 
+  <view wx:if="{{access.createBlockedByCredit}}" class="state-panel warning">
+    <text class="state-title">信用分暂未达到发局门槛</text>
+    <text class="state-text">{{access.createHint}}。你仍可报名他人散客球局。</text>
+  </view>
+
   <view class="section form-panel">
     <label class="field">
       <text class="field-label">标题</text>

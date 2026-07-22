@@ -24,7 +24,7 @@ function mapVenue(venue) {
 
   return {
     id: venue.id,
-    name: venue.name || "未命名场馆",
+    name: "卡子门足球场",
     area: venue.area || "附近",
     address: venue.address || "暂无详细地址",
     lat: Number(venue.lat || 0),

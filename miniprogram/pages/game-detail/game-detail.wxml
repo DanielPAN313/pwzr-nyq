@@ -52,9 +52,9 @@
     <view class="section signup-panel">
       <text class="signup-hint">选择场次后生成待支付订单</text>
       <button
-        class="primary signup-button"
+        class="primary signup-button {{detail.joinBlocked ? 'credit-disabled' : ''}}"
         bindtap="submitJoinGame"
-        disabled="{{!detail.canJoin && !detail.previewOnly || joiningId}}"
+        disabled="{{(!detail.canJoin && !detail.previewOnly && !detail.joinBlocked) || joiningId}}"
       >
         {{joiningId ? "报名中" : detail.joinText}}
       </button>

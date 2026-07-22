@@ -37,7 +37,7 @@ const fallbackReviews = [
     starScore: 5,
     content: "传球视野很好，回防也很积极。",
     time: "2026-07-18 21:30",
-    venue: "南京航空航天大学足球场",
+    venue: "卡子门足球场",
     dimensions: { speed: 76, passing: 84, defense: 70, shooting: 72, dribbling: 79, stamina: 82 }
   },
   {
@@ -55,7 +55,7 @@ const fallbackReviews = [
     starScore: 4,
     content: "体能不错，比赛后段还能保持压迫。",
     time: "2026-07-05 22:10",
-    venue: "九龙湖体育公园",
+    venue: "卡子门足球场",
     dimensions: { speed: 74, passing: 76, defense: 72, shooting: 67, dribbling: 73, stamina: 86 }
   }
 ];
@@ -208,6 +208,16 @@ function safeStorageGet(key, fallback) {
 
 function getStoredProfile() {
   return normalizeProfile(safeStorageGet(PROFILE_STORAGE_KEY, fallbackProfile));
+}
+
+function hasCompletedPlayerProfile() {
+  try {
+    const profile = wx.getStorageSync(PROFILE_STORAGE_KEY) || {};
+    const meta = wx.getStorageSync(PROFILE_EDIT_META_KEY) || {};
+    return Boolean(profile.firstEditAt || profile.first_edit_at || meta.firstSubmittedAt);
+  } catch (_error) {
+    return false;
+  }
 }
 
 function getStoredReviews() {
@@ -399,6 +409,7 @@ module.exports = {
   fallbackReviews,
   formatAverage,
   getEditPolicy,
+  hasCompletedPlayerProfile,
   getStoredProfile,
   getStoredReviews,
   normalizeProfile,

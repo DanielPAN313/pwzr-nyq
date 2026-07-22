@@ -12,7 +12,7 @@ const {
 const fallbackItems = [
   { label: "我的订单", value: "0 单", target: "/pages/orders/orders", tone: "default", hint: "查看支付、核销和取消" },
   { label: "我的球局", value: "0 场", target: "/pages/my-games/my-games", tone: "default", hint: "回看报名、到场和互评" },
-  { label: "信用分", value: "100", target: "/pages/credit/credit", tone: "accent", hint: "查看自评与信用记录" },
+  { label: "信用分", value: "100", target: "/pages/credit/credit", tone: "default", hint: "查看信用记录" },
   { label: "支付与规则", value: "查看", target: "/pages/legal/legal", tone: "subtle", hint: "支付、取消、信用说明" }
 ];
 
@@ -26,7 +26,7 @@ function buildStats(summary) {
   const next = summary || {};
 
   return [
-    { label: "信用分", value: String(next.credit_score || 100), tone: "accent" },
+    { label: "信用分", value: String(next.credit_score ?? 100), tone: "default" },
     { label: "待核销", value: String(next.pending_checkins || 0), tone: "warning" },
     { label: "本周局", value: String(next.week_games || next.played || 0), tone: "default" }
   ];
@@ -38,7 +38,7 @@ function buildItems(profile) {
   return [
     { label: "我的订单", value: `${orders.length} 单`, target: "/pages/orders/orders", tone: "default", hint: "查看支付、核销和取消" },
     { label: "我的球局", value: `${summary.played || 0} 场`, target: "/pages/my-games/my-games", tone: "default", hint: "回看报名、到场和互评" },
-    { label: "信用分", value: String(summary.credit_score || 100), target: "/pages/credit/credit", tone: "accent", hint: "查看自评与信用记录" },
+    { label: "信用分", value: String(summary.credit_score ?? 100), target: "/pages/credit/credit", tone: "default", hint: "查看信用记录" },
     { label: "支付与规则", value: "查看", target: "/pages/legal/legal", tone: "subtle", hint: "支付、取消、信用说明" }
   ];
 }
@@ -51,7 +51,7 @@ function isVenueAdmin(profile, user) {
 
 function buildProfileHint(summary) {
   const next = summary || {};
-  return `信用分 ${next.credit_score || 100}，已参与 ${next.played || 0} 场球局。`;
+  return `信用分 ${next.credit_score ?? 100}，已参与 ${next.played || 0} 场球局。`;
 }
 
 function buildPlayerProfileState(profile, reviews) {
@@ -154,7 +154,7 @@ Page({
           loading: false,
           profileName: user.nickName || summary.username || "宁约球用户",
           profileHint: buildProfileHint(summary),
-          profileTag: summary.credit_score >= 90 ? "守约良好" : summary.credit_score >= 80 ? "保持良好" : "继续完成履约",
+          profileTag: "球友档案",
           profileStats: buildStats(summary),
           items: buildItems(profile),
           isVenueAdmin: isVenueAdmin(profile, user)
@@ -166,7 +166,7 @@ Page({
           error: "",
           profileName: "开发版本体验用户",
           profileHint: "当前显示本地资料，联网后可自动加载真实账户。",
-          profileTag: "离线预览",
+          profileTag: "离线资料",
           profileStats: buildStats({}),
           items: fallbackItems,
           isVenueAdmin: isVenueAdmin({}, getStoredUser() || {})

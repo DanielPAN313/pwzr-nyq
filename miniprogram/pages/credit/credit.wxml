@@ -1,85 +1,20 @@
 <view class="page">
-  <view class="credit-hero {{levelTone}}">
-    <text class="hero-label">当前信用分</text>
-    <text class="score">{{score}}</text>
-    <text wx:if="{{loading}}" class="hero-hint">正在加载信用账户...</text>
-    <text wx:elif="{{error}}" class="hero-hint">{{error}}，已显示本地兜底数据。</text>
-    <text wx:else class="hero-hint">{{level}}</text>
-    <view class="score-track">
-      <view class="score-fill" style="width: {{scorePercent}}%;"></view>
-    </view>
-    <text class="hero-hint">{{progressHint}}</text>
-  </view>
-
-  <view class="section rating-panel">
-    <view class="section-title">实力自评</view>
-    <text wx:if="{{ratingError}}" class="muted">{{ratingError}}</text>
-    <view class="rating-summary-grid">
-      <view wx:for="{{ratingSummaryCards}}" wx:key="label" class="rating-summary-card">
-        <text class="rating-summary-value">{{item.value}}</text>
-        <text class="muted">{{item.label}}</text>
-        <text class="rating-summary-hint">{{item.hint}}</text>
-      </view>
-    </view>
-    <text class="rating-summary-meta">{{ratingHint}}</text>
-    <view class="rating-preset-row">
-      <button
-        wx:for="{{ratingPresets}}"
-        wx:key="key"
-        class="rating-preset"
-        data-score="{{item.value}}"
-        bindtap="applyRatingPreset"
-      >
-        {{item.label}}
-      </button>
-    </view>
-    <view wx:for="{{ratingInputs}}" wx:key="key" class="rating-dimension">
-      <view class="rating-dimension-head">
-        <view>
-          <text class="event-title">{{item.label}}</text>
-          <text class="muted">{{item.hint}}</text>
-        </view>
-        <text class="rating-dimension-value">{{item.value}}</text>
-      </view>
-      <slider
-        class="rating-slider"
-        min="1"
-        max="5"
-        step="1"
-        value="{{item.value}}"
-        data-key="{{item.key}}"
-        bindchange="onRatingChange"
-        activeColor="#d8ff3e"
-        backgroundColor="rgba(247, 251, 245, 0.12)"
-        blockColor="#ffffff"
-        blockSize="18"
-      />
-    </view>
-    <view class="rating-footer">
-      <text class="muted">当前预估 {{ratingDraftAverage}} 分，提交后 7 天内仅可修改 1 次。</text>
-      <button class="primary small" bindtap="submitSelfRating" disabled="{{ratingSubmitting}}">
-        {{ratingSubmitting ? "提交中" : "提交自评"}}
-      </button>
-    </view>
-  </view>
-
-  <view class="section metric-grid">
-    <view wx:for="{{scoreCards}}" wx:key="label" class="metric">
-      <text class="metric-value">{{item.value}}</text>
-      <text class="muted">{{item.label}}</text>
-      <text class="metric-hint">{{item.hint}}</text>
-    </view>
+  <view class="credit-hero">
+    <text class="hero-label">散客球局信用</text>
+    <text class="score-text">{{scoreText}}</text>
+    <text wx:if="{{loading}}" class="hero-hint">正在加载信用记录...</text>
+    <text wx:else class="hero-hint">分值范围 0-100，最高 100 分，无隐藏分。</text>
   </view>
 
   <view class="section">
-    <view class="section-title">下一步建议</view>
-    <view class="action-row">
-      <button class="primary small" bindtap="goOrders">查看订单</button>
-      <button class="secondary small" bindtap="goMyGames">我的球局</button>
-    </view>
+    <view class="section-title">恢复方式</view>
     <view wx:for="{{recoveryTips}}" wx:key="*this" class="tip-row">
       <text class="tip-index">{{index + 1}}</text>
       <text class="tip-text">{{item}}</text>
+    </view>
+    <view class="action-row">
+      <button class="primary small" bindtap="goOrders">查看订单</button>
+      <button class="secondary small" bindtap="goMyGames">我的球局</button>
     </view>
   </view>
 
@@ -96,8 +31,9 @@
     <view wx:for="{{eventSections}}" wx:key="title" class="event-section">
       <text class="event-section-title">{{item.title}}</text>
       <view wx:for="{{item.events}}" wx:for-item="event" wx:key="id" class="credit-row">
-        <view>
+        <view class="event-copy">
           <text class="event-title">{{event.title}}</text>
+          <text wx:if="{{event.gameTitle}}" class="muted">关联球局：{{event.gameTitle}}</text>
           <text class="muted">{{event.note}}</text>
           <text class="muted">{{event.timeText}}</text>
         </view>

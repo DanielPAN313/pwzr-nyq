@@ -113,7 +113,7 @@ function mapVenue(venue) {
 
   return {
     id: venue.id,
-    name: venue.name || "未命名场馆",
+    name: "卡子门足球场",
     area: venue.area || "区域待定",
     status: venue.status || "",
     statusText: venue.status === "approved" ? "营业中" : "待审核",
@@ -132,7 +132,7 @@ function mapOrder(order, highlightedOrderId) {
     id: order.id,
     anchorId: `venue-order-${order.id}`,
     title: order.title || "场地预约订单",
-    venueName: order.venue_name || "场馆待定",
+    venueName: "卡子门足球场",
     username: order.username || "用户",
     status,
     statusText: statusText[status] || status || "未知状态",

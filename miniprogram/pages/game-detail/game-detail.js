@@ -2,6 +2,7 @@ const { get, post } = require("../../utils/api");
 const { getStoredUser } = require("../../utils/auth");
 const { appendLocalNotification } = require("../../utils/notifications");
 const { buildSharePayload } = require("../../utils/share");
+const { evaluateCreditAccess, loadCreditAccess } = require("../../utils/credit-access");
 
 const statusText = {
   forming: "待成局",
@@ -128,6 +129,7 @@ function mapDetail(detail) {
     id: game.id,
     title: game.title || "未命名球局",
     matchType: game.match_type || game.game_type || game.type || "casual",
+    creatorUserId: game.creator_user_id || "",
     joinedCount: playerCount,
     feeAmount: fee,
     format: game.format || game.mode || "5v5",
@@ -153,6 +155,7 @@ function mapDetail(detail) {
     missingText: missingCount > 0 ? `还缺 ${missingCount} 人` : "人数已满",
     progressPercent,
     canJoin,
+    baseCanJoin: canJoin,
     joinText: canJoin ? "提交报名" : game.is_joined ? "已报名" : "暂不可报名",
     currentOrder,
     orderId: currentOrder?.id || "",
@@ -166,6 +169,24 @@ function mapDetail(detail) {
     playerCount,
     reviewOpen: Boolean(detail.review_open),
     reviewedCount: reviewedIds.length
+  };
+}
+
+function applyDetailAccess(detail, access) {
+  if (!detail || detail.previewOnly) return detail;
+  const casual = String(detail.matchType || "casual") === "casual";
+  const currentUser = getStoredUser() || {};
+  const ownGameBlocked = casual && access.creditScore < 80 && detail.creatorUserId && String(detail.creatorUserId) === String(currentUser.id || "");
+  const creditBlocked = casual && (access.joinBlockedByCredit || ownGameBlocked);
+  const profileBlocked = casual && !access.profileReady;
+  return {
+    ...detail,
+    creditBlocked,
+    ownGameBlocked,
+    profileBlocked,
+    joinBlocked: creditBlocked || profileBlocked,
+    canJoin: Boolean(detail.baseCanJoin ?? detail.canJoin) && !creditBlocked && !profileBlocked,
+    joinText: ownGameBlocked ? "仅可报名他人球局" : creditBlocked ? "信用分不足" : profileBlocked ? "先完成球员档案" : detail.joinText
   };
 }
 
@@ -256,7 +277,8 @@ Page({
     reviewHint: "",
     error: "",
     detail: null,
-    inviter: ""
+    inviter: "",
+    access: evaluateCreditAccess(100, false)
   },
 
   onLoad(query) {
@@ -271,7 +293,18 @@ Page({
     });
     wx.showShareMenu({ withShareTicket: true, menus: ["shareAppMessage"] });
     if (previewOnly) return;
+    this.refreshCreditAccess();
     this.loadDetail();
+  },
+
+  refreshCreditAccess() {
+    return loadCreditAccess().then((access) => {
+      this.setData({
+        access,
+        detail: applyDetailAccess(this.data.detail, access)
+      });
+      return access;
+    });
   },
 
   onShareAppMessage(event) {
@@ -317,6 +350,19 @@ Page({
       return;
     }
 
+    if (detail?.ownGameBlocked) {
+      this.showOwnGameBlocked();
+      return;
+    }
+    if (detail?.creditBlocked) {
+      this.showCreditBlocked();
+      return;
+    }
+    if (detail?.profileBlocked) {
+      this.showProfileRequired();
+      return;
+    }
+
     const id = this.data.id;
     if (!id || this.data.joiningId || !detail || !detail.canJoin) return;
 
@@ -345,6 +391,36 @@ Page({
       .finally(() => {
         this.setData({ joiningId: "" });
       });
+  },
+
+  showCreditBlocked() {
+    wx.showModal({
+      title: "信用分不足",
+      content: "信用分不足，无法报名。可通过按时到场踢球恢复（+2 分/次）",
+      confirmText: "查看信用分",
+      success(result) {
+        if (result.confirm) wx.navigateTo({ url: "/pages/credit/credit" });
+      }
+    });
+  },
+
+  showOwnGameBlocked() {
+    wx.showModal({
+      title: "当前仅可报名他人球局",
+      content: "信用分 60-79 分期间，可报名他人发起的散客球局；达到 80 分后恢复发起和本人球局能力。",
+      showCancel: false
+    });
+  },
+
+  showProfileRequired() {
+    wx.showModal({
+      title: "先完成球员档案",
+      content: "报名散客球局前，需要填写六维实力和擅长位置。",
+      confirmText: "去填写",
+      success(result) {
+        if (result.confirm) wx.navigateTo({ url: "/pages/player-profile/edit/index" });
+      }
+    });
   },
 
   cancelRegistration() {
@@ -407,7 +483,7 @@ Page({
 
     return get(`/api/sports-app/games/${id}`, { showLoading: false })
       .then((detail) => {
-        const mapped = mapDetail(detail);
+        const mapped = applyDetailAccess(mapDetail(detail), this.data.access);
         this.setData({
           loading: false,
           detail: mapped,

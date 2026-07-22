@@ -118,7 +118,17 @@ const serverContracts = [
   "CREATE TABLE IF NOT EXISTS sports_player_profile",
   "const playerProfileReviews",
   "/api/sports-app/player-profile/reviews",
-  "'peer_complaint', -5",
+  "event_type: 'peer_complaint'",
+  "score_delta: -5",
+  "const CREDIT_PUBLIC_JOIN_MIN = 60",
+  "const CREDIT_ACTION_MIN = 80",
+  "const CREDIT_NO_SHOW_PENALTY = -15",
+  "const recordCreditEvent",
+  "const recordCheckinCredit",
+  "syncAutomaticAttendanceForUser",
+  "syncMissedReviewsForUser",
+  "LEAST(100, GREATEST(0",
+  "first_edit_at IS NOT NULL",
   "CREATE TABLE IF NOT EXISTS sports_team",
   "ALTER TABLE sports_team ADD COLUMN home_venue_name VARCHAR(120) NOT NULL DEFAULT ''",
   "ALTER TABLE sports_team ADD COLUMN requires_approval TINYINT NOT NULL DEFAULT 1",
@@ -133,6 +143,10 @@ const serverContracts = [
 
 requireIncludes(schema, "db/schema.sql", schemaContracts);
 requireIncludes(server, "scripts/serve-local-mirror.mjs", serverContracts);
+
+for (const forbidden of ["CREDIT_RECOVERY_PER_WEEK", "信用分自动恢复", "信用分 -20", "event_type: 'peer_praise'"]) {
+  if (server.includes(forbidden)) errors.push(`scripts/serve-local-mirror.mjs must not retain forbidden credit behavior: ${forbidden}`);
+}
 
 if (errors.length > 0) {
   console.error("DB contract check failed:");

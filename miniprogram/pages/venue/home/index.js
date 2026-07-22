@@ -41,7 +41,7 @@ function mapDashboard(data) {
   const venues = Array.isArray(data.venues) ? data.venues : [];
   const orders = Array.isArray(data.orders) ? data.orders : [];
   return {
-    venueName: venues[0]?.name || "卡子门足球场",
+    venueName: "卡子门足球场",
     stats: [
       { label: "今日收入", value: `¥${Number(summary.today_revenue ?? summary.revenue ?? 0).toFixed(0)}` },
       { label: "今日订单", value: String(summary.today_orders || 0) },

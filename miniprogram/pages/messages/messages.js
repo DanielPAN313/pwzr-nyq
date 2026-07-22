@@ -17,14 +17,21 @@ const fallbackMessages = [
 
 const typeMeta = {
   payment_required: { type: "order_notification", icon: "单" },
+  payment_success: { type: "order_notification", icon: "单" },
   order_cancelled: { type: "order_notification", icon: "单" },
   refund_success: { type: "order_notification", icon: "单" },
+  refund_requested: { type: "order_notification", icon: "单" },
+  refund_completed: { type: "order_notification", icon: "单" },
+  refund_rejected: { type: "order_notification", icon: "单" },
+  game_cancelled: { type: "order_notification", icon: "单" },
   order_notification: { type: "order_notification", icon: "单" },
   checkin_success: { type: "checkin_notification", icon: "核" },
   checkin_notification: { type: "checkin_notification", icon: "核" },
   team_balance: { type: "team_notification", icon: "队" },
   team_notification: { type: "team_notification", icon: "队" },
   review_reminder: { type: "review_reminder", icon: "评" },
+  review_submitted: { type: "review_reminder", icon: "评" },
+  rating_updated: { type: "review_reminder", icon: "评" },
   credit_change: { type: "credit_change", icon: "信" },
   system: { type: "system_announcement", icon: "告" },
   system_announcement: { type: "system_announcement", icon: "告" }

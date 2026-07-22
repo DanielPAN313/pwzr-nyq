@@ -1,4 +1,5 @@
 const { get, post } = require("../../utils/api");
+const { evaluateCreditAccess, loadCreditAccess } = require("../../utils/credit-access");
 
 const sportOptions = [
   { label: "足球", value: "football" },
@@ -12,6 +13,8 @@ const durationOptions = [
   { label: "1.5 小时", value: 1.5 },
   { label: "2 小时", value: 2 }
 ];
+
+const fallbackVenues = [{ id: 1, name: "卡子门足球场", area: "南京卡子门" }];
 
 function pad2(value) {
   return String(value).padStart(2, "0");
@@ -69,14 +72,16 @@ function buildFormSummary(data) {
     startTime: data.startTime,
     loading: data.loading
   });
-  const canSubmit = validationItems.every((item) => item.ok) && !data.submitting;
+  const canSubmit = validationItems.every((item) => item.ok) && !data.submitting && data.access?.canCreateCasual !== false;
 
   return {
     selectedVenueText: venue ? `${venue.name} · ${venue.area}` : "请选择场馆",
     timeRangeText: `${dateTimeShort(data.date, data.startTime)}-${endTime}`,
-    submitHint: canSubmit
-      ? "发布后会进入球局详情，其他用户报名后生成待支付订单。"
-      : "请补齐标题、场馆和至少 2 人的名额。",
+    submitHint: data.access?.createBlockedByCredit
+      ? data.access.createHint
+      : canSubmit
+        ? "发布后会进入球局详情，其他用户报名后生成待支付订单。"
+        : "请补齐标题、场馆和至少 2 人的名额。",
     canSubmit,
     validationItems,
     summaryCards: [
@@ -143,12 +148,21 @@ Page({
     submitHint: "请补齐标题、场馆和至少 2 人的名额。",
     canSubmit: false,
     validationItems: [],
-    summaryCards: []
+    summaryCards: [],
+    access: evaluateCreditAccess(100, true)
   },
 
   onLoad() {
     this.syncSummary();
+    this.refreshCreditAccess();
     this.loadVenues();
+  },
+
+  refreshCreditAccess() {
+    return loadCreditAccess().then((access) => {
+      this.syncSummary({ access });
+      return access;
+    });
   },
 
   syncSummary(patch) {
@@ -167,7 +181,8 @@ Page({
 
     return get("/api/sports-app/venues", { showLoading: false })
       .then((venues) => {
-        const list = Array.isArray(venues) ? venues.map(mapVenue) : [];
+        const kazi = Array.isArray(venues) ? venues.find((venue) => String(venue.name || "").includes("卡子门足球场")) : null;
+        const list = kazi ? [mapVenue(kazi)] : fallbackVenues;
 
         this.syncSummary({
           loading: false,
@@ -179,7 +194,9 @@ Page({
       .catch(() => {
         this.syncSummary({
           loading: false,
-          error: ""
+          error: "",
+          venues: fallbackVenues,
+          venueIndex: 0
         });
       });
   },
@@ -233,6 +250,15 @@ Page({
     const sport = sportOptions[this.data.sportIndex];
     const duration = durationOptions[this.data.durationIndex];
     const title = String(this.data.title || "").trim();
+
+    if (this.data.access.createBlockedByCredit) {
+      wx.showModal({
+        title: "暂不能发起散客球局",
+        content: this.data.access.createHint,
+        showCancel: false
+      });
+      return;
+    }
 
     if (!venue) {
       wx.showToast({ title: "请先选择场馆", icon: "none" });

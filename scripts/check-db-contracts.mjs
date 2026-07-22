@@ -54,7 +54,14 @@ const schemaContracts = [
   "UNIQUE KEY `uk_sports_peer_game_rater_target` (`game_id`, `rater_user_id`, `target_user_id`)",
   "CREATE TABLE IF NOT EXISTS `sports_player_rating_summary`",
   "`composite_score` DECIMAL(3,1) NOT NULL DEFAULT 3.0",
-  "`level_label` VARCHAR(20) NOT NULL DEFAULT '进阶'"
+  "`level_label` VARCHAR(20) NOT NULL DEFAULT '进阶'",
+  "CREATE TABLE IF NOT EXISTS `sports_team`",
+  "`home_venue_name` VARCHAR(120) NOT NULL DEFAULT ''",
+  "`requires_approval` TINYINT NOT NULL DEFAULT 1",
+  "CREATE TABLE IF NOT EXISTS `sports_team_game`",
+  "`type` VARCHAR(20) NOT NULL DEFAULT 'training'",
+  "CREATE TABLE IF NOT EXISTS `sports_team_game_signup`",
+  "UNIQUE KEY `uk_sports_team_game_signup` (`team_game_id`, `user_id`)"
 ];
 
 const serverContracts = [
@@ -76,7 +83,17 @@ const serverContracts = [
   "ALTER TABLE sports_order ADD COLUMN refund_source VARCHAR(30) NOT NULL DEFAULT \"\"",
   "CREATE TABLE IF NOT EXISTS sports_credit_event",
   "CREATE TABLE IF NOT EXISTS sports_notification",
-  "CREATE TABLE IF NOT EXISTS sports_player_rating_summary"
+  "CREATE TABLE IF NOT EXISTS sports_player_rating_summary",
+  "CREATE TABLE IF NOT EXISTS sports_team",
+  "ALTER TABLE sports_team ADD COLUMN home_venue_name VARCHAR(120) NOT NULL DEFAULT ''",
+  "ALTER TABLE sports_team ADD COLUMN requires_approval TINYINT NOT NULL DEFAULT 1",
+  "CREATE TABLE IF NOT EXISTS sports_team_game",
+  "CREATE TABLE IF NOT EXISTS sports_team_game_signup",
+  "const teamDetailForUser",
+  "const teamGamesForUser",
+  "team_join_requested",
+  "team_game_created",
+  "team_game_joined"
 ];
 
 requireIncludes(schema, "db/schema.sql", schemaContracts);

@@ -207,6 +207,14 @@ CREATE TABLE IF NOT EXISTS `sports_team` (
   `name` VARCHAR(80) NOT NULL,
   `sport` VARCHAR(20) NOT NULL DEFAULT 'football',
   `area` VARCHAR(80) NOT NULL DEFAULT '江宁',
+  `badge_url` VARCHAR(600) NOT NULL DEFAULT '',
+  `badge_color` VARCHAR(20) NOT NULL DEFAULT '#D8FF3E',
+  `home_venue_name` VARCHAR(120) NOT NULL DEFAULT '',
+  `activity_time` VARCHAR(120) NOT NULL DEFAULT '',
+  `level_requirement` VARCHAR(40) NOT NULL DEFAULT '不限水平',
+  `accepts_trial` TINYINT NOT NULL DEFAULT 1,
+  `requires_approval` TINYINT NOT NULL DEFAULT 1,
+  `tags_json` TEXT NULL,
   `description` VARCHAR(500) NOT NULL DEFAULT '',
   `captain_user_id` INT UNSIGNED NOT NULL,
   `captain_username` VARCHAR(50) NOT NULL,
@@ -230,6 +238,39 @@ CREATE TABLE IF NOT EXISTS `sports_team_member` (
   UNIQUE KEY `uk_sports_team_member` (`team_id`, `user_id`),
   KEY `idx_sports_team_member_user` (`user_id`),
   CONSTRAINT `fk_sports_team_member_team` FOREIGN KEY (`team_id`) REFERENCES `sports_team` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `sports_team_game` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `team_id` INT UNSIGNED NOT NULL,
+  `type` VARCHAR(20) NOT NULL DEFAULT 'training',
+  `title` VARCHAR(100) NOT NULL,
+  `venue_name` VARCHAR(120) NOT NULL DEFAULT '',
+  `opponent_name` VARCHAR(80) NOT NULL DEFAULT '',
+  `start_time` DATETIME NOT NULL,
+  `capacity` INT UNSIGNED NOT NULL DEFAULT 10,
+  `fee_per_person` DECIMAL(10,2) NOT NULL DEFAULT 0,
+  `notes` VARCHAR(500) NOT NULL DEFAULT '',
+  `status` VARCHAR(20) NOT NULL DEFAULT 'open',
+  `creator_user_id` INT UNSIGNED NOT NULL,
+  `creator_username` VARCHAR(50) NOT NULL,
+  `create_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_sports_team_game_team` (`team_id`, `start_time`),
+  CONSTRAINT `fk_sports_team_game_team` FOREIGN KEY (`team_id`) REFERENCES `sports_team` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `sports_team_game_signup` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `team_game_id` INT UNSIGNED NOT NULL,
+  `user_id` INT UNSIGNED NOT NULL,
+  `username` VARCHAR(50) NOT NULL,
+  `status` VARCHAR(20) NOT NULL DEFAULT 'active',
+  `create_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_sports_team_game_signup` (`team_game_id`, `user_id`),
+  KEY `idx_sports_team_game_signup_user` (`user_id`),
+  CONSTRAINT `fk_sports_team_game_signup_game` FOREIGN KEY (`team_game_id`) REFERENCES `sports_team_game` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `sports_ai_clip_request` (

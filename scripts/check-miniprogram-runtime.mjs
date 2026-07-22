@@ -215,13 +215,16 @@ for (const file of fs.readdirSync(path.join(miniRoot, "utils"))) {
   if (file.endsWith(".js")) loadModule(path.join(miniRoot, "utils", file));
 }
 
-assert(registeredPages.length === 20, "Mini Program should register the restored 20-page product flow.");
+assert(registeredPages.length === 23, "Mini Program should register the 23-page product flow including P2.5 team pages.");
 for (const pagePath of [
   "pages/venue-detail/venue-detail",
   "pages/create-game/create-game",
   "pages/game-detail/game-detail",
   "pages/rankings/rankings",
   "pages/teams/teams",
+  "pages/team-detail/team-detail",
+  "pages/team-create/team-create",
+  "pages/team-games/team-games",
   "pages/venue-admin/venue-admin",
   "pages/venue/home/index",
   "pages/venue/scan/index",
@@ -295,10 +298,55 @@ assert(gamesPage.data.games.length === gamesPage.data.allGames.length, "games cl
 
 const teamsPage = registeredPageByPath.get("pages/teams/teams");
 assert(teamsPage, "pages/teams/teams page instance was not registered.");
-for (const method of ["loadTeams", "joinTeam", "createGame"]) {
+for (const method of ["loadTeams", "joinTeam", "openHubEntry", "openTeam", "createGame"]) {
   assert(typeof teamsPage[method] === "function", `pages/teams/teams should expose ${method} method.`);
 }
 assert(Array.isArray(teamsPage.data.teams) && teamsPage.data.teams.length >= 1, "teams page should expose fallback teams.");
+assert(Array.isArray(teamsPage.data.hubEntries) && teamsPage.data.hubEntries.length === 3, "teams page should expose join/create/casual entries.");
+assert(teamsPage.data.teams.every((team) => team.badgeText && team.homeVenue && team.captainName && Array.isArray(team.tags)), "team cards should expose P2.5 profile fields.");
+
+const teamDetailPage = registeredPageByPath.get("pages/team-detail/team-detail");
+assert(teamDetailPage, "pages/team-detail/team-detail page instance was not registered.");
+for (const method of ["loadDetail", "joinTeam", "openGames", "openCreateGame", "toggleMemberManagement", "handleApplicant"]) {
+  assert(typeof teamDetailPage[method] === "function", `team detail should expose ${method} method.`);
+}
+
+const teamCreatePage = registeredPageByPath.get("pages/team-create/team-create");
+assert(teamCreatePage, "pages/team-create/team-create page instance was not registered.");
+for (const method of ["loadVenues", "chooseBadge", "toggleTrial", "toggleApproval", "submitTeam"]) {
+  assert(typeof teamCreatePage[method] === "function", `team create should expose ${method} method.`);
+}
+assert(Array.isArray(teamCreatePage.data.badgeColors) && teamCreatePage.data.badgeColors.length >= 5, "team create should expose badge presets.");
+
+const teamGamesPage = registeredPageByPath.get("pages/team-games/team-games");
+assert(teamGamesPage, "pages/team-games/team-games page instance was not registered.");
+for (const method of ["loadGames", "changeFilter", "toggleCreateForm", "submitGame", "signupGame", "toggleGameDetail"]) {
+  assert(typeof teamGamesPage[method] === "function", `team games should expose ${method} method.`);
+}
+assert(teamGamesPage.data.gameTypeOptions.length === 3, "team games should support training, recruiting, and challenge types.");
+
+const teamStats = loadModule(path.join(miniRoot, "utils", "team-stats.js"));
+assert(!fs.readFileSync(path.join(miniRoot, "utils", "team-stats.js"), "utf8").includes(".flat("), "team stats should avoid Array.prototype.flat for older Mini Program base libraries.");
+const fallbackTeamList = teamStats.getTeams();
+assert(fallbackTeamList.length >= 2, "team stats should expose offline fallback teams.");
+const fallbackTeamGames = teamStats.getTeamGames(fallbackTeamList[0].id);
+const fallbackTeamMembers = teamStats.getTeamMembers(fallbackTeamList[0]);
+const fallbackTeamSummary = teamStats.buildTeamStats(fallbackTeamList[0], fallbackTeamMembers, fallbackTeamGames);
+assert(fallbackTeamSummary.memberCount >= 1 && fallbackTeamSummary.gameCount >= 1 && fallbackTeamSummary.attendanceRanking.length >= 1, "team stats fallback should support detail metrics.");
+const pendingTeam = teamStats.recordLocalJoin(fallbackTeamList[1].id, { id: 99, username: "pending_player" }, true);
+assert(pendingTeam.joinPending === true && pendingTeam.joined === false, "team join fallback should preserve pending approval state.");
+const testTeamGame = teamStats.saveLocalGame({
+  id: "runtime-team-game",
+  team_id: fallbackTeamList[0].id,
+  type: "recruiting",
+  title: "Runtime team game",
+  start_time: "2026-08-08 20:00:00",
+  capacity: 10,
+  signup_count: 2,
+  status: "open"
+}, "runtime-team-game");
+const signedTeamGame = teamStats.signupLocalGame(testTeamGame.id);
+assert(signedTeamGame.joined === true && signedTeamGame.signupCount === 3, "team game fallback signup should update joined state and count.");
 
 const gameDetailPage = registeredPageByPath.get("pages/game-detail/game-detail");
 assert(gameDetailPage, "pages/game-detail/game-detail page instance was not registered.");

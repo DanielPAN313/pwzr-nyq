@@ -1,0 +1,88 @@
+<view class="page">
+  <view class="create-hero">
+    <text class="page-kicker">CREATE TEAM</text>
+    <view class="page-title">创建你的球队</view>
+    <text class="hero-note">设置固定主场与活动规则，创建后你将成为队长。</text>
+    <view class="team-preview">
+      <view class="preview-badge" style="background: {{badgeColor}};">
+        <image wx:if="{{badgeUrl}}" class="preview-image" src="{{badgeUrl}}" mode="aspectFill" />
+        <text wx:else>{{badgeText}}</text>
+      </view>
+      <view class="preview-copy">
+        <text class="preview-name">{{name || "球队名称"}}</text>
+        <text class="preview-meta">{{venues[venueIndex].name}} · {{activityOptions[activityIndex]}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="section form-panel">
+    <label class="field">
+      <text class="field-label">球队名称</text>
+      <input class="field-input" maxlength="20" value="{{name}}" bindinput="updateName" placeholder="例如：江宁周末五人制" />
+    </label>
+
+    <view class="field">
+      <text class="field-label">队徽</text>
+      <view class="badge-editor">
+        <button class="badge-upload" bindtap="chooseBadge">选择图片</button>
+        <view class="color-swatches">
+          <button
+            wx:for="{{badgeColors}}"
+            wx:key="*this"
+            class="color-swatch {{badgeColor === item ? 'selected' : ''}}"
+            style="background: {{item}};"
+            data-color="{{item}}"
+            bindtap="selectBadgeColor"
+          ></button>
+        </view>
+      </view>
+    </view>
+
+    <label class="field">
+      <text class="field-label">主场馆</text>
+      <picker range="{{venues}}" range-key="name" value="{{venueIndex}}" bindchange="changeVenue">
+        <view class="picker-value">{{venues[venueIndex].name}} · {{venues[venueIndex].area}}</view>
+      </picker>
+    </label>
+
+    <label class="field">
+      <text class="field-label">活动时间</text>
+      <picker range="{{activityOptions}}" value="{{activityIndex}}" bindchange="changeActivity">
+        <view class="picker-value">{{activityOptions[activityIndex]}}</view>
+      </picker>
+    </label>
+
+    <label class="field">
+      <text class="field-label">水平要求</text>
+      <picker range="{{levelOptions}}" value="{{levelIndex}}" bindchange="changeLevel">
+        <view class="picker-value">{{levelOptions[levelIndex]}}</view>
+      </picker>
+    </label>
+
+    <view class="switch-row">
+      <view>
+        <text class="switch-title">接受散客试训</text>
+        <text class="switch-note">允许非正式成员报名公开试训</text>
+      </view>
+      <switch checked="{{acceptsTrial}}" color="#D8FF3E" bindchange="toggleTrial" />
+    </view>
+
+    <view class="switch-row">
+      <view>
+        <text class="switch-title">需要队长审核</text>
+        <text class="switch-note">入队申请先进入成员管理</text>
+      </view>
+      <switch checked="{{requiresApproval}}" color="#D8FF3E" bindchange="toggleApproval" />
+    </view>
+
+    <label class="field">
+      <text class="field-label">球队简介</text>
+      <textarea class="field-textarea" maxlength="240" value="{{description}}" bindinput="updateDescription" placeholder="说明球队定位、训练节奏和招募需求" />
+      <text class="field-count">{{description.length}}/240</text>
+    </label>
+  </view>
+
+  <button class="primary submit-button" disabled="{{!canSubmit}}" bindtap="submitTeam">
+    {{submitting ? "创建中" : "创建球队"}}
+  </button>
+</view>

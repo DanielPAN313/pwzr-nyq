@@ -1,0 +1,137 @@
+<view class="page">
+  <view wx:if="{{loading}}" class="section loading-panel">
+    <view class="loading-line lg"></view>
+    <view class="loading-line md"></view>
+    <view class="loading-grid">
+      <view class="loading-card"></view>
+      <view class="loading-card"></view>
+      <view class="loading-card"></view>
+    </view>
+  </view>
+
+  <block wx:if="{{team}}">
+    <view class="team-profile">
+      <view class="profile-head">
+        <view class="team-badge" style="background: {{team.badgeColor}};">
+          <image wx:if="{{team.badgeUrl}}" class="badge-image" src="{{team.badgeUrl}}" mode="aspectFill" />
+          <text wx:else>{{team.badgeText}}</text>
+        </view>
+        <view class="profile-copy">
+          <text class="profile-name">{{team.name}}</text>
+          <text class="profile-meta">主场 · {{team.homeVenue}}</text>
+          <text class="profile-meta">队长 · {{team.captainName}}</text>
+        </view>
+      </view>
+      <view class="tag-row">
+        <text wx:for="{{team.tags}}" wx:key="*this" class="team-tag">{{item}}</text>
+      </view>
+      <text class="profile-desc">{{team.description}}</text>
+      <view class="profile-rules">
+        <text>{{team.activityTime}}</text>
+        <text>{{team.levelRequirement}}</text>
+        <text>{{team.acceptsTrial ? "接受散客试训" : "暂不接受试训"}}</text>
+      </view>
+      <view class="profile-actions">
+        <button wx:if="{{!team.joined && !team.joinPending}}" class="primary action-main" disabled="{{joining}}" bindtap="joinTeam">
+          {{joining ? "提交中" : team.requiresApproval ? "申请加入" : "直接加入"}}
+        </button>
+        <button wx:elif="{{team.joinPending}}" class="secondary action-main" disabled>入队审核中</button>
+        <button wx:else class="secondary action-main" bindtap="openGames">查看队内比赛</button>
+      </view>
+      <view wx:if="{{isCaptain}}" class="captain-actions">
+        <button class="captain-button primary" bindtap="openCreateGame">发起比赛</button>
+        <button class="captain-button secondary" bindtap="toggleMemberManagement">成员管理</button>
+      </view>
+    </view>
+
+    <view class="stats-band">
+      <view class="stat-item">
+        <text class="stat-value">{{stats.memberCount}}</text>
+        <text class="stat-label">成员</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-value">{{stats.averageLevel}}</text>
+        <text class="stat-label">平均水平</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-value">{{stats.gameCount}}</text>
+        <text class="stat-label">队内比赛</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-value">{{stats.attendanceRate}}%</text>
+        <text class="stat-label">出勤率</text>
+      </view>
+    </view>
+
+    <view wx:if="{{isCaptain && managing}}" class="section manager-panel">
+      <view class="section-head">
+        <view>
+          <text class="section-title">待审核成员</text>
+          <text class="section-note">{{applicants.length ? "确认试训与入队申请" : "当前没有待处理申请"}}</text>
+        </view>
+        <button class="icon-close" bindtap="toggleMemberManagement">×</button>
+      </view>
+      <view wx:for="{{applicants}}" wx:key="id" class="applicant-row">
+        <view class="member-avatar">{{item.avatarText}}</view>
+        <view class="member-copy">
+          <text class="member-name">{{item.name}}</text>
+          <text class="member-note">{{item.note}} · {{item.level}} 分</text>
+        </view>
+        <view class="review-actions">
+          <button class="review-button reject" data-id="{{item.id}}" data-action="reject" bindtap="handleApplicant">拒绝</button>
+          <button class="review-button approve" data-id="{{item.id}}" data-action="approve" bindtap="handleApplicant">同意</button>
+        </view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-head">
+        <view>
+          <text class="section-title">球队成员</text>
+          <text class="section-note">队长与当前活跃成员</text>
+        </view>
+        <text class="section-count">{{team.memberText}}</text>
+      </view>
+      <view class="member-grid">
+        <view wx:for="{{members}}" wx:key="id" class="member-card">
+          <view class="member-avatar">{{item.avatarText}}</view>
+          <text class="member-name">{{item.name}}</text>
+          <text class="member-role">{{item.roleText}} · {{item.level}} 分</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-head">
+        <view>
+          <text class="section-title">最近比赛</text>
+          <text class="section-note">训练、公开招募与球队约战</text>
+        </view>
+        <button class="text-button" bindtap="openGames">全部</button>
+      </view>
+      <view wx:for="{{stats.recentGames}}" wx:key="id" class="game-row" data-id="{{item.id}}" bindtap="openGame">
+        <view class="game-type game-type-{{item.type}}">{{item.typeShortLabel}}</view>
+        <view class="game-copy">
+          <text class="game-title">{{item.title}}</text>
+          <text class="game-meta">{{item.timeText}} · {{item.venueName}}</text>
+        </view>
+        <text class="game-status">{{item.statusText}}</text>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-head">
+        <view>
+          <text class="section-title">队内出勤榜</text>
+          <text class="section-note">按近期有效到场次数排序</text>
+        </view>
+      </view>
+      <view wx:for="{{stats.attendanceRanking}}" wx:key="id" class="attendance-row">
+        <text class="rank-number">{{item.rank}}</text>
+        <view class="member-avatar small">{{item.avatarText}}</view>
+        <text class="attendance-name">{{item.name}}</text>
+        <text class="attendance-count">{{item.attendance}} 次</text>
+      </view>
+    </view>
+  </block>
+</view>

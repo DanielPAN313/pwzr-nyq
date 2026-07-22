@@ -1,0 +1,403 @@
+.team-profile {
+  margin-bottom: 20rpx;
+  padding: 32rpx 28rpx;
+  border: 1rpx solid rgba(216, 255, 62, 0.16);
+  border-radius: 28rpx;
+  background: linear-gradient(145deg, #10231a 0%, #0b3d27 58%, #12824f 100%);
+}
+
+.profile-head,
+.section-head,
+.applicant-row,
+.game-row,
+.attendance-row {
+  display: flex;
+  align-items: center;
+}
+
+.profile-head {
+  gap: 20rpx;
+}
+
+.team-badge {
+  display: flex;
+  flex: 0 0 104rpx;
+  align-items: center;
+  justify-content: center;
+  width: 104rpx;
+  height: 104rpx;
+  border-radius: 22rpx;
+  color: #10200f;
+  font-size: 44rpx;
+  font-weight: 950;
+  overflow: hidden;
+}
+
+.badge-image {
+  width: 100%;
+  height: 100%;
+}
+
+.profile-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.profile-name,
+.profile-meta {
+  display: block;
+}
+
+.profile-name {
+  color: #ffffff;
+  font-size: 36rpx;
+  font-weight: 950;
+  line-height: 1.25;
+}
+
+.profile-meta {
+  margin-top: 7rpx;
+  color: rgba(247, 251, 245, 0.64);
+  font-size: 23rpx;
+}
+
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  margin-top: 24rpx;
+}
+
+.team-tag {
+  padding: 7rpx 13rpx;
+  border-radius: 8rpx;
+  color: #d8ff3e;
+  background: rgba(216, 255, 62, 0.1);
+  font-size: 21rpx;
+  font-weight: 850;
+}
+
+.profile-desc {
+  display: block;
+  margin-top: 20rpx;
+  color: rgba(247, 251, 245, 0.74);
+  font-size: 25rpx;
+  line-height: 1.58;
+}
+
+.profile-rules {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10rpx;
+  margin-top: 22rpx;
+}
+
+.profile-rules text {
+  min-width: 0;
+  padding: 14rpx 12rpx;
+  border-radius: 12rpx;
+  color: rgba(247, 251, 245, 0.72);
+  background: rgba(7, 18, 13, 0.5);
+  font-size: 20rpx;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.profile-actions,
+.captain-actions {
+  display: flex;
+  gap: 12rpx;
+  margin-top: 24rpx;
+}
+
+.action-main,
+.captain-button {
+  min-height: 72rpx;
+  border-radius: 14rpx;
+  font-size: 25rpx;
+  font-weight: 950;
+  line-height: 72rpx;
+}
+
+.action-main {
+  width: 100%;
+}
+
+.captain-button {
+  flex: 1;
+}
+
+.secondary {
+  color: #d8ff3e;
+  background: #1a5c3a;
+}
+
+.stats-band {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rpx;
+  margin-bottom: 24rpx;
+  overflow: hidden;
+  border: 1rpx solid rgba(216, 255, 62, 0.12);
+  border-radius: 18rpx;
+  background: rgba(216, 255, 62, 0.12);
+}
+
+.stat-item {
+  padding: 20rpx 8rpx;
+  background: #101b15;
+  text-align: center;
+}
+
+.stat-value,
+.stat-label {
+  display: block;
+}
+
+.stat-value {
+  color: #ffffff;
+  font-size: 30rpx;
+  font-weight: 950;
+}
+
+.stat-label {
+  margin-top: 6rpx;
+  color: rgba(247, 251, 245, 0.48);
+  font-size: 20rpx;
+}
+
+.section-head {
+  justify-content: space-between;
+  gap: 16rpx;
+  margin-bottom: 20rpx;
+}
+
+.section-title,
+.section-note {
+  display: block;
+}
+
+.section-title {
+  color: #ffffff;
+  font-size: 29rpx;
+  font-weight: 950;
+}
+
+.section-note,
+.section-count {
+  margin-top: 5rpx;
+  color: rgba(247, 251, 245, 0.52);
+  font-size: 22rpx;
+}
+
+.text-button {
+  min-width: 82rpx;
+  min-height: 52rpx;
+  border-radius: 12rpx;
+  color: #d8ff3e;
+  background: rgba(216, 255, 62, 0.1);
+  font-size: 22rpx;
+  line-height: 52rpx;
+}
+
+.member-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12rpx;
+}
+
+.member-card {
+  min-width: 0;
+  padding: 18rpx 10rpx;
+  border-radius: 14rpx;
+  background: #07120d;
+  text-align: center;
+}
+
+.member-avatar {
+  display: flex;
+  flex: 0 0 58rpx;
+  align-items: center;
+  justify-content: center;
+  width: 58rpx;
+  height: 58rpx;
+  margin: 0 auto;
+  border-radius: 50%;
+  color: #10200f;
+  background: #d8ff3e;
+  font-size: 24rpx;
+  font-weight: 950;
+}
+
+.member-avatar.small {
+  flex-basis: 48rpx;
+  width: 48rpx;
+  height: 48rpx;
+  margin: 0;
+  font-size: 21rpx;
+}
+
+.member-name,
+.member-role,
+.member-note {
+  display: block;
+}
+
+.member-name {
+  margin-top: 10rpx;
+  overflow: hidden;
+  color: #ffffff;
+  font-size: 23rpx;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.member-role,
+.member-note {
+  margin-top: 5rpx;
+  color: rgba(247, 251, 245, 0.48);
+  font-size: 20rpx;
+}
+
+.game-row,
+.attendance-row,
+.applicant-row {
+  gap: 14rpx;
+  padding: 16rpx 0;
+  border-top: 1rpx solid rgba(247, 251, 245, 0.08);
+}
+
+.game-row:first-of-type,
+.attendance-row:first-of-type,
+.applicant-row:first-of-type {
+  border-top: 0;
+}
+
+.game-type {
+  flex: 0 0 88rpx;
+  padding: 10rpx 6rpx;
+  border-radius: 10rpx;
+  color: #10200f;
+  background: #d8ff3e;
+  font-size: 19rpx;
+  font-weight: 900;
+  text-align: center;
+}
+
+.game-type-challenge {
+  background: #f7c66b;
+}
+
+.game-type-recruiting {
+  background: #4fd1c5;
+}
+
+.game-copy,
+.member-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.game-title,
+.game-meta {
+  display: block;
+}
+
+.game-title {
+  overflow: hidden;
+  color: #ffffff;
+  font-size: 24rpx;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.game-meta {
+  margin-top: 6rpx;
+  overflow: hidden;
+  color: rgba(247, 251, 245, 0.48);
+  font-size: 20rpx;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.game-status,
+.attendance-count {
+  color: #d8ff3e;
+  font-size: 21rpx;
+  font-weight: 850;
+}
+
+.rank-number {
+  width: 34rpx;
+  color: #d8ff3e;
+  font-size: 25rpx;
+  font-weight: 950;
+  text-align: center;
+}
+
+.attendance-name {
+  min-width: 0;
+  flex: 1;
+  color: #ffffff;
+  font-size: 24rpx;
+  font-weight: 850;
+}
+
+.manager-panel {
+  border-color: rgba(247, 198, 107, 0.28);
+}
+
+.icon-close {
+  width: 52rpx;
+  height: 52rpx;
+  border-radius: 50%;
+  color: #ffffff;
+  background: #334138;
+  font-size: 34rpx;
+  line-height: 52rpx;
+}
+
+.applicant-row .member-avatar {
+  margin: 0;
+}
+
+.review-actions {
+  display: flex;
+  gap: 8rpx;
+}
+
+.review-button {
+  min-width: 76rpx;
+  min-height: 54rpx;
+  border-radius: 10rpx;
+  font-size: 21rpx;
+  font-weight: 900;
+  line-height: 54rpx;
+}
+
+.review-button.reject {
+  color: #ffb4ab;
+  background: rgba(180, 35, 24, 0.22);
+}
+
+.review-button.approve {
+  color: #10200f;
+  background: #d8ff3e;
+}
+
+@media (max-width: 360px) {
+  .profile-rules,
+  .member-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .profile-rules text:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .stats-band {
+    grid-template-columns: 1fr 1fr;
+  }
+}

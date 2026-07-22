@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "队内比赛",
+  "backgroundColor": "#07120d",
+  "backgroundColorTop": "#07120d",
+  "backgroundColorBottom": "#07120d",
+  "enablePullDownRefresh": true,
+  "initialRenderingCache": "static"
+}

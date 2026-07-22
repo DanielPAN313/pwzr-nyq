@@ -1,30 +1,81 @@
 <view class="page">
-  <view class="section page-hero">
+  <view class="team-hero">
     <text class="page-kicker">TEAM HUB</text>
-    <view class="page-title">球队</view>
-    <text wx:if="{{loading}}" class="muted">正在加载球队...</text>
-    <text wx:else class="muted">固定队伍、稳定出勤和后续比赛统计会在这里沉淀。</text>
-    <button class="create-button" bindtap="createGame">发起球局</button>
+    <view class="page-title">找到固定队友</view>
+    <text class="hero-note">加入长期球队，沉淀出勤、比赛和队内数据。</text>
+    <view class="hub-grid">
+      <button wx:for="{{hubEntries}}" wx:key="key" class="hub-entry" data-key="{{item.key}}" bindtap="openHubEntry">
+        <text class="hub-icon">{{item.icon}}</text>
+        <text class="hub-title">{{item.title}}</text>
+        <text class="hub-note">{{item.note}}</text>
+      </button>
+    </view>
   </view>
 
-  <view wx:for="{{teams}}" wx:key="name" class="section team-card">
-    <view class="team-head">
-      <view>
-        <text class="card-title">{{item.name}}</text>
-        <text class="muted">{{item.venue}}</text>
-      </view>
-      <text class="team-tag">{{item.tagText}}</text>
+  <view id="team-list" class="list-heading">
+    <view>
+      <text class="list-title">正在招募的球队</text>
+      <text class="list-note">按主场、水平和常踢时间选择</text>
     </view>
+    <text class="list-count">{{teams.length}} 支</text>
+  </view>
+
+  <view wx:if="{{loading}}" class="section loading-panel">
+    <view class="loading-line lg"></view>
+    <view class="loading-line md"></view>
+    <view class="loading-grid">
+      <view class="loading-card"></view>
+      <view class="loading-card"></view>
+      <view class="loading-card"></view>
+    </view>
+  </view>
+
+  <view wx:for="{{teams}}" wx:key="id" class="section team-card" data-id="{{item.id}}" bindtap="openTeam">
+    <view class="team-head">
+      <view class="team-badge" style="background: {{item.badgeColor}};">
+        <image wx:if="{{item.badgeUrl}}" class="team-badge-image" src="{{item.badgeUrl}}" mode="aspectFill" />
+        <text wx:else>{{item.badgeText}}</text>
+      </view>
+      <view class="team-identity">
+        <text class="card-title">{{item.name}}</text>
+        <text class="team-venue">主场 · {{item.homeVenue}}</text>
+      </view>
+      <text class="team-arrow">›</text>
+    </view>
+
+    <view class="tag-row">
+      <text wx:for="{{item.tags}}" wx:key="*this" class="team-tag">{{item}}</text>
+    </view>
+
     <text class="team-desc">{{item.description}}</text>
+
+    <view class="team-metrics">
+      <view class="metric">
+        <text class="metric-value">{{item.memberText}}</text>
+        <text class="metric-label">成员</text>
+      </view>
+      <view class="metric">
+        <text class="metric-value">{{item.averageLevel}}</text>
+        <text class="metric-label">平均水平</text>
+      </view>
+      <view class="metric wide">
+        <text class="metric-value small">{{item.activityTime}}</text>
+        <text class="metric-label">常踢时间</text>
+      </view>
+    </view>
+
     <view class="team-foot">
-      <text class="team-members">{{item.memberText}}</text>
+      <view class="captain-line">
+        <text class="captain-label">队长</text>
+        <text class="captain-name">{{item.captainName}}</text>
+      </view>
       <button
         class="join-button"
         data-id="{{item.id}}"
-        bindtap="joinTeam"
-        disabled="{{item.joined || joiningId === item.id}}"
+        catchtap="joinTeam"
+        disabled="{{item.joined || item.joinPending || joiningId === item.id}}"
       >
-        {{item.joined ? "已加入" : joiningId === item.id ? "申请中" : "加入球队"}}
+        {{item.joined ? "已加入" : item.joinPending ? "审核中" : joiningId === item.id ? "提交中" : "申请加入"}}
       </button>
     </view>
   </view>

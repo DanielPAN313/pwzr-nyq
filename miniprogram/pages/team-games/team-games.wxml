@@ -1,0 +1,132 @@
+<view class="page">
+  <view wx:if="{{team}}" class="games-hero">
+    <view class="hero-head">
+      <view class="team-badge" style="background: {{team.badgeColor}};">{{team.badgeText}}</view>
+      <view class="hero-copy">
+        <text class="hero-team">{{team.name}}</text>
+        <text class="hero-note">训练赛、公开招募和球队约战</text>
+      </view>
+      <button wx:if="{{isCaptain}}" class="create-toggle" bindtap="toggleCreateForm">{{createOpen ? "收起" : "+ 发起"}}</button>
+    </view>
+  </view>
+
+  <view wx:if="{{isCaptain && createOpen}}" class="section create-panel">
+    <view class="section-head">
+      <view>
+        <text class="section-title">发起队内比赛</text>
+        <text class="section-note">发布后队员可以直接查看和报名</text>
+      </view>
+    </view>
+
+    <label class="field">
+      <text class="field-label">比赛类型</text>
+      <picker range="{{gameTypeOptions}}" range-key="label" value="{{gameTypeIndex}}" bindchange="changeGameType">
+        <view class="picker-value">{{gameTypeOptions[gameTypeIndex].label}}</view>
+      </picker>
+    </label>
+    <label class="field">
+      <text class="field-label">比赛名称</text>
+      <input class="field-input" value="{{title}}" maxlength="40" bindinput="updateTitle" />
+    </label>
+    <label wx:if="{{gameTypeOptions[gameTypeIndex].value === 'challenge'}}" class="field">
+      <text class="field-label">约战球队</text>
+      <input class="field-input" value="{{opponentName}}" maxlength="30" bindinput="updateOpponent" placeholder="填写对方球队名称" />
+    </label>
+    <view class="form-grid">
+      <label class="field">
+        <text class="field-label">日期</text>
+        <picker mode="date" value="{{date}}" start="{{minDate}}" bindchange="changeDate">
+          <view class="picker-value">{{date}}</view>
+        </picker>
+      </label>
+      <label class="field">
+        <text class="field-label">时间</text>
+        <picker mode="time" value="{{startTime}}" bindchange="changeStartTime">
+          <view class="picker-value">{{startTime}}</view>
+        </picker>
+      </label>
+    </view>
+    <label class="field">
+      <text class="field-label">场馆</text>
+      <picker range="{{venueOptions}}" value="{{venueIndex}}" bindchange="changeVenue">
+        <view class="picker-value">{{venueOptions[venueIndex]}}</view>
+      </picker>
+    </label>
+    <view class="form-grid">
+      <label class="field">
+        <text class="field-label">人数</text>
+        <input class="field-input" type="number" value="{{capacity}}" bindinput="updateCapacity" />
+      </label>
+      <label class="field">
+        <text class="field-label">人均费用</text>
+        <input class="field-input" type="digit" value="{{fee}}" bindinput="updateFee" />
+      </label>
+    </view>
+    <label class="field">
+      <text class="field-label">备注</text>
+      <textarea class="field-textarea" value="{{notes}}" maxlength="180" bindinput="updateNotes" placeholder="装备、集合方式或报名要求" />
+    </label>
+    <button class="primary submit-game" disabled="{{submitting}}" bindtap="submitGame">{{submitting ? "发布中" : "发布比赛"}}</button>
+  </view>
+
+  <view class="filter-scroll">
+    <button
+      wx:for="{{filterOptions}}"
+      wx:key="value"
+      class="filter-button {{filterIndex === index ? 'active' : ''}}"
+      data-index="{{index}}"
+      bindtap="changeFilter"
+    >{{item.label}}</button>
+  </view>
+
+  <view wx:if="{{loading}}" class="section loading-panel">
+    <view class="loading-line lg"></view>
+    <view class="loading-line md"></view>
+  </view>
+
+  <view wx:elif="{{!games.length}}" class="empty-state">
+    <text class="empty-title">暂无这类比赛</text>
+    <text class="empty-note">队长发起后会出现在这里。</text>
+  </view>
+
+  <view wx:for="{{games}}" wx:key="id" class="section game-card">
+    <view class="game-head">
+      <text class="game-type type-{{item.type}}">{{item.typeLabel}}</text>
+      <text class="game-status status-{{item.status}}">{{item.statusText}}</text>
+    </view>
+    <text class="game-title">{{item.title}}</text>
+    <view class="game-info">
+      <text>{{item.timeText}}</text>
+      <text>{{item.venueName}}</text>
+      <text wx:if="{{item.opponentName}}">对手 · {{item.opponentName}}</text>
+    </view>
+    <view class="game-metrics">
+      <view>
+        <text class="metric-value">{{item.slotsText}}</text>
+        <text class="metric-label">报名</text>
+      </view>
+      <view>
+        <text class="metric-value">{{item.feeText}}</text>
+        <text class="metric-label">费用</text>
+      </view>
+      <view wx:if="{{item.resultText}}">
+        <text class="metric-value">{{item.resultText}}</text>
+        <text class="metric-label">赛果</text>
+      </view>
+    </view>
+    <view wx:if="{{selectedGameId === item.id}}" class="game-detail">
+      <text>{{item.notes || "暂无补充说明"}}</text>
+      <text>报名后将在队内比赛列表保留状态。</text>
+    </view>
+    <view class="game-actions">
+      <button class="detail-button" data-id="{{item.id}}" bindtap="toggleGameDetail">{{selectedGameId === item.id ? "收起详情" : "查看详情"}}</button>
+      <button
+        wx:if="{{item.status === 'open'}}"
+        class="signup-button"
+        data-id="{{item.id}}"
+        disabled="{{item.joined || joiningId === item.id}}"
+        bindtap="signupGame"
+      >{{item.joined ? "已报名" : joiningId === item.id ? "报名中" : "报名"}}</button>
+    </view>
+  </view>
+</view>

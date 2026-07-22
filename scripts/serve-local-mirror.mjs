@@ -440,6 +440,14 @@ const ensureSportsSchema = async () => {
         name VARCHAR(80) NOT NULL,
         sport VARCHAR(20) NOT NULL DEFAULT 'football',
         area VARCHAR(80) NOT NULL DEFAULT '江宁',
+        badge_url VARCHAR(600) NOT NULL DEFAULT '',
+        badge_color VARCHAR(20) NOT NULL DEFAULT '#D8FF3E',
+        home_venue_name VARCHAR(120) NOT NULL DEFAULT '',
+        activity_time VARCHAR(120) NOT NULL DEFAULT '',
+        level_requirement VARCHAR(40) NOT NULL DEFAULT '不限水平',
+        accepts_trial TINYINT NOT NULL DEFAULT 1,
+        requires_approval TINYINT NOT NULL DEFAULT 1,
+        tags_json TEXT NULL,
         description VARCHAR(500) NOT NULL DEFAULT '',
         captain_user_id INT UNSIGNED NOT NULL,
         captain_username VARCHAR(50) NOT NULL,
@@ -464,6 +472,55 @@ const ensureSportsSchema = async () => {
         UNIQUE KEY uk_sports_team_member (team_id, user_id),
         KEY idx_sports_team_member_user (user_id),
         CONSTRAINT fk_sports_team_member_team FOREIGN KEY (team_id) REFERENCES sports_team(id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `)
+    for (const statement of [
+      "ALTER TABLE sports_team ADD COLUMN badge_url VARCHAR(600) NOT NULL DEFAULT ''",
+      "ALTER TABLE sports_team ADD COLUMN badge_color VARCHAR(20) NOT NULL DEFAULT '#D8FF3E'",
+      "ALTER TABLE sports_team ADD COLUMN home_venue_name VARCHAR(120) NOT NULL DEFAULT ''",
+      "ALTER TABLE sports_team ADD COLUMN activity_time VARCHAR(120) NOT NULL DEFAULT ''",
+      "ALTER TABLE sports_team ADD COLUMN level_requirement VARCHAR(40) NOT NULL DEFAULT '不限水平'",
+      'ALTER TABLE sports_team ADD COLUMN accepts_trial TINYINT NOT NULL DEFAULT 1',
+      'ALTER TABLE sports_team ADD COLUMN requires_approval TINYINT NOT NULL DEFAULT 1',
+      'ALTER TABLE sports_team ADD COLUMN tags_json TEXT NULL',
+    ]) {
+      await pool.execute(statement).catch((error) => {
+        if (error?.code !== 'ER_DUP_FIELDNAME') throw error
+      })
+    }
+    await pool.execute(`
+      CREATE TABLE IF NOT EXISTS sports_team_game (
+        id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+        team_id INT UNSIGNED NOT NULL,
+        type VARCHAR(20) NOT NULL DEFAULT 'training',
+        title VARCHAR(100) NOT NULL,
+        venue_name VARCHAR(120) NOT NULL DEFAULT '',
+        opponent_name VARCHAR(80) NOT NULL DEFAULT '',
+        start_time DATETIME NOT NULL,
+        capacity INT UNSIGNED NOT NULL DEFAULT 10,
+        fee_per_person DECIMAL(10,2) NOT NULL DEFAULT 0,
+        notes VARCHAR(500) NOT NULL DEFAULT '',
+        status VARCHAR(20) NOT NULL DEFAULT 'open',
+        creator_user_id INT UNSIGNED NOT NULL,
+        creator_username VARCHAR(50) NOT NULL,
+        create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        KEY idx_sports_team_game_team (team_id, start_time),
+        CONSTRAINT fk_sports_team_game_team FOREIGN KEY (team_id) REFERENCES sports_team(id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `)
+    await pool.execute(`
+      CREATE TABLE IF NOT EXISTS sports_team_game_signup (
+        id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+        team_game_id INT UNSIGNED NOT NULL,
+        user_id INT UNSIGNED NOT NULL,
+        username VARCHAR(50) NOT NULL,
+        status VARCHAR(20) NOT NULL DEFAULT 'active',
+        create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        UNIQUE KEY uk_sports_team_game_signup (team_game_id, user_id),
+        KEY idx_sports_team_game_signup_user (user_id),
+        CONSTRAINT fk_sports_team_game_signup_game FOREIGN KEY (team_game_id) REFERENCES sports_team_game(id)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `)
     await pool.execute(`
@@ -1287,24 +1344,118 @@ const sportsProfileForUser = async (pool, user) => {
   }
 }
 
+const serializeTeam = (team) => ({
+  ...team,
+  badge_url: team.badge_url || '',
+  badge_color: team.badge_color || '#D8FF3E',
+  home_venue_name: team.home_venue_name || team.area || '主场待定',
+  activity_time: team.activity_time || '活动时间待定',
+  level_requirement: team.level_requirement || '不限水平',
+  accepts_trial: Boolean(team.accepts_trial),
+  requires_approval: Boolean(team.requires_approval),
+  tags: parseJsonList(team.tags_json).length ? parseJsonList(team.tags_json) : ['长期招人', '休闲', '5v5'],
+  member_count: Number(team.member_count || 0),
+  member_limit: Number(team.member_limit || 0),
+  average_level: Math.round(Number(team.average_level || 50)),
+  is_member: Boolean(team.is_member),
+  is_joined: Boolean(team.is_member),
+  join_pending: Boolean(team.join_pending),
+})
+
+const serializeTeamGame = (game) => ({
+  ...game,
+  id: Number(game.id),
+  team_id: Number(game.team_id),
+  capacity: Number(game.capacity || 0),
+  fee_per_person: Number(game.fee_per_person || 0),
+  signup_count: Number(game.signup_count || 0),
+  is_joined: Boolean(game.is_joined),
+})
+
 const sportsTeamsForUser = async (pool, user) => {
   const [teams] = await pool.execute(
     `SELECT t.*,
-      COUNT(m.id) AS member_count,
-      MAX(CASE WHEN m.user_id = ? THEN 1 ELSE 0 END) AS is_member
+      COUNT(CASE WHEN m.status = 'active' THEN m.id END) AS member_count,
+      ROUND(AVG(CASE WHEN m.status = 'active' THEN COALESCE(r.composite_score * 20, 50) END)) AS average_level,
+      MAX(CASE WHEN m.user_id = ? AND m.status = 'active' THEN 1 ELSE 0 END) AS is_member,
+      MAX(CASE WHEN m.user_id = ? AND m.status = 'pending' THEN 1 ELSE 0 END) AS join_pending
      FROM sports_team t
-     LEFT JOIN sports_team_member m ON m.team_id = t.id AND m.status = 'active'
+     LEFT JOIN sports_team_member m ON m.team_id = t.id
+     LEFT JOIN sports_player_rating_summary r ON r.user_id = m.user_id
      WHERE t.status = 'active'
      GROUP BY t.id
      ORDER BY t.create_time DESC`,
-    [user.id],
+    [user.id, user.id],
   )
-  return teams.map((team) => ({
-    ...team,
-    member_count: Number(team.member_count || 0),
-    member_limit: Number(team.member_limit || 0),
-    is_member: Boolean(team.is_member),
-  }))
+  return teams.map(serializeTeam)
+}
+
+const teamGamesForUser = async (pool, user, teamId) => {
+  const [games] = await pool.execute(
+    `SELECT g.*,
+      COUNT(CASE WHEN s.status = 'active' THEN s.id END) AS signup_count,
+      MAX(CASE WHEN s.user_id = ? AND s.status = 'active' THEN 1 ELSE 0 END) AS is_joined
+     FROM sports_team_game g
+     LEFT JOIN sports_team_game_signup s ON s.team_game_id = g.id
+     WHERE g.team_id = ?
+     GROUP BY g.id
+     ORDER BY g.start_time DESC
+     LIMIT 50`,
+    [user.id, teamId],
+  )
+  return games.map(serializeTeamGame)
+}
+
+const teamDetailForUser = async (pool, user, teamId) => {
+  const [[team]] = await pool.execute(
+    `SELECT t.*,
+      COUNT(CASE WHEN m.status = 'active' THEN m.id END) AS member_count,
+      ROUND(AVG(CASE WHEN m.status = 'active' THEN COALESCE(r.composite_score * 20, 50) END)) AS average_level,
+      MAX(CASE WHEN m.user_id = ? AND m.status = 'active' THEN 1 ELSE 0 END) AS is_member,
+      MAX(CASE WHEN m.user_id = ? AND m.status = 'pending' THEN 1 ELSE 0 END) AS join_pending
+     FROM sports_team t
+     LEFT JOIN sports_team_member m ON m.team_id = t.id
+     LEFT JOIN sports_player_rating_summary r ON r.user_id = m.user_id
+     WHERE t.id = ? AND t.status = 'active'
+     GROUP BY t.id
+     LIMIT 1`,
+    [user.id, user.id, teamId],
+  )
+  if (!team) return null
+  const [members] = await pool.execute(
+    `SELECT m.id, m.user_id, m.username, m.role, m.status,
+      ROUND(COALESCE(r.composite_score * 20, 50)) AS level,
+      COUNT(CASE WHEN s.status = 'active' THEN s.id END) AS attendance_count
+     FROM sports_team_member m
+     LEFT JOIN sports_player_rating_summary r ON r.user_id = m.user_id
+     LEFT JOIN sports_team_game g ON g.team_id = m.team_id AND g.status = 'finished'
+     LEFT JOIN sports_team_game_signup s ON s.team_game_id = g.id AND s.user_id = m.user_id
+     WHERE m.team_id = ? AND m.status = 'active'
+     GROUP BY m.id
+     ORDER BY m.role = 'captain' DESC, attendance_count DESC, m.create_time ASC`,
+    [teamId],
+  )
+  const applicants = Number(team.captain_user_id) === Number(user.id)
+    ? (await pool.execute(
+      `SELECT m.id, m.user_id, m.username AS name, m.role, m.status,
+        ROUND(COALESCE(r.composite_score * 20, 50)) AS level
+       FROM sports_team_member m
+       LEFT JOIN sports_player_rating_summary r ON r.user_id = m.user_id
+       WHERE m.team_id = ? AND m.status = 'pending'
+       ORDER BY m.create_time ASC`,
+      [teamId],
+    ))[0].map((member) => ({ ...member, note: '待队长审核', avatarText: String(member.name || '队').slice(0, 1) }))
+    : []
+  return {
+    team: serializeTeam(team),
+    members: members.map((member) => ({
+      ...member,
+      level: Number(member.level || 50),
+      attendance_count: Number(member.attendance_count || 0),
+    })),
+    games: await teamGamesForUser(pool, user, teamId),
+    applicants,
+  }
 }
 
 const sportsClipsForUser = async (pool, user) => {
@@ -1539,24 +1690,89 @@ const handleSportsApi = async (req, res, requestUrl) => {
 
     if (pathName === '/api/sports-app/teams' && req.method === 'POST') {
       const body = await readJsonBody(req)
+      const tags = Array.isArray(body.tags) ? body.tags.map((item) => text(item, 30)).filter(Boolean).slice(0, 4) : []
       const [result] = await pool.execute(
         `INSERT INTO sports_team
-          (name, sport, area, description, captain_user_id, captain_username, member_limit)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          (name, sport, area, badge_url, badge_color, home_venue_name, activity_time,
+           level_requirement, accepts_trial, requires_approval, tags_json, description,
+           captain_user_id, captain_username, member_limit)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           text(body.name, 80) || `${user.username} 的球队`,
           text(body.sport, 20) || 'football',
           text(body.area, 80) || '江宁大学城',
+          text(body.badge_url, 600),
+          text(body.badge_color, 20) || '#D8FF3E',
+          text(body.home_venue_name, 120) || text(body.area, 80) || '主场待定',
+          text(body.activity_time, 120) || '活动时间待定',
+          text(body.level_requirement, 40) || '不限水平',
+          body.accepts_trial === false || body.accepts_trial === 0 ? 0 : 1,
+          body.requires_approval === false || body.requires_approval === 0 ? 0 : 1,
+          JSON.stringify(tags),
           text(body.description, 500) || '固定约球训练，欢迎同水平球友加入。',
           user.id,
           user.username,
-          Number(body.member_limit || 20),
+          Math.min(50, Math.max(2, Number(body.member_limit || 20))),
         ],
       )
       await pool.execute(
         'INSERT INTO sports_team_member (team_id, user_id, username, role) VALUES (?, ?, ?, "captain")',
         [result.insertId, user.id, user.username],
       )
+      await trackEvent(pool, user, 'team_created', { entity_type: 'team', entity_id: result.insertId })
+      return json(res, { ok: true, id: result.insertId }, 201)
+    }
+
+    const teamDetailMatch = pathName.match(/^\/api\/sports-app\/teams\/(\d+)$/)
+    if (teamDetailMatch && req.method === 'GET') {
+      const detail = await teamDetailForUser(pool, user, Number(teamDetailMatch[1]))
+      if (!detail) return json(res, { ok: false, error: 'team not found' }, 404)
+      return json(res, detail)
+    }
+
+    const teamGamesMatch = pathName.match(/^\/api\/sports-app\/teams\/(\d+)\/games$/)
+    if (teamGamesMatch && req.method === 'GET') {
+      const teamId = Number(teamGamesMatch[1])
+      const detail = await teamDetailForUser(pool, user, teamId)
+      if (!detail) return json(res, { ok: false, error: 'team not found' }, 404)
+      return json(res, { team: detail.team, games: detail.games })
+    }
+
+    if (teamGamesMatch && req.method === 'POST') {
+      const teamId = Number(teamGamesMatch[1])
+      const [[team]] = await pool.execute('SELECT * FROM sports_team WHERE id = ? AND status = "active" LIMIT 1', [teamId])
+      if (!team) return json(res, { ok: false, error: 'team not found' }, 404)
+      if (Number(team.captain_user_id) !== Number(user.id)) return json(res, { ok: false, error: '只有队长可以发起队内比赛' }, 403)
+      const body = await readJsonBody(req)
+      const type = ['training', 'recruiting', 'challenge'].includes(body.type) ? body.type : 'training'
+      const title = text(body.title, 100)
+      const startTime = text(body.start_time, 30)
+      if (!title || !startTime) return json(res, { ok: false, error: '比赛名称和时间不能为空' }, 400)
+      if (type === 'challenge' && !text(body.opponent_name, 80)) return json(res, { ok: false, error: '约战需要填写对方球队' }, 400)
+      const [result] = await pool.execute(
+        `INSERT INTO sports_team_game
+          (team_id, type, title, venue_name, opponent_name, start_time, capacity,
+           fee_per_person, notes, status, creator_user_id, creator_username)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', ?, ?)`,
+        [
+          teamId,
+          type,
+          title,
+          text(body.venue_name, 120) || team.home_venue_name || team.area,
+          text(body.opponent_name, 80),
+          startTime,
+          Math.min(50, Math.max(2, Number(body.capacity || 10))),
+          Math.max(0, Number(body.fee_per_person || 0)),
+          text(body.notes, 500),
+          user.id,
+          user.username,
+        ],
+      )
+      await pool.execute(
+        'INSERT INTO sports_team_game_signup (team_game_id, user_id, username, status) VALUES (?, ?, ?, "active")',
+        [result.insertId, user.id, user.username],
+      )
+      await trackEvent(pool, user, 'team_game_created', { entity_type: 'team', entity_id: teamId, metadata: { team_game_id: result.insertId, type } })
       return json(res, { ok: true, id: result.insertId }, 201)
     }
 
@@ -1573,14 +1789,75 @@ const handleSportsApi = async (req, res, requestUrl) => {
         [teamId],
       )
       if (!team) return json(res, { ok: false, error: 'team not found' }, 404)
+      const [[existing]] = await pool.execute(
+        'SELECT * FROM sports_team_member WHERE team_id = ? AND user_id = ? LIMIT 1',
+        [teamId, user.id],
+      )
+      if (existing && ['active', 'pending'].includes(existing.status)) {
+        return json(res, { ok: true, status: existing.status })
+      }
       if (Number(team.member_count || 0) >= Number(team.member_limit || 0)) {
         return json(res, { ok: false, error: '球队已满员' }, 409)
       }
+      const status = Number(team.requires_approval) === 1 ? 'pending' : 'active'
       await pool.execute(
-        'INSERT IGNORE INTO sports_team_member (team_id, user_id, username, role) VALUES (?, ?, ?, "member")',
-        [teamId, user.id, user.username],
+        `INSERT INTO sports_team_member (team_id, user_id, username, role, status)
+         VALUES (?, ?, ?, 'member', ?)
+         ON DUPLICATE KEY UPDATE username = VALUES(username), role = 'member', status = VALUES(status)`,
+        [teamId, user.id, user.username, status],
       )
-      return json(res, { ok: true })
+      await trackEvent(pool, user, status === 'pending' ? 'team_join_requested' : 'team_joined', { entity_type: 'team', entity_id: teamId })
+      return json(res, { ok: true, status })
+    }
+
+    const memberStatusMatch = pathName.match(/^\/api\/sports-app\/teams\/(\d+)\/members\/(\d+)\/status$/)
+    if (memberStatusMatch && req.method === 'POST') {
+      const teamId = Number(memberStatusMatch[1])
+      const memberId = Number(memberStatusMatch[2])
+      const [[team]] = await pool.execute('SELECT * FROM sports_team WHERE id = ? LIMIT 1', [teamId])
+      if (!team) return json(res, { ok: false, error: 'team not found' }, 404)
+      if (Number(team.captain_user_id) !== Number(user.id)) return json(res, { ok: false, error: '只有队长可以处理成员申请' }, 403)
+      const body = await readJsonBody(req)
+      const status = body.action === 'approve' ? 'active' : body.action === 'reject' ? 'rejected' : ''
+      if (!status) return json(res, { ok: false, error: 'invalid member action' }, 400)
+      const [result] = await pool.execute(
+        'UPDATE sports_team_member SET status = ? WHERE id = ? AND team_id = ? AND status = "pending"',
+        [status, memberId, teamId],
+      )
+      if (!result.affectedRows) return json(res, { ok: false, error: 'member application not found' }, 404)
+      return json(res, { ok: true, status })
+    }
+
+    const joinTeamGameMatch = pathName.match(/^\/api\/sports-app\/team-games\/(\d+)\/join$/)
+    if (joinTeamGameMatch && req.method === 'POST') {
+      const gameId = Number(joinTeamGameMatch[1])
+      const [[game]] = await pool.execute(
+        `SELECT g.*, COUNT(CASE WHEN s.status = 'active' THEN s.id END) AS signup_count
+         FROM sports_team_game g
+         LEFT JOIN sports_team_game_signup s ON s.team_game_id = g.id
+         WHERE g.id = ?
+         GROUP BY g.id
+         LIMIT 1`,
+        [gameId],
+      )
+      if (!game) return json(res, { ok: false, error: 'team game not found' }, 404)
+      if (game.status !== 'open') return json(res, { ok: false, error: '比赛当前不可报名' }, 409)
+      if (Number(game.signup_count || 0) >= Number(game.capacity || 0)) return json(res, { ok: false, error: '比赛名额已满' }, 409)
+      if (game.type === 'training') {
+        const [[membership]] = await pool.execute(
+          'SELECT id FROM sports_team_member WHERE team_id = ? AND user_id = ? AND status = "active" LIMIT 1',
+          [game.team_id, user.id],
+        )
+        if (!membership) return json(res, { ok: false, error: '队内训练赛仅限正式成员' }, 403)
+      }
+      await pool.execute(
+        `INSERT INTO sports_team_game_signup (team_game_id, user_id, username, status)
+         VALUES (?, ?, ?, 'active')
+         ON DUPLICATE KEY UPDATE username = VALUES(username), status = 'active'`,
+        [gameId, user.id, user.username],
+      )
+      await trackEvent(pool, user, 'team_game_joined', { entity_type: 'team', entity_id: game.team_id, metadata: { team_game_id: gameId } })
+      return json(res, { ok: true, status: 'active' })
     }
 
     if (pathName === '/api/sports-app/ai-clips' && req.method === 'GET') {

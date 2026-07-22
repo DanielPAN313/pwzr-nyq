@@ -1,9 +1,20 @@
+const { getLandingPath, getStoredIdentity, hasSelectedIdentity } = require("../../utils/auth");
+
 Page({
   onLoad() {
     this.timer = setTimeout(() => {
-      wx.switchTab({
-        url: "/pages/home/home"
-      });
+      if (!hasSelectedIdentity()) {
+        wx.reLaunch({ url: "/pages/login/login" });
+        return;
+      }
+
+      const role = getStoredIdentity();
+      const url = getLandingPath(role);
+      if (role === "venue_admin") {
+        wx.reLaunch({ url });
+        return;
+      }
+      wx.switchTab({ url });
     }, 1900);
   },
 

@@ -72,8 +72,8 @@ Page({
           url: "/pages/home/home"
         });
       })
-      .catch((error) => {
-        this.setData({ error: error.message || "创建账号失败，请稍后再试" });
+      .catch(() => {
+        this.setData({ error: "创建账号失败，请稍后再试" });
       })
       .finally(() => {
         this.setData({ loading: false });

@@ -287,10 +287,10 @@ Page({
           this.scrollToOrder(this.data.highlightedOrderId);
         }
       })
-      .catch((error) => {
+      .catch(() => {
         this.setData({
           loading: false,
-          error: error.message || "场馆管理数据加载失败",
+          error: "",
           empty: false,
           metrics: fallbackDashboard.metrics,
           adminSteps: buildAdminSteps(false),
@@ -376,9 +376,9 @@ Page({
 
         return this.loadDashboard();
       })
-      .catch((error) => {
+      .catch(() => {
         wx.showToast({
-          title: error.message || "保存失败",
+          title: "保存未完成，请稍后重试",
           icon: "none"
         });
       })
@@ -428,9 +428,9 @@ Page({
 
         return this.loadDashboard();
       })
-      .catch((error) => {
+      .catch(() => {
         wx.showToast({
-          title: error.message || "提交失败",
+          title: "提交未完成，请稍后重试",
           icon: "none"
         });
       })
@@ -506,9 +506,9 @@ Page({
 
         return this.loadDashboard();
       })
-      .catch((error) => {
+      .catch(() => {
         wx.showToast({
-          title: error.message || "核销失败",
+          title: "核销未完成，请稍后重试",
           icon: "none"
         });
       })
@@ -536,9 +536,9 @@ Page({
 
         return this.loadDashboard();
       })
-      .catch((error) => {
+      .catch(() => {
         wx.showToast({
-          title: error.message || "核销失败",
+          title: "核销未完成，请稍后重试",
           icon: "none"
         });
       })

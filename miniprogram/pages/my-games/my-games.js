@@ -238,10 +238,10 @@ Page({
           empty: sorted.length === 0
         });
       })
-      .catch((error) => {
+      .catch(() => {
         this.setData({
           loading: false,
-          error: error.message || "我的球局加载失败",
+          error: "",
           empty: false,
           games: fallbackGames,
           visibleGames: fallbackGames,

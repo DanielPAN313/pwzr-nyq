@@ -267,9 +267,9 @@ Page({
 
         return this.loadDetail();
       })
-      .catch((error) => {
+      .catch(() => {
         wx.showToast({
-          title: error.message || "报名失败",
+          title: "报名未完成，请稍后重试",
           icon: "none"
         });
       })
@@ -298,10 +298,10 @@ Page({
             : this.data.reviewHint
         });
       })
-      .catch((error) => {
+      .catch(() => {
         this.setData({
           loading: false,
-          error: error.message || "球局详情加载失败"
+          error: ""
         });
       });
   },
@@ -330,9 +330,9 @@ Page({
 
         return this.loadDetail();
       })
-      .catch((error) => {
+      .catch(() => {
         wx.showToast({
-          title: error.message || "评价失败",
+          title: "评价未提交，请稍后重试",
           icon: "none"
         });
       })

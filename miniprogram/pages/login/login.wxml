@@ -1,43 +1,44 @@
 <view class="login-page">
-  <view class="login-ambient ambient-one"></view>
-  <view class="login-ambient ambient-two"></view>
-
   <view class="login-hero">
-    <text class="login-kicker">WELCOME BACK</text>
-    <text class="login-title">登陆 NYQ</text>
-    <text class="login-copy">输入用户名和密码，回到你的球局、邀请和订单。</text>
+    <text class="login-kicker">NING YUE QIU</text>
+    <text class="login-title">选择你的身份</text>
+    <text class="login-copy">进入与你相关的球局、订单和场馆工作台。</text>
   </view>
 
-  <view class="login-form">
-    <view class="field">
-      <text class="field-label">用户名</text>
-      <input
-        class="field-input"
-        type="text"
-        placeholder="输入你的用户名"
-        placeholder-class="field-placeholder"
-        value="{{username}}"
-        data-field="username"
-        bindinput="updateField"
-      />
+  <view class="role-switch" role="radiogroup" aria-label="选择身份">
+    <view class="role-option {{selectedRole === 'player' ? 'role-option-active' : ''}}" data-role="player" bindtap="selectRole">
+      <text class="role-icon">球</text>
+      <view class="role-copy">
+        <text class="role-title">我是球友</text>
+        <text class="role-hint">找球局、订场、加入球队</text>
+      </view>
+      <text class="role-check">{{selectedRole === 'player' ? '✓' : ''}}</text>
     </view>
-
-    <view class="field">
-      <text class="field-label">密码</text>
-      <input
-        class="field-input"
-        password
-        placeholder="输入密码"
-        placeholder-class="field-placeholder"
-        value="{{password}}"
-        data-field="password"
-        bindinput="updateField"
-      />
+    <view class="role-option {{selectedRole === 'venue_admin' ? 'role-option-active' : ''}}" data-role="venue_admin" bindtap="selectRole">
+      <text class="role-icon">馆</text>
+      <view class="role-copy">
+        <text class="role-title">我是场馆管理员</text>
+        <text class="role-hint">处理订单、球局与核销</text>
+      </view>
+      <text class="role-check">{{selectedRole === 'venue_admin' ? '✓' : ''}}</text>
     </view>
-
-    <text wx:if="{{error}}" class="form-error">{{error}}</text>
-
-    <button class="login-button" bindtap="submitLogin">登陆 NYQ</button>
-    <button class="remember-button" bindtap="rememberLogin">记住我</button>
   </view>
+
+  <view wx:if="{{selectedRole === 'venue_admin'}}" class="venue-form">
+    <view class="field">
+      <text class="field-label">管理员手机号</text>
+      <input class="field-input" type="number" maxlength="11" placeholder="请输入管理员手机号" placeholder-class="field-placeholder" value="{{phone}}" data-field="phone" bindinput="updateField" />
+    </view>
+    <view class="field">
+      <text class="field-label">验证码</text>
+      <input class="field-input" type="number" maxlength="6" placeholder="请输入 6 位验证码" placeholder-class="field-placeholder" value="{{code}}" data-field="code" bindinput="updateField" />
+    </view>
+    <text class="test-account">测试账号：13800000000　验证码：123456</text>
+  </view>
+
+  <text wx:if="{{error}}" class="form-error">{{error}}</text>
+  <button class="login-button" loading="{{loading}}" disabled="{{loading}}" bindtap="submitIdentity">
+    {{selectedRole === 'player' ? '微信一键登录' : '验证并进入场馆端'}}
+  </button>
+  <text class="privacy-note">登录即表示同意平台服务与隐私规则</text>
 </view>

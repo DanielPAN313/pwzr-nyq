@@ -177,10 +177,10 @@ Page({
           error: slots.length ? "" : "该场馆暂未开放可预约时段。"
         });
       })
-      .catch((error) => {
+      .catch(() => {
         this.setData({
           loading: false,
-          error: error.message || "场馆时段加载失败"
+          error: ""
         });
       });
   },
@@ -220,9 +220,9 @@ Page({
           wx.navigateTo({ url: result.order_id ? `/pages/orders/orders?orderId=${result.order_id}` : "/pages/orders/orders" });
         }, 600);
       })
-      .catch((error) => {
+      .catch(() => {
         wx.showToast({
-          title: error.message || "订场失败",
+          title: "订场未完成，请稍后重试",
           icon: "none"
         });
       })

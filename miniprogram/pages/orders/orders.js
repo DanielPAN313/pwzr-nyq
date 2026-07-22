@@ -101,10 +101,10 @@ Page({
           this.getTabBar().syncTabState();
         }
       })
-      .catch((error) => {
+      .catch(() => {
         this.setData({
           loading: false,
-          error: error.message || "订单数据加载失败",
+          error: "",
           empty: false,
           orders: fallbackOrders
         });
@@ -153,8 +153,8 @@ Page({
         wx.showToast({ title: "支付成功", icon: "success" });
         return this.loadOrders();
       })
-      .catch((error) => {
-        wx.showToast({ title: error.message || "支付未完成", icon: "none" });
+      .catch(() => {
+        wx.showToast({ title: "支付未完成，请稍后重试", icon: "none" });
       })
       .finally(() => {
         this.setData({ payingId: "" });
@@ -180,8 +180,8 @@ Page({
             wx.showToast({ title: "订单已取消", icon: "success" });
             return this.loadOrders();
           })
-          .catch((error) => {
-            wx.showToast({ title: error.message || "取消失败", icon: "none" });
+          .catch(() => {
+            wx.showToast({ title: "取消未完成，请稍后重试", icon: "none" });
           })
           .finally(() => {
             this.setData({ cancellingId: "" });
@@ -201,8 +201,8 @@ Page({
         wx.showToast({ title: "核销成功", icon: "success" });
         return this.loadOrders();
       })
-      .catch((error) => {
-        wx.showToast({ title: error.message || "暂不能核销", icon: "none" });
+      .catch(() => {
+        wx.showToast({ title: "暂不能核销，请稍后重试", icon: "none" });
       })
       .finally(() => {
         this.setData({ checkingInId: "" });

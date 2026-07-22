@@ -176,10 +176,10 @@ Page({
           error: list.length ? "" : "暂无可用场馆，先去订场页确认场馆数据。"
         });
       })
-      .catch((error) => {
+      .catch(() => {
         this.syncSummary({
           loading: false,
-          error: error.message || "场馆加载失败"
+          error: ""
         });
       });
   },
@@ -279,9 +279,9 @@ Page({
           wx.navigateBack();
         }, 600);
       })
-      .catch((error) => {
+      .catch(() => {
         wx.showToast({
-          title: error.message || "发起失败",
+          title: "球局未发起，请稍后重试",
           icon: "none"
         });
       })

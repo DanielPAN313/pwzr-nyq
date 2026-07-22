@@ -342,10 +342,38 @@ const mePage = registeredPageByPath.get("pages/me/me");
 assert(mePage, "pages/me/me page instance was not registered.");
 assert(Array.isArray(mePage.data.profileStats) && mePage.data.profileStats.length === 3, "me page should expose three profile stats.");
 assert(typeof mePage.data.profileTag === "string" && mePage.data.profileTag.length > 0, "me page should expose a profile tag.");
-for (const target of ["/pages/my-games/my-games", "/pages/credit/credit", "/pages/venue-admin/venue-admin", "/pages/legal/legal"]) {
+for (const target of ["/pages/my-games/my-games", "/pages/credit/credit", "/pages/legal/legal"]) {
   assert(mePage.data.items.some((item) => item.target === target), `me menu should expose ${target}.`);
 }
+assert(!mePage.data.items.some((item) => item.target.includes("venue")), "player me menu should not expose a venue admin entry.");
+assert(mePage.data.venueModeEntry?.target === "/pages/venue/home/index", "venue admins should enter the current venue home.");
 assert(mePage.data.items.every((item) => typeof item.hint === "string" && item.hint.length > 0), "me menu items should expose descriptive hints.");
+
+const loginPage = registeredPageByPath.get("pages/login/login");
+assert(loginPage, "pages/login/login page instance was not registered.");
+for (const method of ["selectRole", "updateField", "submitIdentity", "submitPlayerLogin", "submitVenueLogin"]) {
+  assert(typeof loginPage[method] === "function", `pages/login/login should expose ${method} method.`);
+}
+const loginWxml = fs.readFileSync(path.join(miniRoot, "pages/login/login.wxml"), "utf8");
+assert(loginWxml.includes("我是球友") && loginWxml.includes("我是场馆管理员"), "login should present player and venue roles.");
+assert(!loginWxml.includes("用户名") && !loginWxml.includes("密码"), "login should not retain the username/password entry.");
+
+context.wx.setStorageSync("nyq_user", { id: 10, username: "player", role: "player" });
+context.wx.setStorageSync("nyq_identity", "player");
+const auth = loadModule(path.join(miniRoot, "utils/auth.js"));
+assert(auth.getStoredIdentity() === "player", "player identity should persist in storage.");
+assert(auth.getLandingPath() === "/pages/home/home", "player identity should land on player home.");
+context.wx.removeStorageSync("nyq_user");
+context.wx.removeStorageSync("nyq_token");
+context.wx.removeStorageSync("nyq_identity");
+loginPage.setData({ selectedRole: "venue_admin", phone: "13800000000", code: "123456", loading: false, error: "" });
+loginPage.submitVenueLogin.call(loginPage);
+assert(context.wx.getStorageSync("nyq_identity") === "venue_admin", "verified venue identity should persist in storage.");
+assert(context.wx.getStorageSync("nyq_user")?.role === "venue_admin", "verified venue user should receive venue_admin role.");
+assert(auth.getLandingPath() === "/pages/venue/home/index", "venue admin identity should land on venue home.");
+
+const pageSources = appJson.pages.map((pagePath) => fs.readFileSync(path.join(miniRoot, `${pagePath}.js`), "utf8"));
+assert(pageSources.every((source) => !/\b(?:error|err)\.message\b/.test(source)), "page code must not expose raw technical error messages.");
 
 const rankingsPage = registeredPageByPath.get("pages/rankings/rankings");
 assert(rankingsPage, "pages/rankings/rankings page instance was not registered.");

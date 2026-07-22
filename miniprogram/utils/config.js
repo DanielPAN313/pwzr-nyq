@@ -5,7 +5,9 @@ const DEFAULT_CONFIG = {
   useMockAuth: true,
   storageKeys: {
     token: "nyq_token",
-    user: "nyq_user"
+    user: "nyq_user",
+    identity: "nyq_identity",
+    venueVerification: "nyq_venue_verification"
   }
 };
 

@@ -127,12 +127,12 @@ Page({
           empty: visibleVenues.length === 0
         });
       })
-      .catch((error) => {
+      .catch(() => {
         const visibleVenues = buildVenueView(normalizeKaziVenues(fallbackVenues), this.data.venueMode, this.data.keyword);
 
         this.setData({
           loading: false,
-          error: error.message || "场馆数据加载失败",
+          error: "",
           empty: visibleVenues.length === 0,
           allVenues: normalizeKaziVenues(fallbackVenues),
           venues: visibleVenues
@@ -212,8 +212,8 @@ Page({
         wx.showToast({ title: "已生成订单", icon: "success" });
         wx.navigateTo({ url: "/pages/orders/orders" });
       })
-      .catch((error) => {
-        wx.showToast({ title: error.message || "订场失败", icon: "none" });
+      .catch(() => {
+        wx.showToast({ title: "订场未完成，请稍后重试", icon: "none" });
       })
       .finally(() => {
         this.setData({ bookingId: "" });

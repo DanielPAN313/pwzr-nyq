@@ -1,79 +1,81 @@
-const { post } = require("../../utils/api");
-const { setSession } = require("../../utils/auth");
+const { MOCK_USER, getLandingPath, setSession } = require("../../utils/auth");
+const { verifyVenueAdmin } = require("../../utils/venue-auth");
 
-function normalizeUser(rawUser) {
-  const username = rawUser.username || rawUser.name || rawUser.email || "nyq_player";
-  return {
-    id: rawUser.id || 1,
-    username,
-    nickName: rawUser.nickName || rawUser.name || username,
-    avatarUrl: rawUser.avatarUrl || "",
-    creditScore: rawUser.creditScore || 100
-  };
+function reLaunchByRole(role) {
+  wx.reLaunch({ url: getLandingPath(role) });
 }
 
 Page({
   data: {
-    username: "",
-    password: "",
+    selectedRole: "player",
+    phone: "",
+    code: "",
     error: "",
     loading: false
   },
 
+  selectRole(event) {
+    const role = event.currentTarget.dataset.role;
+    if (!["player", "venue_admin"].includes(role)) return;
+    this.setData({ selectedRole: role, error: "" });
+  },
+
   updateField(event) {
     const field = event.currentTarget.dataset.field;
-    if (!field) return;
+    if (!["phone", "code"].includes(field)) return;
+    this.setData({ [field]: event.detail.value, error: "" });
+  },
 
-    this.setData({
-      [field]: event.detail.value,
-      error: ""
+  submitIdentity() {
+    if (this.data.loading) return;
+    if (this.data.selectedRole === "venue_admin") {
+      this.submitVenueLogin();
+      return;
+    }
+    this.submitPlayerLogin();
+  },
+
+  submitPlayerLogin() {
+    this.setData({ loading: true, error: "" });
+
+    const finish = () => {
+      setSession({
+        user: { ...MOCK_USER, role: "player" },
+        token: `dev-token-${MOCK_USER.username}`
+      });
+      reLaunchByRole("player");
+    };
+
+    if (typeof wx.login !== "function") {
+      finish();
+      return;
+    }
+
+    wx.login({
+      success: finish,
+      fail: finish
     });
   },
 
-  submitLogin() {
-    const username = this.data.username.trim();
-    const password = this.data.password;
+  submitVenueLogin() {
+    const phone = this.data.phone.trim();
+    const code = this.data.code.trim();
 
-    if (!username || !password) {
-      this.setData({ error: "请输入用户名和密码" });
+    if (!/^1\d{10}$/.test(phone)) {
+      this.setData({ error: "请输入正确的管理员手机号" });
+      return;
+    }
+    if (!/^\d{6}$/.test(code)) {
+      this.setData({ error: "请输入 6 位验证码" });
       return;
     }
 
     this.setData({ loading: true, error: "" });
-
-    post("/api/auth/login", { username, password }, {
-      auth: false,
-      loadingTitle: "登录中"
-    })
-      .then((result) => {
-        const rawUser = result.user || {};
-        setSession({
-          user: normalizeUser(rawUser),
-          token: result.token || rawUser.token
-        });
-        wx.reLaunch({
-          url: "/pages/home/home"
-        });
-      })
-      .catch((error) => {
-        this.setData({ error: error.message || "登录失败，请检查账号密码" });
-      })
-      .finally(() => {
-        this.setData({ loading: false });
-      });
-  },
-
-  rememberLogin() {
-    const profile = wx.getStorageSync("nyq_register_profile");
-
-    if (!profile || !profile.username) {
-      this.setData({ error: "未找到已注册账户，请先创建账号" });
+    const session = verifyVenueAdmin(phone, code);
+    if (!session) {
+      this.setData({ loading: false, error: "手机号或验证码未通过场馆验证" });
       return;
     }
-
-    wx.setStorageSync("nyq_remember_login", true);
-    wx.reLaunch({
-      url: "/pages/home/home"
-    });
+    reLaunchByRole("venue_admin");
   }
 });

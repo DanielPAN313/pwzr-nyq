@@ -5,8 +5,12 @@ const MOCK_USER = {
   username: "demo_player",
   nickName: "宁约球体验用户",
   avatarUrl: "",
-  creditScore: 100
+  creditScore: 100,
+  role: "player"
 };
+
+const PLAYER_HOME = "/pages/home/home";
+const VENUE_HOME = "/pages/venue/home/index";
 
 function getStoredUser() {
   const { storageKeys } = getConfig();
@@ -20,17 +24,36 @@ function getToken() {
 
 function setSession(session) {
   const { storageKeys } = getConfig();
-  const user = session.user || MOCK_USER;
+  const rawUser = session.user || MOCK_USER;
+  const user = {
+    ...rawUser,
+    role: rawUser.role || session.role || "player"
+  };
   const token = session.token || `dev-token-${user.username || "demo"}`;
 
   wx.setStorageSync(storageKeys.user, user);
   wx.setStorageSync(storageKeys.token, token);
+  wx.setStorageSync(storageKeys.identity, user.role);
 
   const app = getApp();
   app.globalData.user = user;
   app.globalData.token = token;
 
   return { user, token };
+}
+
+function getStoredIdentity() {
+  const { storageKeys } = getConfig();
+  const user = getStoredUser();
+  return wx.getStorageSync(storageKeys.identity) || (user && user.role) || "";
+}
+
+function hasSelectedIdentity() {
+  return ["player", "venue_admin"].includes(getStoredIdentity());
+}
+
+function getLandingPath(role = getStoredIdentity()) {
+  return role === "venue_admin" ? VENUE_HOME : PLAYER_HOME;
 }
 
 function ensureDevLogin() {
@@ -59,6 +82,8 @@ function logout() {
   const { storageKeys } = getConfig();
   wx.removeStorageSync(storageKeys.user);
   wx.removeStorageSync(storageKeys.token);
+  wx.removeStorageSync(storageKeys.identity);
+  wx.removeStorageSync(storageKeys.venueVerification);
 
   const app = getApp();
   app.globalData.user = null;
@@ -67,9 +92,14 @@ function logout() {
 
 module.exports = {
   MOCK_USER,
+  PLAYER_HOME,
+  VENUE_HOME,
   ensureDevLogin,
+  getLandingPath,
+  getStoredIdentity,
   getStoredUser,
   getToken,
+  hasSelectedIdentity,
   logout,
   setSession
 };

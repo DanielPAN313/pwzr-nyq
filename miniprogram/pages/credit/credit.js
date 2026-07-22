@@ -260,7 +260,7 @@ Page({
         nextState.events = visibleEvents;
         nextState.eventSections = buildEventSections(visibleEvents);
       } else {
-        nextState.error = profileResult.error.message || "信用分加载失败";
+        nextState.error = "";
         nextState.events = fallbackEvents;
         nextState.eventSections = buildEventSections(fallbackEvents);
       }
@@ -268,7 +268,7 @@ Page({
       if (ratingResult.ok) {
         this.syncRatingState(ratingResult.value || {});
       } else {
-        nextState.ratingError = ratingResult.error.message || "实力自评加载失败";
+        nextState.ratingError = "";
         this.syncRatingState({});
       }
 
@@ -346,9 +346,9 @@ Page({
           icon: "success"
         });
       })
-      .catch((error) => {
+      .catch(() => {
         wx.showToast({
-          title: error.message || "自评提交失败",
+          title: "自评未提交，请稍后重试",
           icon: "none"
         });
       })

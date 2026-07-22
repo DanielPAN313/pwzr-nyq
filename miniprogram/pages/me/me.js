@@ -5,14 +5,13 @@ const fallbackItems = [
   { label: "我的订单", value: "0 单", target: "/pages/orders/orders", tone: "default", hint: "查看支付、核销和取消" },
   { label: "我的球局", value: "0 场", target: "/pages/my-games/my-games", tone: "default", hint: "回看报名、到场和互评" },
   { label: "信用分", value: "100", target: "/pages/credit/credit", tone: "accent", hint: "查看自评与信用记录" },
-  { label: "场馆合作", value: "联系中", target: "/pages/venue-admin/venue-admin", tone: "default", hint: "场馆端管理与核销" },
   { label: "支付与规则", value: "查看", target: "/pages/legal/legal", tone: "subtle", hint: "支付、取消、信用说明" }
 ];
 
 const venueModeEntry = {
   label: "切换至场馆模式",
   subLabel: "仅场馆管理员可见",
-  target: "/pages/venue-admin/venue-admin"
+  target: "/pages/venue/home/index"
 };
 
 function buildStats(summary) {
@@ -28,13 +27,10 @@ function buildStats(summary) {
 function buildItems(profile) {
   const summary = profile.summary || {};
   const orders = Array.isArray(profile.orders) ? profile.orders : [];
-  const pendingCheckins = Number(summary.pending_checkins || 0);
-
   return [
     { label: "我的订单", value: `${orders.length} 单`, target: "/pages/orders/orders", tone: "default", hint: "查看支付、核销和取消" },
     { label: "我的球局", value: `${summary.played || 0} 场`, target: "/pages/my-games/my-games", tone: "default", hint: "回看报名、到场和互评" },
     { label: "信用分", value: String(summary.credit_score || 100), target: "/pages/credit/credit", tone: "accent", hint: "查看自评与信用记录" },
-    { label: "场馆合作", value: pendingCheckins > 0 ? `${pendingCheckins} 个待处理` : "联系中", target: "/pages/venue-admin/venue-admin", tone: pendingCheckins > 0 ? "warning" : "default", hint: "场馆端管理与核销" },
     { label: "支付与规则", value: "查看", target: "/pages/legal/legal", tone: "subtle", hint: "支付、取消、信用说明" }
   ];
 }

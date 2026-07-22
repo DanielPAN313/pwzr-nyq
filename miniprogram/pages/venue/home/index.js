@@ -1,6 +1,6 @@
 const { getStoredUser } = require("../../../utils/auth");
 
-const PLAYER_HOME = "/pages/home/home";
+const LOGIN_PAGE = "/pages/login/login";
 const SCAN_PAGE = "/pages/venue/scan/index";
 
 const fallbackStats = [
@@ -27,12 +27,7 @@ function hasVenueAdminRole(user) {
 }
 
 function backToPlayerHome() {
-  wx.switchTab({
-    url: PLAYER_HOME,
-    fail() {
-      wx.reLaunch({ url: PLAYER_HOME });
-    }
-  });
+  wx.reLaunch({ url: LOGIN_PAGE });
 }
 
 Page({

@@ -78,6 +78,15 @@
         复制核销码
       </button>
       <button
+        wx:if="{{item.canRequestMakeup}}"
+        class="action-button"
+        bindtap="requestMakeup"
+        data-id="{{item.id}}"
+        disabled="{{requestingMakeupId === item.id}}"
+      >
+        {{requestingMakeupId === item.id ? "提交中" : "申请补核销"}}
+      </button>
+      <button
         wx:if="{{item.canReview}}"
         class="action-button"
         bindtap="openGameReview"

@@ -1,0 +1,30 @@
+<view class="settings-page">
+  <view class="page-head">
+    <text class="eyebrow">场馆设置</text>
+    <text class="page-title">{{venue.name}}</text>
+    <text class="page-note">维护球友端可见的价格和可订时段。</text>
+  </view>
+
+  <view class="setting-section">
+    <text class="section-title">场地管理</text>
+    <view class="setting-row"><text>场地名称</text><text class="setting-value">{{venue.name}}</text></view>
+    <view class="setting-row switch-row"><view><text class="row-title">临时闭场</text><text class="row-note">开启后暂停新的场地预约</text></view><switch checked="{{temporaryClosed}}" color="#c8ff00" bindchange="toggleClosed" /></view>
+  </view>
+
+  <view class="setting-section">
+    <text class="section-title">价格与时段</text>
+    <text class="field-label">每小时价格（元）</text>
+    <input class="field-input" type="digit" value="{{venue.pricePerHour}}" bindinput="updatePrice" />
+    <text class="field-label">可订时段（用逗号分隔）</text>
+    <input class="field-input" value="{{venue.openSlotsText}}" bindinput="updateSlots" />
+    <text class="field-label">联系电话</text>
+    <input class="field-input" value="{{venue.contact}}" bindinput="updateContact" />
+  </view>
+
+  <view class="setting-section">
+    <text class="section-title">收款设置</text>
+    <view class="payment-row"><view class="payment-icon">¥</view><view><text class="row-title">微信支付</text><text class="row-note">{{paymentStatus}}</text></view><text class="reserved">预留</text></view>
+  </view>
+
+  <button class="save-button" loading="{{saving}}" bindtap="saveSettings">保存设置</button>
+</view>

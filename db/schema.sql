@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS `sports_venue` (
   `contact` VARCHAR(80) NOT NULL DEFAULT '',
   `manager_user_id` INT UNSIGNED NULL,
   `open_slots_json` TEXT NULL,
+  `temporary_closed` TINYINT NOT NULL DEFAULT 0,
   `create_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_sports_venue_status` (`status`),
@@ -40,6 +41,8 @@ CREATE TABLE IF NOT EXISTS `sports_game` (
   `capacity` INT UNSIGNED NOT NULL DEFAULT 10,
   `fee_per_person` DECIMAL(10,2) NOT NULL DEFAULT 0,
   `notes` VARCHAR(500) NOT NULL DEFAULT '',
+  `match_type` VARCHAR(20) NOT NULL DEFAULT 'casual',
+  `format` VARCHAR(20) NOT NULL DEFAULT '5v5',
   `creator_user_id` INT UNSIGNED NULL,
   `status` VARCHAR(20) NOT NULL DEFAULT 'open',
   `create_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -103,6 +106,23 @@ CREATE TABLE IF NOT EXISTS `sports_credit_event` (
   PRIMARY KEY (`id`),
   KEY `idx_sports_credit_user` (`user_id`),
   KEY `idx_sports_credit_game` (`related_game_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `sports_checkin_makeup` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `order_id` INT UNSIGNED NOT NULL,
+  `user_id` INT UNSIGNED NOT NULL,
+  `username` VARCHAR(50) NOT NULL,
+  `phone` VARCHAR(30) NOT NULL DEFAULT '',
+  `reason` VARCHAR(255) NOT NULL DEFAULT '',
+  `status` VARCHAR(20) NOT NULL DEFAULT 'pending',
+  `handled_by` INT UNSIGNED NULL,
+  `handled_at` DATETIME NULL,
+  `create_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_sports_makeup_order` (`order_id`),
+  KEY `idx_sports_makeup_status` (`status`, `create_time`),
+  CONSTRAINT `fk_sports_makeup_order` FOREIGN KEY (`order_id`) REFERENCES `sports_order` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `sports_notification` (

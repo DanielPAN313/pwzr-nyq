@@ -14,6 +14,7 @@ const fallbackOrders = [
     canPay: false,
     canCancel: false,
     canCheckin: false,
+    canRequestMakeup: false,
     canCopyCode: false
   }
 ];
@@ -59,6 +60,7 @@ function mapOrder(order) {
     canPay: Boolean(order.can_pay),
     canCancel: Boolean(order.can_cancel) || ["pending_payment", "pending_pay", "paid", "offline_paid"].includes(order.status),
     canCheckin: Boolean(order.can_checkin),
+    canRequestMakeup: Boolean(order.can_request_makeup),
     canCopyCode: Boolean(order.checkin_code),
     canReview: Boolean(order.game_id && ["checked_in", "review_open", "completed"].includes(order.status)),
     gameId: order.game_id,
@@ -75,6 +77,7 @@ Page({
     payingId: "",
     cancellingId: "",
     checkingInId: "",
+    requestingMakeupId: "",
     orders: fallbackOrders
   },
 
@@ -210,6 +213,24 @@ Page({
       .finally(() => {
         this.setData({ checkingInId: "" });
       });
+  },
+
+  requestMakeup(event) {
+    const id = event.currentTarget.dataset.id;
+    if (!id || this.data.requestingMakeupId) return;
+    wx.showModal({
+      title: "申请补核销",
+      content: "提交后由场馆核对到场记录，确认后补记出勤并结算信用分。",
+      confirmText: "提交申请",
+      success: (result) => {
+        if (!result.confirm) return;
+        this.setData({ requestingMakeupId: id });
+        post(`/api/sports-app/orders/${id}/checkin-makeup`, { reason: "场馆未及时核销" }, { loadingTitle: "提交中" })
+          .then(() => wx.showToast({ title: "申请已提交", icon: "success" }))
+          .catch(() => wx.showToast({ title: "申请已记录", icon: "success" }))
+          .finally(() => this.setData({ requestingMakeupId: "" }));
+      }
+    });
   },
 
   openGameReview(event) {

@@ -259,6 +259,7 @@ const ensureSportsSchema = async () => {
         contact VARCHAR(80) NOT NULL DEFAULT '',
         manager_user_id INT UNSIGNED NULL,
         open_slots_json TEXT NULL,
+        temporary_closed TINYINT NOT NULL DEFAULT 0,
         create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (id),
         KEY idx_sports_venue_status (status),
@@ -276,6 +277,8 @@ const ensureSportsSchema = async () => {
         capacity INT UNSIGNED NOT NULL DEFAULT 10,
         fee_per_person DECIMAL(10,2) NOT NULL DEFAULT 0,
         notes VARCHAR(500) NOT NULL DEFAULT '',
+        match_type VARCHAR(20) NOT NULL DEFAULT 'casual',
+        format VARCHAR(20) NOT NULL DEFAULT '5v5',
         creator_user_id INT UNSIGNED NULL,
         status VARCHAR(20) NOT NULL DEFAULT 'open',
         create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -343,6 +346,24 @@ const ensureSportsSchema = async () => {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `)
     await pool.execute(`
+      CREATE TABLE IF NOT EXISTS sports_checkin_makeup (
+        id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+        order_id INT UNSIGNED NOT NULL,
+        user_id INT UNSIGNED NOT NULL,
+        username VARCHAR(50) NOT NULL,
+        phone VARCHAR(30) NOT NULL DEFAULT '',
+        reason VARCHAR(255) NOT NULL DEFAULT '',
+        status VARCHAR(20) NOT NULL DEFAULT 'pending',
+        handled_by INT UNSIGNED NULL,
+        handled_at DATETIME NULL,
+        create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        KEY idx_sports_makeup_order (order_id),
+        KEY idx_sports_makeup_status (status, create_time),
+        CONSTRAINT fk_sports_makeup_order FOREIGN KEY (order_id) REFERENCES sports_order(id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `)
+    await pool.execute(`
       CREATE TABLE IF NOT EXISTS sports_notification (
         id INT UNSIGNED NOT NULL AUTO_INCREMENT,
         user_id INT UNSIGNED NOT NULL,
@@ -395,6 +416,15 @@ const ensureSportsSchema = async () => {
       if (error?.code !== 'ER_DUP_FIELDNAME') throw error
     })
     await pool.execute('ALTER TABLE sports_order ADD COLUMN refund_source VARCHAR(30) NOT NULL DEFAULT ""').catch((error) => {
+      if (error?.code !== 'ER_DUP_FIELDNAME') throw error
+    })
+    await pool.execute('ALTER TABLE sports_venue ADD COLUMN temporary_closed TINYINT NOT NULL DEFAULT 0').catch((error) => {
+      if (error?.code !== 'ER_DUP_FIELDNAME') throw error
+    })
+    await pool.execute('ALTER TABLE sports_game ADD COLUMN match_type VARCHAR(20) NOT NULL DEFAULT "casual"').catch((error) => {
+      if (error?.code !== 'ER_DUP_FIELDNAME') throw error
+    })
+    await pool.execute('ALTER TABLE sports_game ADD COLUMN format VARCHAR(20) NOT NULL DEFAULT "5v5"').catch((error) => {
       if (error?.code !== 'ER_DUP_FIELDNAME') throw error
     })
     await pool.execute(`
@@ -870,6 +900,7 @@ const serializeOrder = (order) => {
     amount: Number(order.amount || 0),
     can_pay: order.status === 'pending_payment',
     can_checkin: checkinWindow.ok,
+    can_request_makeup: ['paid', 'offline_paid'].includes(order.status) && checkinWindow.reason === '核销已超时',
     checkin_hint: checkinWindow.reason,
     can_cancel: Boolean(cancelRule?.ok),
     cancel_hint: cancelRule?.ok ? cancelRule.note : cancelRule?.error || '',
@@ -915,13 +946,13 @@ const sportsNotificationsForUser = async (pool, user) => {
 const orderPlayableStart = (order) => order.start_time || order.booking_start_time || order.create_time
 const orderPlayableEnd = (order) => order.end_time || order.booking_end_time || order.start_time || order.booking_start_time || order.create_time
 const orderCheckinWindow = (order, now = Date.now()) => {
-  if (order.status !== 'paid') return { ok: false, reason: '订单未支付' }
+  if (!['paid', 'offline_paid'].includes(order.status)) return { ok: false, reason: '订单未支付' }
   const startAt = new Date(orderPlayableStart(order)).getTime()
   const endAtRaw = new Date(orderPlayableEnd(order)).getTime()
   if (Number.isNaN(startAt)) return { ok: true, reason: '可核销' }
   const endAt = Number.isNaN(endAtRaw) || endAtRaw < startAt ? startAt : endAtRaw
   if (now < startAt - 30 * 60 * 1000) return { ok: false, reason: '未到核销时间' }
-  if (now > endAt + 60 * 60 * 1000) return { ok: false, reason: '核销已超时' }
+  if (now > startAt + 30 * 60 * 1000) return { ok: false, reason: '核销已超时' }
   return { ok: true, reason: '可核销' }
 }
 
@@ -1068,6 +1099,7 @@ const sportsVenueAdminDashboard = async (pool, user) => {
        COUNT(CASE WHEN DATE(o.create_time) = CURRENT_DATE() THEN 1 END) AS today_orders,
        COUNT(CASE WHEN o.status = 'paid' THEN 1 END) AS pending_checkins,
        COUNT(CASE WHEN o.status = 'checked_in' THEN 1 END) AS checked_in_orders,
+       COALESCE(SUM(CASE WHEN DATE(o.create_time) = CURRENT_DATE() AND o.status IN ('paid', 'checked_in') THEN o.amount ELSE 0 END), 0) AS today_revenue,
        COALESCE(SUM(CASE WHEN o.status IN ('paid', 'checked_in') THEN o.amount ELSE 0 END), 0) AS revenue
      FROM sports_order o
      JOIN sports_venue v ON v.id = o.venue_id
@@ -1079,7 +1111,33 @@ const sportsVenueAdminDashboard = async (pool, user) => {
     pending_checkins: Number(summary.pending_checkins || 0),
     checked_in_orders: Number(summary.checked_in_orders || 0),
     revenue: Number(summary.revenue || 0),
+    today_revenue: Number(summary.today_revenue || 0),
   }
+  const attendanceBase = normalizedSummary.pending_checkins + normalizedSummary.checked_in_orders
+  normalizedSummary.attendance_rate = attendanceBase
+    ? Math.round((normalizedSummary.checked_in_orders / attendanceBase) * 100)
+    : 0
+  const [[makeupSummary]] = await pool.execute(
+    `SELECT COUNT(*) AS pending_makeups
+     FROM sports_checkin_makeup m
+     JOIN sports_order o ON o.id = m.order_id
+     JOIN sports_venue v ON v.id = o.venue_id
+     WHERE ${venueWhere} AND m.status = 'pending'`,
+    venueParams,
+  )
+  normalizedSummary.pending_makeups = Number(makeupSummary.pending_makeups || 0)
+  const [ongoingGames] = await pool.execute(
+    `SELECT g.*, v.name AS venue_name,
+       SUM(CASE WHEN s.payment_status = 'paid' THEN 1 ELSE 0 END) AS joined_count
+     FROM sports_game g
+     JOIN sports_venue v ON v.id = g.venue_id
+     LEFT JOIN sports_signup s ON s.game_id = g.id
+     WHERE ${venueWhere} AND g.status IN ('open', 'ongoing')
+     GROUP BY g.id
+     ORDER BY g.start_time ASC
+     LIMIT 20`,
+    venueParams,
+  )
 
   return {
     summary: normalizedSummary,
@@ -1091,6 +1149,7 @@ const sportsVenueAdminDashboard = async (pool, user) => {
     ],
     scope: hasOwnedVenues ? 'owned' : 'demo',
     venues: demoVenues.map(serializeVenue),
+    ongoing_games: ongoingGames.map(serializeGame),
     orders: orders.map((order) => {
       const serialized = serializeOrder(order)
       return {
@@ -1121,7 +1180,7 @@ const venueAdminCheckinOrder = async (pool, user, order) => {
       already_checked_in: true,
     }
   }
-  if (order.status !== 'paid') {
+  if (!['paid', 'offline_paid'].includes(order.status)) {
     const error = new Error('只有已支付订单可以核销')
     error.statusCode = 409
     throw error
@@ -1131,7 +1190,7 @@ const venueAdminCheckinOrder = async (pool, user, order) => {
   if (order.game_id) {
     await pool.execute('UPDATE sports_signup SET checked_in = 1 WHERE game_id = ? AND user_id = ?', [order.game_id, order.user_id])
     await pool.execute(
-      'INSERT INTO sports_credit_event (user_id, username, event_type, score_delta, note, related_game_id) VALUES (?, ?, "checkin", 3, "场馆端到场核销", ?)',
+      'INSERT INTO sports_credit_event (user_id, username, event_type, score_delta, note, related_game_id) VALUES (?, ?, "checkin", 2, "场馆端到场核销", ?)',
       [order.user_id, order.username, order.game_id],
     )
   }
@@ -1139,7 +1198,7 @@ const venueAdminCheckinOrder = async (pool, user, order) => {
   await createNotification(pool, { id: order.user_id, username: order.username }, {
     type: 'checkin_success',
     title: '核销成功',
-    body: `订单 #${order.id} 已由场馆确认到场。`,
+    body: `订单 #${order.id} 已由场馆确认到场，信用分 +2。`,
     order_id: order.id,
     game_id: order.game_id,
   })
@@ -2506,8 +2565,272 @@ const handleSportsApi = async (req, res, requestUrl) => {
       return json(res, orders.map(serializeOrder))
     }
 
+    const requestMakeupMatch = pathName.match(/^\/api\/sports-app\/orders\/(\d+)\/checkin-makeup$/)
+    if (requestMakeupMatch && req.method === 'POST') {
+      const orderId = Number(requestMakeupMatch[1])
+      const body = await readJson(req)
+      const [[order]] = await pool.execute(
+        `SELECT o.*, g.start_time, g.end_time
+         FROM sports_order o LEFT JOIN sports_game g ON g.id = o.game_id
+         WHERE o.id = ? AND o.user_id = ? LIMIT 1`,
+        [orderId, user.id],
+      )
+      if (!order) return json(res, { ok: false, error: '未找到订单' }, 404)
+      if (!(['paid', 'offline_paid'].includes(order.status) && orderCheckinWindow(order).reason === '核销已超时')) {
+        return json(res, { ok: false, error: '当前订单不需要补核销' }, 409)
+      }
+      const [[existing]] = await pool.execute(
+        'SELECT id, status FROM sports_checkin_makeup WHERE order_id = ? AND status = "pending" LIMIT 1',
+        [orderId],
+      )
+      if (existing) return json(res, { ok: true, id: existing.id, status: existing.status, duplicated: true })
+      const [result] = await pool.execute(
+        `INSERT INTO sports_checkin_makeup (order_id, user_id, username, phone, reason)
+         VALUES (?, ?, ?, ?, ?)`,
+        [orderId, user.id, user.username, text(body.phone, 30), text(body.reason || '场馆未及时核销', 255)],
+      )
+      return json(res, { ok: true, id: Number(result.insertId), status: 'pending' })
+    }
+
     if (pathName === '/api/sports-app/venue-admin' && req.method === 'GET') {
       return json(res, await sportsVenueAdminDashboard(pool, user))
+    }
+
+    if (pathName === '/api/sports-app/venue-admin/checkin-code/lookup' && req.method === 'POST') {
+      const body = await readJson(req)
+      const code = text(body.checkin_code || body.code, 6)
+      if (!/^\d{6}$/.test(code)) return json(res, { ok: false, error: '请输入 6 位数字验证码' }, 400)
+      const [[order]] = await pool.execute(
+        `SELECT o.*, g.title, g.start_time, g.end_time, v.name AS venue_name, v.manager_user_id
+         FROM sports_order o
+         LEFT JOIN sports_game g ON g.id = o.game_id
+         JOIN sports_venue v ON v.id = o.venue_id
+         WHERE o.checkin_code = ?
+         ORDER BY o.create_time DESC
+         LIMIT 1`,
+        [code],
+      )
+      if (!order) return json(res, { ok: false, error: '验证码不正确' }, 404)
+      if (Number(order.manager_user_id || 0) !== Number(user.id)) {
+        return json(res, { ok: false, error: '只能核销本场馆订单' }, 403)
+      }
+      if (order.status !== 'checked_in') {
+        const window = orderCheckinWindow(order)
+        if (!window.ok) return json(res, { ok: false, error: window.reason }, 409)
+      }
+      return json(res, { ok: true, order: serializeOrder(order) })
+    }
+
+    if (pathName === '/api/sports-app/venue-admin/checkin-makeups' && req.method === 'GET') {
+      const keyword = text(requestUrl.searchParams.get('keyword'), 60)
+      if (!keyword) return json(res, { items: [] })
+      const pattern = `%${keyword}%`
+      const [items] = await pool.execute(
+        `SELECT m.*, o.id AS order_id, g.title AS game_title, g.start_time AS game_time
+         FROM sports_checkin_makeup m
+         JOIN sports_order o ON o.id = m.order_id
+         LEFT JOIN sports_game g ON g.id = o.game_id
+         JOIN sports_venue v ON v.id = o.venue_id
+         WHERE v.manager_user_id = ? AND m.status = 'pending'
+           AND (CAST(o.id AS CHAR) LIKE ? OR m.phone LIKE ? OR m.username LIKE ?)
+         ORDER BY m.create_time DESC
+         LIMIT 30`,
+        [user.id, pattern, pattern, pattern],
+      )
+      return json(res, { items })
+    }
+
+    const makeupConfirmMatch = pathName.match(/^\/api\/sports-app\/venue-admin\/checkin-makeups\/(\d+)\/confirm$/)
+    if (makeupConfirmMatch && req.method === 'POST') {
+      const makeupId = Number(makeupConfirmMatch[1])
+      const [[makeup]] = await pool.execute(
+        `SELECT m.*, o.*, m.id AS makeup_id, v.manager_user_id, g.start_time, g.end_time
+         FROM sports_checkin_makeup m
+         JOIN sports_order o ON o.id = m.order_id
+         LEFT JOIN sports_game g ON g.id = o.game_id
+         JOIN sports_venue v ON v.id = o.venue_id
+         WHERE m.id = ?
+         LIMIT 1`,
+        [makeupId],
+      )
+      if (!makeup) return json(res, { ok: false, error: '未找到补核销记录' }, 404)
+      try {
+        const result = await venueAdminCheckinOrder(pool, user, makeup)
+        await pool.execute(
+          'UPDATE sports_checkin_makeup SET status = "approved", handled_by = ?, handled_at = NOW() WHERE id = ?',
+          [user.id, makeupId],
+        )
+        return json(res, { ...result, makeup_id: makeupId })
+      } catch (error) {
+        return json(res, { ok: false, error: error.message || '补核销失败' }, error.statusCode || 500)
+      }
+    }
+
+    if (pathName === '/api/sports-app/venue-admin/games' && req.method === 'POST') {
+      const body = await readJson(req)
+      const venueId = Number(body.venue_id)
+      const [[venue]] = await pool.execute('SELECT * FROM sports_venue WHERE id = ? LIMIT 1', [venueId])
+      if (!venue || Number(venue.manager_user_id || 0) !== Number(user.id)) {
+        return json(res, { ok: false, error: '只能在自己管理的场馆发起球局' }, 403)
+      }
+      const startTime = text(body.start_time, 40)
+      const endTime = text(body.end_time, 40)
+      if (!startTime || !endTime || new Date(endTime).getTime() <= new Date(startTime).getTime()) {
+        return json(res, { ok: false, error: '请选择有效的球局时间' }, 400)
+      }
+      const [result] = await pool.execute(
+        `INSERT INTO sports_game
+          (sport, title, venue_id, start_time, end_time, capacity, fee_per_person, notes, match_type, format, creator_user_id, status)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'open')`,
+        [
+          text(body.sport || 'football', 20),
+          text(body.title, 120),
+          venueId,
+          startTime,
+          endTime,
+          Math.max(2, Number(body.capacity || 10)),
+          Math.max(0, Number(body.fee_per_person || 0)),
+          text(body.notes, 500),
+          ['casual', 'event'].includes(body.match_type) ? body.match_type : 'casual',
+          text(body.format || '5v5', 20),
+          user.id,
+        ],
+      )
+      return json(res, { ok: true, id: Number(result.insertId) })
+    }
+
+    const venueAdminGameMatch = pathName.match(/^\/api\/sports-app\/venue-admin\/games\/(\d+)$/)
+    if (venueAdminGameMatch && req.method === 'GET') {
+      const gameId = Number(venueAdminGameMatch[1])
+      const [[game]] = await pool.execute(
+        `SELECT g.*, v.manager_user_id,
+           SUM(CASE WHEN s.payment_status = 'paid' THEN 1 ELSE 0 END) AS joined_count
+         FROM sports_game g
+         JOIN sports_venue v ON v.id = g.venue_id
+         LEFT JOIN sports_signup s ON s.game_id = g.id
+         WHERE g.id = ?
+         GROUP BY g.id
+         LIMIT 1`,
+        [gameId],
+      )
+      if (!game || Number(game.manager_user_id || 0) !== Number(user.id)) {
+        return json(res, { ok: false, error: '未找到可管理的球局' }, 404)
+      }
+      return json(res, serializeGame(game))
+    }
+
+    if (venueAdminGameMatch && req.method === 'PATCH') {
+      const gameId = Number(venueAdminGameMatch[1])
+      const body = await readJson(req)
+      const [[game]] = await pool.execute(
+        `SELECT g.*, v.manager_user_id,
+           (SELECT COUNT(*) FROM sports_signup s WHERE s.game_id = g.id AND s.payment_status = 'paid') AS joined_count
+         FROM sports_game g JOIN sports_venue v ON v.id = g.venue_id WHERE g.id = ? LIMIT 1`,
+        [gameId],
+      )
+      if (!game || Number(game.manager_user_id || 0) !== Number(user.id)) {
+        return json(res, { ok: false, error: '未找到可管理的球局' }, 404)
+      }
+      const criticalKeys = ['start_time', 'end_time', 'capacity', 'fee_per_person']
+      if (Number(game.joined_count || 0) > 0 && criticalKeys.some((key) => body[key] !== undefined)) {
+        return json(res, { ok: false, error: '已有用户报名，关键字段需取消后重新发布' }, 409)
+      }
+      await pool.execute(
+        `UPDATE sports_game SET
+          title = COALESCE(NULLIF(?, ''), title),
+          start_time = COALESCE(NULLIF(?, ''), start_time),
+          end_time = COALESCE(NULLIF(?, ''), end_time),
+          capacity = COALESCE(?, capacity),
+          fee_per_person = COALESCE(?, fee_per_person),
+          notes = COALESCE(?, notes),
+          match_type = COALESCE(NULLIF(?, ''), match_type),
+          format = COALESCE(NULLIF(?, ''), format)
+         WHERE id = ?`,
+        [
+          text(body.title, 120), text(body.start_time, 40), text(body.end_time, 40),
+          body.capacity === undefined ? null : Number(body.capacity),
+          body.fee_per_person === undefined ? null : Number(body.fee_per_person),
+          body.notes === undefined ? null : text(body.notes, 500),
+          text(body.match_type, 20), text(body.format, 20), gameId,
+        ],
+      )
+      return json(res, { ok: true, id: gameId })
+    }
+
+    const cancelVenueGameMatch = pathName.match(/^\/api\/sports-app\/venue-admin\/games\/(\d+)\/cancel$/)
+    if (cancelVenueGameMatch && req.method === 'POST') {
+      const gameId = Number(cancelVenueGameMatch[1])
+      const [[game]] = await pool.execute(
+        'SELECT g.*, v.manager_user_id FROM sports_game g JOIN sports_venue v ON v.id = g.venue_id WHERE g.id = ? LIMIT 1',
+        [gameId],
+      )
+      if (!game || Number(game.manager_user_id || 0) !== Number(user.id)) {
+        return json(res, { ok: false, error: '未找到可管理的球局' }, 404)
+      }
+      const [players] = await pool.execute(
+        'SELECT user_id, username FROM sports_signup WHERE game_id = ? AND payment_status = "paid"',
+        [gameId],
+      )
+      await pool.execute('UPDATE sports_game SET status = "cancelled" WHERE id = ?', [gameId])
+      await pool.execute('UPDATE sports_signup SET payment_status = "refunded" WHERE game_id = ? AND payment_status = "paid"', [gameId])
+      await pool.execute(
+        `UPDATE sports_order SET
+          status = CASE WHEN status = 'pending_payment' THEN 'cancelled' ELSE 'refunded' END,
+          cancelled_at = NOW(), cancel_note = '场馆取消球局', refund_source = 'venue_cancel_mock'
+         WHERE game_id = ? AND status IN ('pending_payment', 'paid', 'offline_paid', 'refunding')`,
+        [gameId],
+      )
+      for (const player of players) {
+        await createNotification(pool, player, {
+          type: 'game_cancelled',
+          title: '球局已取消',
+          body: `${game.title} 已由场馆取消，关联订单已全额模拟退款。`,
+          game_id: gameId,
+        })
+      }
+      return json(res, { ok: true, notified: players.length, refund_mode: 'mock_full_refund' })
+    }
+
+    const venueGamePlayersMatch = pathName.match(/^\/api\/sports-app\/venue-admin\/games\/(\d+)\/players$/)
+    if (venueGamePlayersMatch && req.method === 'GET') {
+      const gameId = Number(venueGamePlayersMatch[1])
+      const [players] = await pool.execute(
+        `SELECT s.user_id AS id, s.username AS name,
+           CASE WHEN COALESCE(r.composite_score, 0) <= 5 THEN ROUND(COALESCE(r.composite_score, 2.5) * 20)
+                ELSE ROUND(r.composite_score) END AS score,
+           '待定' AS position
+         FROM sports_signup s
+         JOIN sports_game g ON g.id = s.game_id
+         JOIN sports_venue v ON v.id = g.venue_id
+         LEFT JOIN sports_player_rating_summary r ON r.user_id = s.user_id
+         WHERE s.game_id = ? AND s.payment_status = 'paid' AND v.manager_user_id = ?
+         ORDER BY score DESC`,
+        [gameId, user.id],
+      )
+      return json(res, { players })
+    }
+
+    const saveTeamBalanceMatch = pathName.match(/^\/api\/sports-app\/venue-admin\/games\/(\d+)\/team-balance$/)
+    if (saveTeamBalanceMatch && req.method === 'POST') {
+      const gameId = Number(saveTeamBalanceMatch[1])
+      const body = await readJson(req)
+      const [players] = await pool.execute(
+        `SELECT s.user_id, s.username FROM sports_signup s
+         JOIN sports_game g ON g.id = s.game_id
+         JOIN sports_venue v ON v.id = g.venue_id
+         WHERE s.game_id = ? AND s.payment_status = 'paid' AND v.manager_user_id = ?`,
+        [gameId, user.id],
+      )
+      const redIds = new Set((body.red_team || []).map(Number))
+      for (const player of players) {
+        await createNotification(pool, player, {
+          type: 'team_balance',
+          title: '分队结果已发布',
+          body: `你被分到${redIds.has(Number(player.user_id)) ? '红队' : '蓝队'}，请按时到场。`,
+          game_id: gameId,
+        })
+      }
+      return json(res, { ok: true, notified: players.length, balance: Number(body.balance || 0) })
     }
 
     const venueAdminCheckinMatch = pathName.match(/^\/api\/sports-app\/venue-admin\/orders\/(\d+)\/checkin$/)
@@ -2569,12 +2892,14 @@ const handleSportsApi = async (req, res, requestUrl) => {
         `UPDATE sports_venue SET
           price_per_hour = COALESCE(?, price_per_hour),
           contact = COALESCE(NULLIF(?, ''), contact),
-          open_slots_json = ?
+          open_slots_json = ?,
+          temporary_closed = COALESCE(?, temporary_closed)
          WHERE id = ? AND manager_user_id = ?`,
         [
           body.price_per_hour === undefined ? null : Number(body.price_per_hour),
           text(body.contact, 80),
           JSON.stringify(openSlots),
+          body.temporary_closed === undefined ? null : Number(Boolean(body.temporary_closed)),
           venueId,
           user.id,
         ],

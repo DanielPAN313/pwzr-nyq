@@ -22,6 +22,9 @@
     "pages/venue-admin/venue-admin",
     "pages/venue/home/index",
     "pages/venue/scan/index",
+    "pages/venue/create-game/index",
+    "pages/venue/team-balance/index",
+    "pages/venue/settings/index",
     "pages/credit/credit",
     "pages/my-games/my-games",
     "pages/legal/legal"

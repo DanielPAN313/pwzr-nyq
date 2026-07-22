@@ -1,0 +1,64 @@
+<view class="venue-form-page">
+  <view class="page-head">
+    <text class="eyebrow">场馆端</text>
+    <text class="page-title">{{editingId ? '编辑球局' : '发起球局'}}</text>
+    <text class="page-note">发布后会同步出现在球友端首页和球局列表。</text>
+  </view>
+
+  <view wx:if="{{signupCount > 0}}" class="warning">已有 {{signupCount}} 人报名，当前仅允许直接修改备注。</view>
+
+  <view class="form-section">
+    <text class="section-title">基本信息</text>
+    <text class="field-label">球局名称</text>
+    <input class="field-input" value="{{title}}" maxlength="30" bindinput="updateTitle" />
+
+    <view class="two-columns">
+      <view>
+        <text class="field-label">球局类型</text>
+        <picker range="{{gameTypes}}" range-key="label" value="{{typeIndex}}" bindchange="changeType">
+          <view class="picker-value">{{gameTypes[typeIndex].label}} ›</view>
+        </picker>
+      </view>
+      <view>
+        <text class="field-label">赛制</text>
+        <picker range="{{formats}}" value="{{formatIndex}}" bindchange="changeFormat">
+          <view class="picker-value">{{formats[formatIndex]}} ›</view>
+        </picker>
+      </view>
+    </view>
+
+    <text class="field-label">场地</text>
+    <picker range="{{venues}}" range-key="name" value="{{venueIndex}}" bindchange="changeVenue">
+      <view class="picker-value">{{venues[venueIndex].name}} · {{venues[venueIndex].area}} ›</view>
+    </picker>
+  </view>
+
+  <view class="form-section">
+    <text class="section-title">时间与名额</text>
+    <view class="two-columns">
+      <view>
+        <text class="field-label">日期</text>
+        <picker mode="date" value="{{date}}" bindchange="changeDate"><view class="picker-value">{{date}} ›</view></picker>
+      </view>
+      <view>
+        <text class="field-label">开场时间</text>
+        <picker mode="time" value="{{startTime}}" bindchange="changeTime"><view class="picker-value">{{startTime}} ›</view></picker>
+      </view>
+      <view>
+        <text class="field-label">人数</text>
+        <input class="field-input" type="number" value="{{capacity}}" bindinput="updateCapacity" />
+      </view>
+      <view>
+        <text class="field-label">价格（元/人）</text>
+        <input class="field-input" type="digit" value="{{price}}" bindinput="updatePrice" />
+      </view>
+    </view>
+  </view>
+
+  <view class="form-section">
+    <text class="section-title">备注</text>
+    <textarea class="field-textarea" maxlength="300" value="{{notes}}" bindinput="updateNotes"></textarea>
+  </view>
+
+  <button class="submit-button" loading="{{submitting}}" bindtap="submitGame">{{editingId ? '保存修改' : '发布球局'}}</button>
+</view>

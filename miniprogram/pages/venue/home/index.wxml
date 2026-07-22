@@ -1,8 +1,45 @@
 <view class="venue-page">
   <view class="top-bar">
     <text class="back-link" bindtap="returnPlayerMode">← 返回球友模式</text>
-    <text class="venue-title">卡子门足球场</text>
+    <text class="venue-title">{{venueName}}</text>
     <text class="top-spacer"></text>
+  </view>
+
+  <view class="venue-tools">
+    <button class="tool-button primary-tool" bindtap="openCreateGame">发起球局</button>
+    <button class="tool-button" bindtap="openTeamBalance">智能分队</button>
+    <button class="tool-button" bindtap="openSettings">场馆设置</button>
+  </view>
+
+  <view class="schedule-section game-section">
+    <view class="section-heading-row">
+      <text class="section-title">进行中的球局</text>
+      <text class="section-count">{{ongoingGames.length}} 场</text>
+    </view>
+    <view class="schedule-card">
+      <view wx:for="{{ongoingGames}}" wx:key="id" class="game-row">
+        <view class="game-main">
+          <text class="game-title">{{item.title}}</text>
+          <text class="game-meta">{{item.timeText || item.start_time}} · {{item.signupText || item.signup_count + '/' + item.capacity}}</text>
+        </view>
+        <text class="schedule-status status-confirmed">{{item.statusText || "报名中"}}</text>
+        <view class="game-actions">
+          <text class="game-action" data-id="{{item.id}}" bindtap="editGame">编辑</text>
+          <text class="game-action danger" data-id="{{item.id}}" bindtap="cancelGame">取消</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="makeup-entry" bindtap="openMakeupHandling">
+    <view>
+      <text class="makeup-title">待处理补核销</text>
+      <text class="makeup-note">核对订单号或手机号后确认到场</text>
+    </view>
+    <view class="makeup-meta">
+      <text wx:if="{{pendingMakeupCount > 0}}" class="makeup-badge">{{pendingMakeupCount}}</text>
+      <text class="makeup-arrow">›</text>
+    </view>
   </view>
 
   <view class="stats-grid">
@@ -29,7 +66,7 @@
 
   <view class="bottom-actions">
     <button class="action-button scan-button" bindtap="openScanPage">扫码核销</button>
-    <button class="action-button confirm-button" bindtap="openConfirmSheet">确认订单</button>
+    <button class="action-button confirm-button" bindtap="openConfirmSheet">待处理订单 {{pendingOrders.length}}</button>
   </view>
 
   <view wx:if="{{showConfirmSheet}}" class="sheet-mask" bindtap="closeConfirmSheet">
@@ -41,6 +78,8 @@
       </view>
 
       <view wx:if="{{pendingOrders.length === 0}}" class="empty-orders">暂无待确认订单</view>
+
+      <input class="order-search" value="{{orderKeyword}}" placeholder="搜索订单号或手机号" bindinput="onOrderSearchInput" />
 
       <view wx:for="{{pendingOrders}}" wx:key="id" class="order-row">
         <view class="order-main">

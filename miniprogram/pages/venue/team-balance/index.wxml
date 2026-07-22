@@ -1,0 +1,35 @@
+<view class="balance-page">
+  <view class="page-head">
+    <text class="eyebrow">智能分队</text>
+    <text class="page-title">{{gameTitle}}</text>
+    <text class="page-note">点击两队各一名球员可手动互换。</text>
+  </view>
+
+  <view class="balance-summary">
+    <view><text class="summary-value">{{redScore}}</text><text class="summary-label">红队总分</text></view>
+    <view class="balance-main"><text class="balance-value">{{balance}}%</text><text class="summary-label">平衡度</text></view>
+    <view><text class="summary-value">{{blueScore}}</text><text class="summary-label">蓝队总分</text></view>
+  </view>
+
+  <view class="teams-grid">
+    <view class="team-column red-column">
+      <text class="team-title">红队</text>
+      <view wx:for="{{redTeam}}" wx:key="id" class="player-row {{selected && selected.id === item.id ? 'selected' : ''}}" data-team="red" data-id="{{item.id}}" bindtap="selectPlayer">
+        <view><text class="player-name">{{item.name}}</text><text class="player-position">{{item.position}}</text></view>
+        <text class="player-score">{{item.score}}</text>
+      </view>
+    </view>
+    <view class="team-column blue-column">
+      <text class="team-title">蓝队</text>
+      <view wx:for="{{blueTeam}}" wx:key="id" class="player-row {{selected && selected.id === item.id ? 'selected' : ''}}" data-team="blue" data-id="{{item.id}}" bindtap="selectPlayer">
+        <view><text class="player-name">{{item.name}}</text><text class="player-position">{{item.position}}</text></view>
+        <text class="player-score">{{item.score}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="actions">
+    <button class="secondary-button" bindtap="rebalance">重新分队</button>
+    <button class="primary-button" loading="{{saving}}" bindtap="saveAndNotify">保存并通知球员</button>
+  </view>
+</view>

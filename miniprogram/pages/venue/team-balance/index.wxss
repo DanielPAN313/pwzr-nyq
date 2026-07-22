@@ -1,0 +1,27 @@
+page { background: #07120d; }
+.balance-page { min-height: 100vh; padding: 24px 14px 40px; color: #fff; box-sizing: border-box; }
+.page-head { padding: 6px 2px 18px; }
+.eyebrow { display: block; color: #c8ff00; font-size: 12px; }
+.page-title { display: block; margin-top: 6px; font-size: 24px; font-weight: 700; }
+.page-note { display: block; margin-top: 8px; color: #8ea095; font-size: 13px; }
+.balance-summary { display: grid; grid-template-columns: 1fr 1.2fr 1fr; align-items: center; padding: 18px 10px; border: 1px solid #244133; border-radius: 8px; background: #0b1c14; text-align: center; }
+.summary-value, .balance-value, .summary-label { display: block; }
+.summary-value { font-size: 22px; font-weight: 700; }
+.balance-value { color: #c8ff00; font-size: 28px; font-weight: 800; }
+.summary-label { margin-top: 4px; color: #8ea095; font-size: 11px; }
+.balance-main { border-right: 1px solid #244133; border-left: 1px solid #244133; }
+.teams-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; margin-top: 14px; }
+.team-column { min-width: 0; padding: 12px 9px; border: 1px solid #244133; border-radius: 8px; background: #0b1c14; }
+.red-column { border-top: 3px solid #ff5f57; }
+.blue-column { border-top: 3px solid #4a90d9; }
+.team-title { display: block; margin-bottom: 10px; font-size: 16px; font-weight: 700; }
+.player-row { display: flex; align-items: center; justify-content: space-between; min-height: 52px; margin-top: 7px; padding: 8px; border: 1px solid #244133; border-radius: 6px; background: #07120d; box-sizing: border-box; }
+.player-row.selected { border-color: #c8ff00; background: #182c1f; }
+.player-name, .player-position { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.player-name { max-width: 80px; font-size: 13px; font-weight: 600; }
+.player-position { margin-top: 4px; color: #8ea095; font-size: 10px; }
+.player-score { margin-left: 4px; color: #c8ff00; font-size: 16px; font-weight: 700; }
+.actions { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; margin-top: 20px; }
+.secondary-button, .primary-button { margin: 0; border-radius: 6px; font-size: 14px; font-weight: 700; }
+.secondary-button { border: 1px solid #456050; background: #0b1c14; color: #fff; }
+.primary-button { background: #c8ff00; color: #07120d; }

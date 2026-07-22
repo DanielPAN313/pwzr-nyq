@@ -215,7 +215,7 @@ for (const file of fs.readdirSync(path.join(miniRoot, "utils"))) {
   if (file.endsWith(".js")) loadModule(path.join(miniRoot, "utils", file));
 }
 
-assert(registeredPages.length === 25, "Mini Program should register the 25-page product flow including P2 player profile pages.");
+assert(registeredPages.length === 28, "Mini Program should register the 28-page product flow including P3 venue pages.");
 for (const pagePath of [
   "pages/venue-detail/venue-detail",
   "pages/create-game/create-game",
@@ -230,6 +230,9 @@ for (const pagePath of [
   "pages/venue-admin/venue-admin",
   "pages/venue/home/index",
   "pages/venue/scan/index",
+  "pages/venue/create-game/index",
+  "pages/venue/team-balance/index",
+  "pages/venue/settings/index",
   "pages/credit/credit",
   "pages/my-games/my-games",
   "pages/legal/legal",
@@ -409,7 +412,7 @@ assert(gameDetailPage.data.detail?.joinText === "去球局页报名", "preview g
 
 const ordersPage = registeredPageByPath.get("pages/orders/orders");
 assert(ordersPage, "pages/orders/orders page instance was not registered.");
-for (const method of ["goVenues", "goGames", "copyCheckinCode", "payOrder", "cancelOrder", "checkinOrder", "openGameReview"]) {
+for (const method of ["goVenues", "goGames", "copyCheckinCode", "payOrder", "cancelOrder", "checkinOrder", "requestMakeup", "openGameReview"]) {
   assert(typeof ordersPage[method] === "function", `pages/orders/orders should expose ${method} method.`);
 }
 assert(ordersPage.data.orders.every((order) => "canPay" in order && "canCancel" in order && "canCheckin" in order), "orders should expose actionable payment/cancel/checkin flags.");
@@ -496,7 +499,7 @@ assert(gameDetailForCancel && typeof gameDetailForCancel.cancelRegistration === 
 
 const venueHomePage = registeredPageByPath.get("pages/venue/home/index");
 assert(venueHomePage, "pages/venue/home/index page instance was not registered.");
-for (const method of ["guardVenueAdmin", "returnPlayerMode", "openScanPage", "openConfirmSheet", "closeConfirmSheet", "confirmOrder", "rejectOrder"]) {
+for (const method of ["guardVenueAdmin", "returnPlayerMode", "openScanPage", "openMakeupHandling", "openCreateGame", "openTeamBalance", "openSettings", "editGame", "cancelGame", "onOrderSearchInput", "openConfirmSheet", "closeConfirmSheet", "confirmOrder", "rejectOrder"]) {
   assert(typeof venueHomePage[method] === "function", `pages/venue/home/index should expose ${method} method.`);
 }
 assert(Array.isArray(venueHomePage.data.stats) && venueHomePage.data.stats.length === 3, "venue home should expose three stats.");
@@ -512,7 +515,7 @@ assert(venueHomePage.guardVenueAdmin.call(venueHomePage) === false, "venue home 
 
 const venueScanPage = registeredPageByPath.get("pages/venue/scan/index");
 assert(venueScanPage, "pages/venue/scan/index page instance was not registered.");
-for (const method of ["guardVenueAdmin", "returnVenueHome"]) {
+for (const method of ["guardVenueAdmin", "returnVenueHome", "changeMode", "scanCode", "onCodeInput", "lookupCode", "confirmArrival", "searchMakeups", "confirmMakeup"]) {
   assert(typeof venueScanPage[method] === "function", `pages/venue/scan/index should expose ${method} method.`);
 }
 context.wx.setStorageSync("nyq_user", { id: 9, role: "venue_admin" });
@@ -520,6 +523,22 @@ assert(venueScanPage.guardVenueAdmin.call(venueScanPage) === true, "venue scan s
 context.wx.setStorageSync("nyq_user", { id: 10, role: "player" });
 assert(venueScanPage.guardVenueAdmin.call(venueScanPage) === false, "venue scan should reject non venue_admin users.");
 
+const venueCreateGamePage = registeredPageByPath.get("pages/venue/create-game/index");
+for (const method of ["loadVenues", "loadGame", "changeType", "changeFormat", "submitGame", "saveGame"]) {
+  assert(typeof venueCreateGamePage[method] === "function", `venue create game should expose ${method}.`);
+}
+assert(venueCreateGamePage.data.gameTypes.length === 2, "venue create game should support casual and event types.");
+
+const venueTeamBalancePage = registeredPageByPath.get("pages/venue/team-balance/index");
+for (const method of ["loadPlayers", "applyTeams", "rebalance", "selectPlayer", "swapPlayers", "saveAndNotify"]) {
+  assert(typeof venueTeamBalancePage[method] === "function", `venue team balance should expose ${method}.`);
+}
+
+const venueSettingsPage = registeredPageByPath.get("pages/venue/settings/index");
+for (const method of ["loadSettings", "updatePrice", "updateSlots", "toggleClosed", "saveSettings"]) {
+  assert(typeof venueSettingsPage[method] === "function", `venue settings should expose ${method}.`);
+}
+
 for (const timer of timers.splice(0)) timer();
 
-console.log(`Mini Program runtime check passed: loaded app.js, ${registeredPages.length} pages, restored product pages, P2 player profile, venue admin home, search flows, order actions, and credit self-rating.`);
+console.log(`Mini Program runtime check passed: loaded app.js, ${registeredPages.length} pages, restored product pages, P3 venue flows, search flows, order actions, and credit self-rating.`);

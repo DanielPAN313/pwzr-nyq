@@ -1,18 +1,85 @@
 <view class="scan-page">
-  <camera class="camera-area" mode="scanCode" device-position="back" flash="off"></camera>
-
   <view class="scan-top">
     <text class="scan-back" bindtap="returnVenueHome">← 返回</text>
-    <text class="scan-title">扫码核销</text>
+    <text class="scan-title">到场核销</text>
     <text class="scan-spacer"></text>
   </view>
 
-  <view class="scan-frame">
-    <view class="corner corner-left-top"></view>
-    <view class="corner corner-right-top"></view>
-    <view class="corner corner-left-bottom"></view>
-    <view class="corner corner-right-bottom"></view>
+  <view class="mode-tabs">
+    <view class="mode-tab {{mode === 'checkin' ? 'active' : ''}}" data-mode="checkin" bindtap="changeMode">扫码核销</view>
+    <view class="mode-tab {{mode === 'makeup' ? 'active' : ''}}" data-mode="makeup" bindtap="changeMode">
+      补核销处理
+    </view>
   </view>
 
-  <view class="scan-tip">将用户订单二维码放入框内</view>
+  <view wx:if="{{mode === 'checkin'}}" class="content">
+    <view wx:if="{{locked}}" class="locked-panel">
+      <text class="locked-title">验证已锁定</text>
+      <text class="locked-note">验证码连续输错 3 次，请联系平台客服解锁。</text>
+    </view>
+
+    <block wx:else>
+      <view class="scan-panel">
+        <view class="scan-symbol">⌗</view>
+        <text class="panel-title">扫描用户订单二维码</text>
+        <text class="panel-note">核对订单信息后，再确认用户到场</text>
+        <button class="primary-button" bindtap="scanCode">打开扫码</button>
+      </view>
+
+      <view class="divider"><text>或手动输入</text></view>
+
+      <view class="manual-form">
+        <text class="field-label">6 位核销验证码</text>
+        <view class="input-row">
+          <input class="code-input" type="number" maxlength="6" value="{{code}}" placeholder="请输入验证码" bindinput="onCodeInput" />
+          <button class="lookup-button" loading="{{loading}}" bindtap="lookupCode">查询</button>
+        </view>
+        <text wx:if="{{attempts > 0}}" class="attempt-note">已尝试 {{attempts}}/3 次</text>
+      </view>
+
+      <view wx:if="{{order}}" class="order-card">
+        <view class="status-row">
+          <text class="status-pill {{success ? 'done' : ''}}">{{success ? '核销成功' : order.statusText}}</text>
+          <text class="order-number">订单 {{order.id}}</text>
+        </view>
+        <text class="user-name">{{order.username}}</text>
+        <text class="user-phone">{{order.phoneText}}</text>
+        <view class="order-detail">
+          <text class="detail-title">{{order.title}}</text>
+          <text class="detail-meta">{{order.venueName}}</text>
+          <text class="detail-meta">{{order.timeText}}</text>
+        </view>
+        <button wx:if="{{!success}}" class="primary-button confirm-arrival" loading="{{confirming}}" bindtap="confirmArrival">确认到场</button>
+        <button wx:else class="secondary-button" bindtap="resetCheckin">继续核销下一位</button>
+      </view>
+    </block>
+  </view>
+
+  <view wx:else class="content">
+    <view class="makeup-intro">
+      <text class="panel-title">查询待补核销记录</text>
+      <text class="panel-note">输入用户订单号或手机号，确认到场后将同步结算信用分。</text>
+    </view>
+    <view class="manual-form">
+      <text class="field-label">订单号 / 手机号</text>
+      <view class="input-row">
+        <input class="keyword-input" value="{{makeupKeyword}}" placeholder="请输入完整订单号或手机号" bindinput="onMakeupKeywordInput" />
+        <button class="lookup-button" loading="{{loading}}" bindtap="searchMakeups">查询</button>
+      </view>
+    </view>
+
+    <view wx:if="{{makeupSearched && makeupItems.length === 0}}" class="empty-state">未找到待处理记录</view>
+
+    <view wx:for="{{makeupItems}}" wx:key="id" class="makeup-card">
+      <view class="status-row">
+        <text class="status-pill {{item.status === 'approved' ? 'done' : ''}}">{{item.status === 'approved' ? '已处理' : '待确认'}}</text>
+        <text class="order-number">订单 {{item.orderId}}</text>
+      </view>
+      <text class="user-name">{{item.username}} · {{item.phoneText}}</text>
+      <text class="detail-title">{{item.gameTitle}}</text>
+      <text class="detail-meta">{{item.timeText}}</text>
+      <text class="makeup-reason">申请原因：{{item.reason}}</text>
+      <button wx:if="{{item.status !== 'approved'}}" class="primary-button confirm-arrival" data-id="{{item.id}}" loading="{{confirming}}" bindtap="confirmMakeup">确认补核销</button>
+    </view>
+  </view>
 </view>

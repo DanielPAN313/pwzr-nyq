@@ -41,3 +41,4 @@ miniprogram/miniprogram_npm/
 miniprogram/.cache/
 miniprogram/.temp/
 miniprogram/project.private.config.json
+/project.private.config.json

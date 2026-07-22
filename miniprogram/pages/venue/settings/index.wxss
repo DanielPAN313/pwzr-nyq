@@ -1,0 +1,19 @@
+page { background: #07120d; }
+.settings-page { min-height: 100vh; padding: 24px 16px 40px; color: #fff; box-sizing: border-box; }
+.page-head { padding: 6px 2px 18px; }
+.eyebrow { display: block; color: #c8ff00; font-size: 12px; }
+.page-title { display: block; margin-top: 6px; font-size: 26px; font-weight: 700; }
+.page-note { display: block; margin-top: 8px; color: #8ea095; font-size: 13px; }
+.setting-section { margin-bottom: 14px; padding: 18px; border: 1px solid #244133; border-radius: 8px; background: #0b1c14; }
+.section-title { display: block; margin-bottom: 14px; font-size: 17px; font-weight: 700; }
+.setting-row, .payment-row { display: flex; align-items: center; justify-content: space-between; min-height: 48px; border-top: 1px solid #244133; font-size: 14px; }
+.setting-value, .row-note { color: #8ea095; }
+.switch-row { gap: 14px; }
+.row-title, .row-note { display: block; }
+.row-note { margin-top: 4px; font-size: 12px; line-height: 18px; }
+.field-label { display: block; margin: 14px 0 8px; color: #a9b8ae; font-size: 12px; }
+.field-input { width: 100%; height: 44px; padding: 0 12px; border: 1px solid #365444; border-radius: 6px; background: #07120d; color: #fff; font-size: 14px; box-sizing: border-box; }
+.payment-row { justify-content: flex-start; gap: 12px; }
+.payment-icon { width: 38px; height: 38px; border-radius: 6px; background: #1d5637; color: #c8ff00; font-size: 20px; font-weight: 700; line-height: 38px; text-align: center; }
+.reserved { margin-left: auto; padding: 4px 7px; border-radius: 4px; background: #24362c; color: #8ea095; font-size: 11px; }
+.save-button { margin-top: 20px; border-radius: 6px; background: #c8ff00; color: #07120d; font-weight: 700; }

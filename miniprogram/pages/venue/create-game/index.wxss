@@ -1,0 +1,15 @@
+page { background: #07120d; }
+.venue-form-page { min-height: 100vh; padding: 24px 16px 40px; color: #fff; box-sizing: border-box; }
+.page-head { padding: 8px 2px 18px; }
+.eyebrow { display: block; color: #c8ff00; font-size: 12px; }
+.page-title { display: block; margin-top: 6px; font-size: 26px; font-weight: 700; }
+.page-note { display: block; margin-top: 8px; color: #8ea095; font-size: 13px; line-height: 20px; }
+.warning { margin-bottom: 14px; padding: 12px; border-left: 3px solid #ff9800; background: #2b2212; color: #ffd095; font-size: 13px; line-height: 20px; }
+.form-section { margin-bottom: 14px; padding: 18px; border: 1px solid #244133; border-radius: 8px; background: #0b1c14; }
+.section-title { display: block; margin-bottom: 16px; font-size: 17px; font-weight: 700; }
+.field-label { display: block; margin: 14px 0 8px; color: #a9b8ae; font-size: 12px; }
+.field-input, .picker-value, .field-textarea { width: 100%; border: 1px solid #365444; border-radius: 6px; background: #07120d; color: #fff; box-sizing: border-box; }
+.field-input, .picker-value { height: 44px; padding: 0 12px; font-size: 14px; line-height: 44px; }
+.field-textarea { height: 110px; padding: 12px; font-size: 14px; line-height: 21px; }
+.two-columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+.submit-button { margin-top: 20px; border-radius: 6px; background: #c8ff00; color: #07120d; font-weight: 700; }

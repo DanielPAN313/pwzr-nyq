@@ -1042,6 +1042,21 @@ const recordAdminAudit = async (pool, req, admin, payload) => {
   )
 }
 
+const withTransaction = async (pool, work) => {
+  const connection = await pool.getConnection()
+  try {
+    await connection.beginTransaction()
+    const result = await work(connection)
+    await connection.commit()
+    return result
+  } catch (error) {
+    await connection.rollback()
+    throw error
+  } finally {
+    connection.release()
+  }
+}
+
 const ensureRefundRequest = async (pool, order, payload = {}) => {
   const [[existing]] = await pool.execute(
     `SELECT * FROM sports_refund_request
@@ -1478,31 +1493,42 @@ const autoProcessMockRefunds = async (pool) => {
      LIMIT 100`,
   )
   if (!expired.length) return 0
-  const ids = expired.map((order) => Number(order.id)).filter(Boolean)
-  const placeholders = ids.map(() => '?').join(',')
-  await pool.execute(
-    `UPDATE sports_order SET status = 'refunded', refunded_at = NOW(), refund_source = 'mock_auto_48h'
-     WHERE id IN (${placeholders})`,
-    ids,
-  )
+  let processed = 0
   for (const order of expired) {
-    await ensureRefundRequest(pool, order, {
-      percent: Number(order.refund_percent || 0),
-      reason: order.refund_reason || 'automatic refund after 48 hours',
-    })
-    await pool.execute(
-      `UPDATE sports_refund_request SET
-        status = 'approved', decision_note = 'automatic refund after 48 hours',
-        handled_by_type = 'system', handled_at = NOW()
-       WHERE order_id = ? AND status = 'pending'`,
-      [order.id],
-    )
-    if (order.game_id) {
-      await pool.execute(
-        'UPDATE sports_signup SET payment_status = "refunded" WHERE game_id = ? AND user_id = ?',
-        [order.game_id, order.user_id],
+    const completed = await withTransaction(pool, async (connection) => {
+      const [[lockedOrder]] = await connection.execute(
+        `SELECT * FROM sports_order
+         WHERE id = ? AND status = 'refunding' AND refund_requested_at <= DATE_SUB(NOW(), INTERVAL 48 HOUR)
+         FOR UPDATE`,
+        [order.id],
       )
-    }
+      if (!lockedOrder) return false
+      await ensureRefundRequest(connection, lockedOrder, {
+        percent: Number(lockedOrder.refund_percent || 0),
+        reason: lockedOrder.refund_reason || 'automatic refund after 48 hours',
+      })
+      await connection.execute(
+        `UPDATE sports_refund_request SET
+          status = 'approved', decision_note = 'automatic refund after 48 hours',
+          handled_by_type = 'system', handled_at = NOW()
+         WHERE order_id = ? AND status = 'pending'`,
+        [lockedOrder.id],
+      )
+      await connection.execute(
+        `UPDATE sports_order SET status = 'refunded', refunded_at = NOW(), refund_source = 'mock_auto_48h'
+         WHERE id = ?`,
+        [lockedOrder.id],
+      )
+      if (lockedOrder.game_id) {
+        await connection.execute(
+          'UPDATE sports_signup SET payment_status = "refunded" WHERE game_id = ? AND user_id = ?',
+          [lockedOrder.game_id, lockedOrder.user_id],
+        )
+      }
+      return true
+    })
+    if (!completed) continue
+    processed += 1
     await createNotification(pool, { id: order.user_id, username: order.username }, {
       type: 'refund_completed',
       title: '模拟退款已自动处理',
@@ -1511,7 +1537,7 @@ const autoProcessMockRefunds = async (pool) => {
       game_id: order.game_id,
     })
   }
-  return expired.length
+  return processed
 }
 
 const sportsVenueAdminDashboard = async (pool, user) => {
@@ -2463,32 +2489,39 @@ const handleAdminApi = async (req, res, requestUrl) => {
       const refundId = Number(refundDecisionMatch[1])
       const body = await readJsonBody(req)
       const approved = body.action !== 'reject'
-      const [[refund]] = await pool.execute(
-        `SELECT r.*, o.game_id, o.username
-         FROM sports_refund_request r JOIN sports_order o ON o.id = r.order_id
-         WHERE r.id = ? AND r.status = 'pending' LIMIT 1`,
-        [refundId],
-      )
-      if (!refund) return json(res, { ok: false, error: 'pending refund not found' }, 404)
       const refundStatus = approved ? 'approved' : 'rejected'
       const orderStatus = approved ? 'refunded' : 'cancelled'
-      await pool.execute(
-        `UPDATE sports_refund_request SET status = ?, decision_note = ?,
-          handled_by_type = 'platform_admin', handled_by_id = ?, handled_at = NOW()
-         WHERE id = ? AND status = 'pending'`,
-        [refundStatus, text(body.note, 255), admin.id, refundId],
-      )
-      await pool.execute(
-        `UPDATE sports_order SET status = ?, refunded_at = ?, refund_source = 'platform_admin', refund_reason = ?
-         WHERE id = ? AND status = 'refunding'`,
-        [orderStatus, approved ? new Date() : null, text(body.note, 255), refund.order_id],
-      )
-      if (refund.game_id) {
-        await pool.execute(
-          'UPDATE sports_signup SET payment_status = ? WHERE game_id = ? AND user_id = ?',
-          [orderStatus, refund.game_id, refund.user_id],
+      const refund = await withTransaction(pool, async (connection) => {
+        const [[lockedRefund]] = await connection.execute(
+          `SELECT r.*, o.game_id, o.username, o.status AS order_status
+           FROM sports_refund_request r JOIN sports_order o ON o.id = r.order_id
+           WHERE r.id = ? FOR UPDATE`,
+          [refundId],
         )
-      }
+        if (!lockedRefund || lockedRefund.status !== 'pending' || lockedRefund.order_status !== 'refunding') {
+          const error = new Error('pending refund not found')
+          error.statusCode = 404
+          throw error
+        }
+        await connection.execute(
+          `UPDATE sports_refund_request SET status = ?, decision_note = ?,
+            handled_by_type = 'platform_admin', handled_by_id = ?, handled_at = NOW()
+           WHERE id = ? AND status = 'pending'`,
+          [refundStatus, text(body.note, 255), admin.id, refundId],
+        )
+        await connection.execute(
+          `UPDATE sports_order SET status = ?, refunded_at = ?, refund_source = 'platform_admin', refund_reason = ?
+           WHERE id = ? AND status = 'refunding'`,
+          [orderStatus, approved ? new Date() : null, text(body.note, 255), lockedRefund.order_id],
+        )
+        if (lockedRefund.game_id) {
+          await connection.execute(
+            'UPDATE sports_signup SET payment_status = ? WHERE game_id = ? AND user_id = ?',
+            [orderStatus, lockedRefund.game_id, lockedRefund.user_id],
+          )
+        }
+        return lockedRefund
+      })
       await createNotification(pool, { id: refund.user_id, username: refund.username }, {
         type: approved ? 'refund_completed' : 'refund_rejected',
         title: approved ? '退款已完成' : '退款申请未通过',
@@ -2563,6 +2596,9 @@ const handleAdminApi = async (req, res, requestUrl) => {
 
 const handleSportsApi = async (req, res, requestUrl) => {
   const pathName = requestUrl.pathname
+    .replace(/^\/api\/player\/v1(?=\/|$)/, '/api/sports-app')
+    .replace(/^\/api\/venue\/v1\/auth(?=\/|$)/, '/api/sports-app/auth')
+    .replace(/^\/api\/venue\/v1(?=\/|$)/, '/api/sports-app/venue-admin')
   if (!pathName.startsWith('/api/sports-app/')) return false
   try {
     const pool = await ensureSportsSchema()
@@ -3389,19 +3425,46 @@ const handleSportsApi = async (req, res, requestUrl) => {
       if (!rule.ok || Number(rule.refund_percent || 0) <= 0) {
         return json(res, { ok: false, error: rule.error || '当前时间不支持退款' }, 409)
       }
-      await pool.execute(
-        `UPDATE sports_order SET status = 'refunding', refund_percent = ?, refund_reason = ?,
-          refund_requested_at = NOW(), refund_source = 'mock_user_request', cancelled_at = NOW(), cancel_note = ?
-         WHERE id = ?`,
-        [Number(rule.refund_percent), text(body.reason || '用户申请退款', 255), rule.note, orderId],
-      )
-      const refundRequest = await ensureRefundRequest(pool, order, {
-        percent: Number(rule.refund_percent),
-        reason: body.reason || rule.note,
+      const refundRequest = await withTransaction(pool, async (connection) => {
+        const [[lockedOrder]] = await connection.execute(
+          'SELECT * FROM sports_order WHERE id = ? AND user_id = ? FOR UPDATE',
+          [orderId, user.id],
+        )
+        if (!lockedOrder) {
+          const error = new Error('未找到订单')
+          error.statusCode = 404
+          throw error
+        }
+        if (lockedOrder.status === 'refunding') {
+          return ensureRefundRequest(connection, lockedOrder, {
+            percent: Number(lockedOrder.refund_percent || rule.refund_percent),
+            reason: lockedOrder.refund_reason || body.reason || rule.note,
+          })
+        }
+        const lockedRule = canCancelOrder({ ...lockedOrder, start_time: order.start_time })
+        if (!lockedRule.ok || Number(lockedRule.refund_percent || 0) <= 0) {
+          const error = new Error(lockedRule.error || '当前时间不支持退款')
+          error.statusCode = 409
+          throw error
+        }
+        await connection.execute(
+          `UPDATE sports_order SET status = 'refunding', refund_percent = ?, refund_reason = ?,
+            refund_requested_at = NOW(), refund_source = 'mock_user_request', cancelled_at = NOW(), cancel_note = ?
+           WHERE id = ?`,
+          [Number(lockedRule.refund_percent), text(body.reason || '用户申请退款', 255), lockedRule.note, orderId],
+        )
+        const request = await ensureRefundRequest(connection, lockedOrder, {
+          percent: Number(lockedRule.refund_percent),
+          reason: body.reason || lockedRule.note,
+        })
+        if (lockedOrder.game_id) {
+          await connection.execute(
+            'UPDATE sports_signup SET payment_status = "refunding" WHERE game_id = ? AND user_id = ?',
+            [lockedOrder.game_id, user.id],
+          )
+        }
+        return request
       })
-      if (order.game_id) {
-        await pool.execute('UPDATE sports_signup SET payment_status = "refunding" WHERE game_id = ? AND user_id = ?', [order.game_id, user.id])
-      }
       await createNotification(pool, user, {
         type: 'refund_requested',
         title: '模拟退款申请已提交',
@@ -3629,33 +3692,40 @@ const handleSportsApi = async (req, res, requestUrl) => {
         'SELECT user_id, username FROM sports_signup WHERE game_id = ? AND payment_status = "paid"',
         [gameId],
       )
-      const [refundOrders] = await pool.execute(
-        `SELECT * FROM sports_order
-         WHERE game_id = ? AND status IN ('paid', 'offline_paid', 'pending_verify', 'refunding')`,
-        [gameId],
-      )
-      for (const refundOrder of refundOrders) {
-        const refundRequest = await ensureRefundRequest(pool, refundOrder, {
-          percent: 100,
-          reason: 'venue cancelled game',
-        })
-        await pool.execute(
-          `UPDATE sports_refund_request SET status = 'approved', decision_note = 'venue cancelled game',
-            handled_by_type = 'venue_admin', handled_by_id = ?, handled_at = NOW()
-           WHERE id = ?`,
-          [user.id, refundRequest.id],
+      await withTransaction(pool, async (connection) => {
+        await connection.execute('SELECT id FROM sports_game WHERE id = ? FOR UPDATE', [gameId])
+        const [refundOrders] = await connection.execute(
+          `SELECT * FROM sports_order
+           WHERE game_id = ? AND status IN ('paid', 'offline_paid', 'pending_verify', 'refunding')
+           FOR UPDATE`,
+          [gameId],
         )
-      }
-      await pool.execute('UPDATE sports_game SET status = "cancelled" WHERE id = ?', [gameId])
-      await pool.execute('UPDATE sports_signup SET payment_status = "refunded" WHERE game_id = ? AND payment_status = "paid"', [gameId])
-      await pool.execute(
-        `UPDATE sports_order SET
-          status = CASE WHEN status IN ('pending_payment', 'pending_pay') THEN 'cancelled' ELSE 'refunded' END,
-          cancelled_at = NOW(), refunded_at = NOW(), cancel_note = '场馆取消球局',
-          refund_source = 'venue_cancel_mock', refund_percent = 100, refund_reason = '场馆取消球局'
-         WHERE game_id = ? AND status IN ('pending_payment', 'pending_pay', 'paid', 'offline_paid', 'pending_verify', 'refunding')`,
-        [gameId],
-      )
+        for (const refundOrder of refundOrders) {
+          const refundRequest = await ensureRefundRequest(connection, refundOrder, {
+            percent: 100,
+            reason: 'venue cancelled game',
+          })
+          await connection.execute(
+            `UPDATE sports_refund_request SET status = 'approved', decision_note = 'venue cancelled game',
+              handled_by_type = 'venue_admin', handled_by_id = ?, handled_at = NOW()
+             WHERE id = ? AND status = 'pending'`,
+            [user.id, refundRequest.id],
+          )
+        }
+        await connection.execute('UPDATE sports_game SET status = "cancelled" WHERE id = ?', [gameId])
+        await connection.execute(
+          'UPDATE sports_signup SET payment_status = "refunded" WHERE game_id = ? AND payment_status = "paid"',
+          [gameId],
+        )
+        await connection.execute(
+          `UPDATE sports_order SET
+            status = CASE WHEN status IN ('pending_payment', 'pending_pay') THEN 'cancelled' ELSE 'refunded' END,
+            cancelled_at = NOW(), refunded_at = NOW(), cancel_note = '场馆取消球局',
+            refund_source = 'venue_cancel_mock', refund_percent = 100, refund_reason = '场馆取消球局'
+           WHERE game_id = ? AND status IN ('pending_payment', 'pending_pay', 'paid', 'offline_paid', 'pending_verify', 'refunding')`,
+          [gameId],
+        )
+      })
       for (const player of players) {
         await createNotification(pool, player, {
           type: 'game_cancelled',
@@ -3730,29 +3800,49 @@ const handleSportsApi = async (req, res, requestUrl) => {
       if (order.status !== 'refunding') return json(res, { ok: false, error: '订单当前不在退款处理中' }, 409)
       const approved = body.action !== 'reject'
       const nextStatus = approved ? 'refunded' : 'cancelled'
-      await pool.execute(
-        `UPDATE sports_order SET status = ?, refunded_at = ?, refund_source = ?, refund_reason = ? WHERE id = ?`,
-        [
-          nextStatus,
-          approved ? new Date() : null,
-          approved ? 'mock_venue_approved' : 'mock_venue_rejected',
-          text(body.note || (approved ? '场馆同意模拟退款' : '场馆拒绝模拟退款'), 255),
-          orderId,
-        ],
-      )
-      const refundRequest = await ensureRefundRequest(pool, order, {
-        percent: Number(order.refund_percent || 0),
-        reason: order.refund_reason || body.note,
+      const refundRequest = await withTransaction(pool, async (connection) => {
+        const [[lockedOrder]] = await connection.execute(
+          'SELECT * FROM sports_order WHERE id = ? AND venue_id = ? FOR UPDATE',
+          [orderId, order.venue_id],
+        )
+        if (!lockedOrder || lockedOrder.status !== 'refunding') {
+          const error = new Error('订单当前不在退款处理中')
+          error.statusCode = 409
+          throw error
+        }
+        const request = await ensureRefundRequest(connection, lockedOrder, {
+          percent: Number(lockedOrder.refund_percent || 0),
+          reason: lockedOrder.refund_reason || body.note,
+        })
+        const [decision] = await connection.execute(
+          `UPDATE sports_refund_request SET status = ?, decision_note = ?,
+            handled_by_type = 'venue_admin', handled_by_id = ?, handled_at = NOW()
+           WHERE id = ? AND status = 'pending'`,
+          [approved ? 'approved' : 'rejected', text(body.note, 255), user.id, request.id],
+        )
+        if (!decision.affectedRows) {
+          const error = new Error('退款申请已被处理')
+          error.statusCode = 409
+          throw error
+        }
+        await connection.execute(
+          `UPDATE sports_order SET status = ?, refunded_at = ?, refund_source = ?, refund_reason = ? WHERE id = ?`,
+          [
+            nextStatus,
+            approved ? new Date() : null,
+            approved ? 'mock_venue_approved' : 'mock_venue_rejected',
+            text(body.note || (approved ? '场馆同意模拟退款' : '场馆拒绝模拟退款'), 255),
+            orderId,
+          ],
+        )
+        if (lockedOrder.game_id) {
+          await connection.execute(
+            'UPDATE sports_signup SET payment_status = ? WHERE game_id = ? AND user_id = ?',
+            [nextStatus, lockedOrder.game_id, lockedOrder.user_id],
+          )
+        }
+        return request
       })
-      await pool.execute(
-        `UPDATE sports_refund_request SET status = ?, decision_note = ?,
-          handled_by_type = 'venue_admin', handled_by_id = ?, handled_at = NOW()
-         WHERE id = ?`,
-        [approved ? 'approved' : 'rejected', text(body.note, 255), user.id, refundRequest.id],
-      )
-      if (order.game_id) {
-        await pool.execute('UPDATE sports_signup SET payment_status = ? WHERE game_id = ? AND user_id = ?', [nextStatus, order.game_id, order.user_id])
-      }
       await createNotification(pool, { id: order.user_id, username: order.username }, {
         type: approved ? 'refund_completed' : 'refund_rejected',
         title: approved ? '模拟退款已完成' : '模拟退款未通过',
@@ -3909,35 +3999,57 @@ const handleSportsApi = async (req, res, requestUrl) => {
       if (Number(order.user_id) !== Number(user.id)) return json(res, { ok: false, error: '只能取消自己的订单' }, 403)
       const cancelRule = canCancelOrder(order)
       if (!cancelRule.ok) return json(res, { ok: false, error: cancelRule.error }, 409)
-      const nextStatus = cancelRule.nextStatus
-      const cancelPenalty = Number(cancelRule.penalty || 0)
-      const refundSource = nextStatus === 'refunding' ? 'mock_refund_pending' : ''
-      await pool.execute(
-        `UPDATE sports_order SET status = ?, cancelled_at = NOW(), cancel_note = ?, cancel_penalty = ?,
-          refund_source = ?, refund_percent = ?, refund_reason = ?,
-          refund_requested_at = CASE WHEN ? = 'refunding' THEN NOW() ELSE refund_requested_at END
-         WHERE id = ?`,
-        [nextStatus, cancelRule.note, cancelPenalty, refundSource, Number(cancelRule.refund_percent || 0), cancelRule.note, nextStatus, orderId],
-      )
-      const refundRequest = nextStatus === 'refunding'
-        ? await ensureRefundRequest(pool, order, {
-            percent: Number(cancelRule.refund_percent || 0),
-            reason: cancelRule.note,
+      const transition = await withTransaction(pool, async (connection) => {
+        const [[lockedOrder]] = await connection.execute(
+          'SELECT * FROM sports_order WHERE id = ? AND user_id = ? FOR UPDATE',
+          [orderId, user.id],
+        )
+        if (!lockedOrder) {
+          const error = new Error('order not found')
+          error.statusCode = 404
+          throw error
+        }
+        const lockedRule = canCancelOrder({ ...lockedOrder, start_time: order.start_time })
+        if (!lockedRule.ok) {
+          const error = new Error(lockedRule.error)
+          error.statusCode = 409
+          throw error
+        }
+        const status = lockedRule.nextStatus
+        const penalty = Number(lockedRule.penalty || 0)
+        const source = status === 'refunding' ? 'mock_refund_pending' : ''
+        await connection.execute(
+          `UPDATE sports_order SET status = ?, cancelled_at = NOW(), cancel_note = ?, cancel_penalty = ?,
+            refund_source = ?, refund_percent = ?, refund_reason = ?,
+            refund_requested_at = CASE WHEN ? = 'refunding' THEN NOW() ELSE refund_requested_at END
+           WHERE id = ?`,
+          [status, lockedRule.note, penalty, source, Number(lockedRule.refund_percent || 0), lockedRule.note, status, orderId],
+        )
+        const request = status === 'refunding'
+          ? await ensureRefundRequest(connection, lockedOrder, {
+              percent: Number(lockedRule.refund_percent || 0),
+              reason: lockedRule.note,
+            })
+          : null
+        if (lockedOrder.game_id) {
+          await connection.execute(
+            'UPDATE sports_signup SET payment_status = ? WHERE game_id = ? AND user_id = ?',
+            [status, lockedOrder.game_id, lockedOrder.user_id],
+          )
+        }
+        if (penalty !== 0) {
+          await recordCreditEvent(connection, {
+            user_id: lockedOrder.user_id,
+            username: lockedOrder.username,
+            event_type: 'late_cancel',
+            score_delta: penalty,
+            note: lockedRule.note,
+            related_game_id: lockedOrder.game_id || null,
           })
-        : null
-      if (order.game_id) {
-        await pool.execute('UPDATE sports_signup SET payment_status = ? WHERE game_id = ? AND user_id = ?', [nextStatus, order.game_id, order.user_id])
-      }
-      if (cancelPenalty !== 0) {
-        await recordCreditEvent(pool, {
-          user_id: order.user_id,
-          username: order.username,
-          event_type: 'late_cancel',
-          score_delta: cancelPenalty,
-          note: cancelRule.note,
-          related_game_id: order.game_id || null,
-        })
-      }
+        }
+        return { rule: lockedRule, refundRequest: request, nextStatus: status, cancelPenalty: penalty, refundSource: source }
+      })
+      const { rule: effectiveCancelRule, refundRequest, nextStatus, cancelPenalty, refundSource } = transition
       await trackEvent(pool, user, nextStatus === 'refunding' ? 'refund_requested' : 'order_cancelled', {
         entity_type: order.game_id ? 'game' : 'venue',
         entity_id: order.game_id || order.venue_id,
@@ -3946,7 +4058,7 @@ const handleSportsApi = async (req, res, requestUrl) => {
       await createNotification(pool, user, {
         type: 'order_cancelled',
         title: nextStatus === 'refunding' ? '报名已取消，退款处理中' : '报名已取消',
-        body: `订单 #${orderId} 已更新为${nextStatus === 'refunding' ? '退款处理中' : '已取消'}。${cancelPenalty !== 0 ? ` ${cancelRule.note}` : ''}`,
+        body: `订单 #${orderId} 已更新为${nextStatus === 'refunding' ? '退款处理中' : '已取消'}。${cancelPenalty !== 0 ? ` ${effectiveCancelRule.note}` : ''}`,
         order_id: orderId,
         game_id: order.game_id,
       })
@@ -3954,9 +4066,9 @@ const handleSportsApi = async (req, res, requestUrl) => {
         ok: true,
         status: nextStatus,
         penalty: cancelPenalty,
-        refund_percent: Number(cancelRule.refund_percent || 0),
+        refund_percent: Number(effectiveCancelRule.refund_percent || 0),
         refund_request_id: refundRequest ? Number(refundRequest.id) : null,
-        note: cancelRule.note,
+        note: effectiveCancelRule.note,
         refund_source: refundSource,
       })
     }
@@ -4775,7 +4887,23 @@ const server = http.createServer(async (req, res) => {
   createReadStream(target).pipe(res)
 })
 
+const startBackgroundJobs = async () => {
+  const env = await readRuntimeEnv()
+  if (env.NYQ_SCHEDULER_ENABLED === 'false') return
+  const intervalMs = Math.max(30_000, Number(env.NYQ_JOB_POLL_INTERVAL_MS || 60_000))
+  const run = async () => {
+    try {
+      await autoProcessMockRefunds(await ensureSportsSchema())
+    } catch (error) {
+      console.error('[background-jobs] refund sweep failed', error)
+    }
+  }
+  const timer = setInterval(run, intervalMs)
+  timer.unref()
+}
+
 server.listen(port, '0.0.0.0', () => {
   console.log(`Local mirror running at http://localhost:${port}`)
   console.log(`Serving: ${root}`)
+  startBackgroundJobs().catch((error) => console.error('[background-jobs] startup failed', error))
 })

@@ -7,6 +7,14 @@ import crypto from 'node:crypto'
 import { execFile } from 'node:child_process'
 import mysql from 'mysql2/promise'
 import bcrypt from 'bcryptjs'
+import {
+  bearerToken,
+  createUploadPolicy,
+  hashToken,
+  hasAdminPermission,
+  newOpaqueToken,
+  safeUploadKey,
+} from './server/security.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = path.resolve(__dirname, '..', 'site')
@@ -56,7 +64,13 @@ const readJsonBody = async (req) => {
   return raw ? JSON.parse(raw) : {}
 }
 
+const readJson = readJsonBody
+
 const text = (value, max = 500) => String(value || '').trim().slice(0, max)
+
+const SESSION_TTL_HOURS = 24 * 30
+const ADMIN_SESSION_TTL_HOURS = 12
+const uploadContentTypes = new Set(['image/jpeg', 'image/png', 'image/webp'])
 
 let dbPoolPromise = null
 
@@ -329,6 +343,123 @@ const ensureSportsSchema = async () => {
         KEY idx_sports_order_user (user_id),
         CONSTRAINT fk_sports_order_venue FOREIGN KEY (venue_id) REFERENCES sports_venue(id),
         CONSTRAINT fk_sports_order_game FOREIGN KEY (game_id) REFERENCES sports_game(id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `)
+    await pool.execute(`
+      CREATE TABLE IF NOT EXISTS sports_auth_session (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        token_hash CHAR(64) NOT NULL,
+        user_id INT UNSIGNED NOT NULL,
+        username VARCHAR(50) NOT NULL,
+        role VARCHAR(30) NOT NULL DEFAULT 'player',
+        venue_id INT UNSIGNED NULL,
+        expires_at DATETIME NOT NULL,
+        revoked_at DATETIME NULL,
+        create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        UNIQUE KEY uk_sports_auth_token (token_hash),
+        KEY idx_sports_auth_user (user_id, expires_at),
+        KEY idx_sports_auth_venue (venue_id, expires_at),
+        CONSTRAINT fk_sports_auth_venue FOREIGN KEY (venue_id) REFERENCES sports_venue(id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `)
+    await pool.execute(`
+      CREATE TABLE IF NOT EXISTS sports_venue_manager (
+        id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+        venue_id INT UNSIGNED NOT NULL,
+        user_id INT UNSIGNED NOT NULL,
+        phone VARCHAR(30) NOT NULL DEFAULT '',
+        password_hash VARCHAR(255) NOT NULL DEFAULT '',
+        status VARCHAR(20) NOT NULL DEFAULT 'active',
+        create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        UNIQUE KEY uk_sports_venue_manager_user (user_id),
+        UNIQUE KEY uk_sports_venue_manager_phone (phone),
+        KEY idx_sports_venue_manager_venue (venue_id, status),
+        CONSTRAINT fk_sports_venue_manager_venue FOREIGN KEY (venue_id) REFERENCES sports_venue(id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `)
+    await pool.execute(`
+      CREATE TABLE IF NOT EXISTS sports_refund_request (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        order_id INT UNSIGNED NOT NULL,
+        venue_id INT UNSIGNED NOT NULL,
+        user_id INT UNSIGNED NOT NULL,
+        requested_percent INT NOT NULL DEFAULT 0,
+        requested_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
+        reason VARCHAR(255) NOT NULL DEFAULT '',
+        status VARCHAR(20) NOT NULL DEFAULT 'pending',
+        decision_note VARCHAR(255) NOT NULL DEFAULT '',
+        handled_by_type VARCHAR(20) NOT NULL DEFAULT '',
+        handled_by_id INT UNSIGNED NULL,
+        handled_at DATETIME NULL,
+        create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        KEY idx_sports_refund_order (order_id, create_time),
+        KEY idx_sports_refund_venue (venue_id, status, create_time),
+        KEY idx_sports_refund_user (user_id, create_time),
+        CONSTRAINT fk_sports_refund_order FOREIGN KEY (order_id) REFERENCES sports_order(id),
+        CONSTRAINT fk_sports_refund_venue FOREIGN KEY (venue_id) REFERENCES sports_venue(id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `)
+    await pool.execute(`
+      CREATE TABLE IF NOT EXISTS sports_platform_admin (
+        id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+        username VARCHAR(50) NOT NULL,
+        password_hash VARCHAR(255) NOT NULL,
+        role VARCHAR(30) NOT NULL DEFAULT 'auditor',
+        status VARCHAR(20) NOT NULL DEFAULT 'active',
+        last_login_at DATETIME NULL,
+        create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        UNIQUE KEY uk_sports_platform_admin_username (username)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `)
+    await pool.execute(`
+      CREATE TABLE IF NOT EXISTS sports_admin_session (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        token_hash CHAR(64) NOT NULL,
+        admin_id INT UNSIGNED NOT NULL,
+        expires_at DATETIME NOT NULL,
+        revoked_at DATETIME NULL,
+        create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        UNIQUE KEY uk_sports_admin_session_token (token_hash),
+        KEY idx_sports_admin_session_admin (admin_id, expires_at),
+        CONSTRAINT fk_sports_admin_session_admin FOREIGN KEY (admin_id) REFERENCES sports_platform_admin(id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `)
+    await pool.execute(`
+      CREATE TABLE IF NOT EXISTS sports_admin_audit (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        admin_id INT UNSIGNED NOT NULL,
+        action VARCHAR(80) NOT NULL,
+        resource_type VARCHAR(50) NOT NULL DEFAULT '',
+        resource_id VARCHAR(80) NOT NULL DEFAULT '',
+        request_id VARCHAR(80) NOT NULL DEFAULT '',
+        ip_address VARCHAR(80) NOT NULL DEFAULT '',
+        metadata_json TEXT NULL,
+        create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        KEY idx_sports_admin_audit_admin (admin_id, create_time),
+        KEY idx_sports_admin_audit_resource (resource_type, resource_id, create_time),
+        CONSTRAINT fk_sports_admin_audit_admin FOREIGN KEY (admin_id) REFERENCES sports_platform_admin(id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `)
+    await pool.execute(`
+      CREATE TABLE IF NOT EXISTS sports_upload_grant (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        actor_type VARCHAR(20) NOT NULL,
+        actor_id INT UNSIGNED NOT NULL,
+        object_key VARCHAR(240) NOT NULL,
+        content_type VARCHAR(80) NOT NULL,
+        max_bytes INT UNSIGNED NOT NULL,
+        expires_at DATETIME NOT NULL,
+        create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        KEY idx_sports_upload_actor (actor_type, actor_id, create_time),
+        KEY idx_sports_upload_key (object_key)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `)
     await pool.execute(`
@@ -701,6 +832,39 @@ const ensureSportsSchema = async () => {
         )
       }
     }
+    const runtimeEnv = await readRuntimeEnv()
+    if (runtimeEnv.NODE_ENV !== 'production' && runtimeEnv.NYQ_DEV_VENUE_BINDING !== 'false') {
+      const devVenueUserId = Number(runtimeEnv.NYQ_DEV_VENUE_USER_ID || 9001)
+      await pool.execute(
+        `UPDATE sports_venue
+         SET manager_user_id = ?
+         WHERE manager_user_id IS NULL AND status = 'approved'
+         ORDER BY id ASC
+         LIMIT 1`,
+        [devVenueUserId],
+      )
+    }
+    await pool.execute(
+      `INSERT IGNORE INTO sports_venue_manager (venue_id, user_id, phone, status)
+       SELECT id, manager_user_id, CONCAT('legacy-', id, '-', manager_user_id), 'active'
+       FROM sports_venue
+       WHERE manager_user_id IS NOT NULL`,
+    )
+    const adminUsername = text(runtimeEnv.PLATFORM_ADMIN_USERNAME, 50)
+    const adminPassword = String(runtimeEnv.PLATFORM_ADMIN_PASSWORD || '')
+    if (adminUsername && adminPassword.length >= 12 && !adminPassword.startsWith('replace_with_')) {
+      const [[existingAdmin]] = await pool.execute(
+        'SELECT id FROM sports_platform_admin WHERE username = ? LIMIT 1',
+        [adminUsername],
+      )
+      if (!existingAdmin) {
+        await pool.execute(
+          `INSERT INTO sports_platform_admin (username, password_hash, role, status)
+           VALUES (?, ?, 'super_admin', 'active')`,
+          [adminUsername, await bcrypt.hash(adminPassword, 12)],
+        )
+      }
+    }
     return pool
   })()
   return sportsSchemaPromise
@@ -755,10 +919,147 @@ const overlapsRange = (startA, endA, startB, endB) => {
 
 const bookingRangeLabel = (start, end) => `${formatTimeOnly(start)}-${formatTimeOnly(end)}`
 
-const requestUser = (req) => ({
-  id: Number(req.headers['x-user-id'] || 1) || 1,
-  username: text(req.headers['x-username'] || 'demo_player', 50) || 'demo_player',
-})
+const developmentRequestUser = (req) => {
+  const token = bearerToken(req)
+  const role = token.startsWith('venue-dev-token-') ? 'venue_admin' : 'player'
+  return {
+    id: Number(req.headers['x-user-id'] || 1) || 1,
+    username: text(req.headers['x-username'] || (role === 'venue_admin' ? 'venue_admin' : 'demo_player'), 50),
+    role,
+    venueId: null,
+    development: true,
+  }
+}
+
+const createSportsSession = async (pool, user, options = {}) => {
+  const token = newOpaqueToken('nyq_user')
+  const role = options.role === 'venue_admin' ? 'venue_admin' : 'player'
+  const venueId = options.venueId ? Number(options.venueId) : null
+  await pool.execute(
+    `INSERT INTO sports_auth_session
+      (token_hash, user_id, username, role, venue_id, expires_at)
+     VALUES (?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL ? HOUR))`,
+    [hashToken(token), Number(user.id), text(user.username, 50), role, venueId, SESSION_TTL_HOURS],
+  )
+  return token
+}
+
+const authenticateSportsRequest = async (pool, req) => {
+  const token = bearerToken(req)
+  if (token) {
+    const [[session]] = await pool.execute(
+      `SELECT s.user_id AS id, s.username, s.role, s.venue_id
+       FROM sports_auth_session s
+       WHERE s.token_hash = ? AND s.revoked_at IS NULL AND s.expires_at > NOW()
+       LIMIT 1`,
+      [hashToken(token)],
+    )
+    if (session) {
+      return {
+        id: Number(session.id),
+        username: session.username,
+        role: session.role,
+        venueId: session.venue_id == null ? null : Number(session.venue_id),
+      }
+    }
+  }
+
+  const env = await readRuntimeEnv()
+  if (env.NODE_ENV !== 'production' && env.NYQ_ALLOW_DEV_AUTH !== 'false') {
+    return developmentRequestUser(req)
+  }
+
+  const error = new Error('authentication required')
+  error.statusCode = 401
+  throw error
+}
+
+const assertVenueAdmin = (user) => {
+  if (user.role !== 'venue_admin') {
+    const error = new Error('venue administrator permission required')
+    error.statusCode = 403
+    throw error
+  }
+}
+
+const venueScopeSql = (user, venueAlias = 'v') => user.venueId
+  ? { clause: `${venueAlias}.id = ?`, params: [user.venueId] }
+  : { clause: `${venueAlias}.manager_user_id = ?`, params: [user.id] }
+
+const createAdminSession = async (pool, admin) => {
+  const token = newOpaqueToken('nyq_admin')
+  await pool.execute(
+    `INSERT INTO sports_admin_session (token_hash, admin_id, expires_at)
+     VALUES (?, ?, DATE_ADD(NOW(), INTERVAL ? HOUR))`,
+    [hashToken(token), admin.id, ADMIN_SESSION_TTL_HOURS],
+  )
+  return token
+}
+
+const authenticateAdminRequest = async (pool, req) => {
+  const token = bearerToken(req)
+  if (!token) return null
+  const [[admin]] = await pool.execute(
+    `SELECT a.id, a.username, a.role
+     FROM sports_admin_session s
+     JOIN sports_platform_admin a ON a.id = s.admin_id
+     WHERE s.token_hash = ? AND s.revoked_at IS NULL AND s.expires_at > NOW() AND a.status = 'active'
+     LIMIT 1`,
+    [hashToken(token)],
+  )
+  return admin || null
+}
+
+const requireAdminPermission = (admin, permission) => {
+  if (!admin) {
+    const error = new Error('administrator authentication required')
+    error.statusCode = 401
+    throw error
+  }
+  if (!hasAdminPermission(admin.role, permission)) {
+    const error = new Error('administrator permission denied')
+    error.statusCode = 403
+    throw error
+  }
+}
+
+const requestIp = (req) => text(String(req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '').split(',')[0], 80)
+
+const recordAdminAudit = async (pool, req, admin, payload) => {
+  await pool.execute(
+    `INSERT INTO sports_admin_audit
+      (admin_id, action, resource_type, resource_id, request_id, ip_address, metadata_json)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [
+      admin.id,
+      text(payload.action, 80),
+      text(payload.resourceType, 50),
+      text(payload.resourceId, 80),
+      text(req.headers['x-request-id'] || crypto.randomUUID(), 80),
+      requestIp(req),
+      JSON.stringify(payload.metadata || {}),
+    ],
+  )
+}
+
+const ensureRefundRequest = async (pool, order, payload = {}) => {
+  const [[existing]] = await pool.execute(
+    `SELECT * FROM sports_refund_request
+     WHERE order_id = ? AND status = 'pending'
+     ORDER BY id DESC LIMIT 1`,
+    [order.id],
+  )
+  if (existing) return existing
+  const percent = Math.max(0, Math.min(100, Number(payload.percent || 0)))
+  const amount = Math.round(Number(order.amount || 0) * percent) / 100
+  const [result] = await pool.execute(
+    `INSERT INTO sports_refund_request
+      (order_id, venue_id, user_id, requested_percent, requested_amount, reason)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [order.id, order.venue_id, order.user_id, percent, amount, text(payload.reason, 255)],
+  )
+  return { id: Number(result.insertId), order_id: order.id, status: 'pending', requested_percent: percent, requested_amount: amount }
+}
 
 const resolveUserMeta = (userOrId, username = '') => {
   if (typeof userOrId === 'object' && userOrId) {
@@ -1169,7 +1470,7 @@ const markSportsOrderPaid = async (pool, user, order, source = 'mock') => {
 
 const autoProcessMockRefunds = async (pool) => {
   const [expired] = await pool.execute(
-    `SELECT id, user_id, username, game_id
+    `SELECT id, venue_id, user_id, username, game_id, amount, refund_percent, refund_reason
      FROM sports_order
      WHERE status = 'refunding'
        AND refund_requested_at IS NOT NULL
@@ -1185,6 +1486,17 @@ const autoProcessMockRefunds = async (pool) => {
     ids,
   )
   for (const order of expired) {
+    await ensureRefundRequest(pool, order, {
+      percent: Number(order.refund_percent || 0),
+      reason: order.refund_reason || 'automatic refund after 48 hours',
+    })
+    await pool.execute(
+      `UPDATE sports_refund_request SET
+        status = 'approved', decision_note = 'automatic refund after 48 hours',
+        handled_by_type = 'system', handled_at = NOW()
+       WHERE order_id = ? AND status = 'pending'`,
+      [order.id],
+    )
     if (order.game_id) {
       await pool.execute(
         'UPDATE sports_signup SET payment_status = "refunded" WHERE game_id = ? AND user_id = ?',
@@ -1204,24 +1516,17 @@ const autoProcessMockRefunds = async (pool) => {
 
 const sportsVenueAdminDashboard = async (pool, user) => {
   await autoProcessMockRefunds(pool)
+  const venueScope = venueScopeSql(user, 'v')
   const [ownedVenues] = await pool.execute(
-    `SELECT *
-     FROM sports_venue
-     WHERE manager_user_id = ?
+    `SELECT v.*
+     FROM sports_venue v
+     WHERE ${venueScope.clause}
      ORDER BY create_time DESC
      LIMIT 20`,
-    [user.id],
+    venueScope.params,
   )
-  const hasOwnedVenues = ownedVenues.length > 0
-  const [demoVenues] = hasOwnedVenues ? [ownedVenues] : await pool.execute(
-    `SELECT *
-     FROM sports_venue
-     WHERE status = 'approved'
-     ORDER BY create_time DESC
-     LIMIT 20`,
-  )
-  const venueWhere = hasOwnedVenues ? 'v.manager_user_id = ?' : 'v.status = "approved"'
-  const venueParams = hasOwnedVenues ? [user.id] : []
+  const venueWhere = venueScope.clause
+  const venueParams = venueScope.params
   const [orders] = await pool.execute(
     `SELECT o.*, g.title, g.start_time, g.end_time, v.name AS venue_name, v.area
      FROM sports_order o
@@ -1292,14 +1597,14 @@ const sportsVenueAdminDashboard = async (pool, user) => {
       { label: '已核销', value: normalizedSummary.checked_in_orders },
       { label: '收入', value: `¥${normalizedSummary.revenue.toFixed(0)}` },
     ],
-    scope: hasOwnedVenues ? 'owned' : 'demo',
-    venues: demoVenues.map(serializeVenue),
+    scope: 'owned',
+    venues: ownedVenues.map(serializeVenue),
     ongoing_games: ongoingGames.map(serializeGame),
     orders: orders.map((order) => {
       const serialized = serializeOrder(order)
       return {
         ...serialized,
-        can_checkin: hasOwnedVenues && serialized.can_checkin,
+        can_checkin: serialized.can_checkin,
       }
     }),
   }
@@ -1311,7 +1616,10 @@ const venueAdminCheckinOrder = async (pool, user, order) => {
     error.statusCode = 404
     throw error
   }
-  if (Number(order.manager_user_id || 0) !== Number(user.id)) {
+  const outsideVenueScope = user.venueId
+    ? Number(order.venue_id || 0) !== Number(user.venueId)
+    : Number(order.manager_user_id || 0) !== Number(user.id)
+  if (outsideVenueScope) {
     const error = new Error('only the venue owner can check in this order')
     error.statusCode = 403
     throw error
@@ -1977,6 +2285,282 @@ const sportsMetrics = async (pool) => {
   }
 }
 
+const handleAdminApi = async (req, res, requestUrl) => {
+  const pathName = requestUrl.pathname
+  if (!pathName.startsWith('/api/admin/v1/')) return false
+  try {
+    const pool = await ensureSportsSchema()
+    const runtimeEnv = await readRuntimeEnv()
+    const requestOrigin = text(req.headers.origin, 300)
+    const allowedAdminOrigins = String(runtimeEnv.ADMIN_WEB_ORIGIN || '')
+      .split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean)
+    if (runtimeEnv.NODE_ENV === 'production' && requestOrigin && !allowedAdminOrigins.includes(requestOrigin)) {
+      return json(res, { ok: false, error: 'admin origin is not allowed' }, 403)
+    }
+
+    if (pathName === '/api/admin/v1/auth/login' && req.method === 'POST') {
+      const body = await readJsonBody(req)
+      const username = text(body.username, 50)
+      const password = String(body.password || '')
+      const [[admin]] = await pool.execute(
+        `SELECT id, username, password_hash, role, status
+         FROM sports_platform_admin WHERE username = ? LIMIT 1`,
+        [username],
+      )
+      const passwordOk = Boolean(admin) && admin.status === 'active' && await bcrypt.compare(password, admin.password_hash)
+      if (!passwordOk) return json(res, { ok: false, error: 'invalid administrator credentials' }, 401)
+      const token = await createAdminSession(pool, admin)
+      await pool.execute('UPDATE sports_platform_admin SET last_login_at = NOW() WHERE id = ?', [admin.id])
+      await recordAdminAudit(pool, req, admin, { action: 'admin.login', resourceType: 'admin', resourceId: admin.id })
+      return json(res, {
+        ok: true,
+        token,
+        expires_in: ADMIN_SESSION_TTL_HOURS * 60 * 60,
+        admin: { id: Number(admin.id), username: admin.username, role: admin.role },
+      })
+    }
+
+    const admin = await authenticateAdminRequest(pool, req)
+
+    if (pathName === '/api/admin/v1/auth/me' && req.method === 'GET') {
+      requireAdminPermission(admin, 'dashboard:read')
+      return json(res, { ok: true, admin: { id: Number(admin.id), username: admin.username, role: admin.role } })
+    }
+
+    if (pathName === '/api/admin/v1/auth/logout' && req.method === 'POST') {
+      requireAdminPermission(admin, 'dashboard:read')
+      await pool.execute('UPDATE sports_admin_session SET revoked_at = NOW() WHERE token_hash = ?', [hashToken(bearerToken(req))])
+      await recordAdminAudit(pool, req, admin, { action: 'admin.logout', resourceType: 'admin', resourceId: admin.id })
+      return json(res, { ok: true })
+    }
+
+    if (pathName === '/api/admin/v1/dashboard' && req.method === 'GET') {
+      requireAdminPermission(admin, 'dashboard:read')
+      const [[summary]] = await pool.execute(
+        `SELECT
+          (SELECT COUNT(*) FROM sports_venue) AS venues,
+          (SELECT COUNT(*) FROM sports_venue WHERE status = 'pending') AS pending_venues,
+          (SELECT COUNT(*) FROM sports_order WHERE DATE(create_time) = CURRENT_DATE()) AS today_orders,
+          (SELECT COALESCE(SUM(amount), 0) FROM sports_order
+            WHERE DATE(create_time) = CURRENT_DATE()
+              AND status IN ('paid', 'offline_paid', 'pending_verify', 'checked_in', 'verified')) AS today_gmv,
+          (SELECT COUNT(*) FROM sports_refund_request WHERE status = 'pending') AS pending_refunds,
+          (SELECT COUNT(*) FROM user WHERE status = 1) AS active_users`,
+      )
+      return json(res, {
+        venues: Number(summary.venues || 0),
+        pending_venues: Number(summary.pending_venues || 0),
+        today_orders: Number(summary.today_orders || 0),
+        today_gmv: Number(summary.today_gmv || 0),
+        pending_refunds: Number(summary.pending_refunds || 0),
+        active_users: Number(summary.active_users || 0),
+      })
+    }
+
+    if (pathName === '/api/admin/v1/venues' && req.method === 'GET') {
+      requireAdminPermission(admin, 'venue:read')
+      const status = text(requestUrl.searchParams.get('status'), 20)
+      const params = []
+      const where = status ? 'WHERE v.status = ?' : ''
+      if (status) params.push(status)
+      const [venues] = await pool.execute(
+        `SELECT v.*,
+          (SELECT COUNT(*) FROM sports_order o WHERE o.venue_id = v.id) AS order_count,
+          (SELECT COUNT(*) FROM sports_game g WHERE g.venue_id = v.id) AS game_count
+         FROM sports_venue v ${where}
+         ORDER BY v.create_time DESC LIMIT 200`,
+        params,
+      )
+      return json(res, { items: venues.map(serializeVenue) })
+    }
+
+    const venueStatusMatch = pathName.match(/^\/api\/admin\/v1\/venues\/(\d+)\/status$/)
+    if (venueStatusMatch && req.method === 'PATCH') {
+      requireAdminPermission(admin, 'venue:write')
+      const venueId = Number(venueStatusMatch[1])
+      const body = await readJsonBody(req)
+      const status = text(body.status, 20)
+      if (!['pending', 'approved', 'rejected', 'disabled'].includes(status)) {
+        return json(res, { ok: false, error: 'invalid venue status' }, 400)
+      }
+      const [result] = await pool.execute('UPDATE sports_venue SET status = ? WHERE id = ?', [status, venueId])
+      if (!result.affectedRows) return json(res, { ok: false, error: 'venue not found' }, 404)
+      await recordAdminAudit(pool, req, admin, {
+        action: 'venue.status.update', resourceType: 'venue', resourceId: venueId, metadata: { status },
+      })
+      return json(res, { ok: true, id: venueId, status })
+    }
+
+    const venueManagerMatch = pathName.match(/^\/api\/admin\/v1\/venues\/(\d+)\/manager$/)
+    if (venueManagerMatch && req.method === 'PUT') {
+      requireAdminPermission(admin, 'venue:write')
+      const venueId = Number(venueManagerMatch[1])
+      const body = await readJsonBody(req)
+      const phone = text(body.phone, 30)
+      const username = text(body.username, 50)
+      const password = String(body.password || '')
+      if (!/^1\d{10}$/.test(phone) || !username || password.length < 6) {
+        return json(res, { ok: false, error: 'valid phone, username, and a credential of at least 6 characters are required' }, 400)
+      }
+      const [[venue]] = await pool.execute('SELECT id FROM sports_venue WHERE id = ? LIMIT 1', [venueId])
+      if (!venue) return json(res, { ok: false, error: 'venue not found' }, 404)
+      let [[managerUser]] = await pool.execute('SELECT id, username FROM user WHERE username = ? LIMIT 1', [username])
+      if (!managerUser) {
+        const [created] = await pool.execute(
+          'INSERT INTO user (username, password_hash, status) VALUES (?, ?, 1)',
+          [username, await bcrypt.hash(newOpaqueToken('venue_internal'), 12)],
+        )
+        managerUser = { id: Number(created.insertId), username }
+      }
+      const [[phoneOwner]] = await pool.execute(
+        'SELECT user_id FROM sports_venue_manager WHERE phone = ? LIMIT 1',
+        [phone],
+      )
+      if (phoneOwner && Number(phoneOwner.user_id) !== Number(managerUser.id)) {
+        return json(res, { ok: false, error: 'phone is already assigned to another venue manager' }, 409)
+      }
+      const passwordHash = await bcrypt.hash(password, 12)
+      await pool.execute(
+        `INSERT INTO sports_venue_manager (venue_id, user_id, phone, password_hash, status)
+         VALUES (?, ?, ?, ?, 'active')
+         ON DUPLICATE KEY UPDATE venue_id = VALUES(venue_id), phone = VALUES(phone),
+           password_hash = VALUES(password_hash), status = 'active'`,
+        [venueId, managerUser.id, phone, passwordHash],
+      )
+      await pool.execute('UPDATE sports_venue SET manager_user_id = ? WHERE id = ?', [managerUser.id, venueId])
+      await recordAdminAudit(pool, req, admin, {
+        action: 'venue.manager.upsert', resourceType: 'venue', resourceId: venueId,
+        metadata: { manager_user_id: Number(managerUser.id), phone },
+      })
+      return json(res, { ok: true, venue_id: venueId, manager_user_id: Number(managerUser.id), username, phone })
+    }
+
+    if (pathName === '/api/admin/v1/refunds' && req.method === 'GET') {
+      requireAdminPermission(admin, 'refund:read')
+      const status = text(requestUrl.searchParams.get('status'), 20)
+      const params = []
+      const where = status ? 'WHERE r.status = ?' : ''
+      if (status) params.push(status)
+      const [refunds] = await pool.execute(
+        `SELECT r.*, o.status AS order_status, o.amount AS order_amount,
+          v.name AS venue_name, u.username
+         FROM sports_refund_request r
+         JOIN sports_order o ON o.id = r.order_id
+         JOIN sports_venue v ON v.id = r.venue_id
+         LEFT JOIN user u ON u.id = r.user_id
+         ${where}
+         ORDER BY r.create_time DESC LIMIT 200`,
+        params,
+      )
+      return json(res, { items: refunds })
+    }
+
+    const refundDecisionMatch = pathName.match(/^\/api\/admin\/v1\/refunds\/(\d+)\/decision$/)
+    if (refundDecisionMatch && req.method === 'POST') {
+      requireAdminPermission(admin, 'refund:decide')
+      const refundId = Number(refundDecisionMatch[1])
+      const body = await readJsonBody(req)
+      const approved = body.action !== 'reject'
+      const [[refund]] = await pool.execute(
+        `SELECT r.*, o.game_id, o.username
+         FROM sports_refund_request r JOIN sports_order o ON o.id = r.order_id
+         WHERE r.id = ? AND r.status = 'pending' LIMIT 1`,
+        [refundId],
+      )
+      if (!refund) return json(res, { ok: false, error: 'pending refund not found' }, 404)
+      const refundStatus = approved ? 'approved' : 'rejected'
+      const orderStatus = approved ? 'refunded' : 'cancelled'
+      await pool.execute(
+        `UPDATE sports_refund_request SET status = ?, decision_note = ?,
+          handled_by_type = 'platform_admin', handled_by_id = ?, handled_at = NOW()
+         WHERE id = ? AND status = 'pending'`,
+        [refundStatus, text(body.note, 255), admin.id, refundId],
+      )
+      await pool.execute(
+        `UPDATE sports_order SET status = ?, refunded_at = ?, refund_source = 'platform_admin', refund_reason = ?
+         WHERE id = ? AND status = 'refunding'`,
+        [orderStatus, approved ? new Date() : null, text(body.note, 255), refund.order_id],
+      )
+      if (refund.game_id) {
+        await pool.execute(
+          'UPDATE sports_signup SET payment_status = ? WHERE game_id = ? AND user_id = ?',
+          [orderStatus, refund.game_id, refund.user_id],
+        )
+      }
+      await createNotification(pool, { id: refund.user_id, username: refund.username }, {
+        type: approved ? 'refund_completed' : 'refund_rejected',
+        title: approved ? '退款已完成' : '退款申请未通过',
+        body: `订单 #${refund.order_id} 的退款申请已由平台处理。`,
+        order_id: refund.order_id,
+        game_id: refund.game_id,
+      })
+      await recordAdminAudit(pool, req, admin, {
+        action: 'refund.decision', resourceType: 'refund', resourceId: refundId,
+        metadata: { action: approved ? 'approve' : 'reject', order_id: Number(refund.order_id) },
+      })
+      return json(res, { ok: true, id: refundId, status: refundStatus, order_status: orderStatus })
+    }
+
+    if (pathName === '/api/admin/v1/uploads/sign' && req.method === 'POST') {
+      requireAdminPermission(admin, 'upload:sign')
+      const env = await readRuntimeEnv()
+      const signingSecret = String(env.OBJECT_STORAGE_SIGNING_SECRET || '')
+      const uploadUrl = text(env.OBJECT_STORAGE_UPLOAD_URL, 600)
+      const publicBaseUrl = text(env.OBJECT_STORAGE_PUBLIC_BASE_URL, 600)
+      if (signingSecret.length < 32 || !uploadUrl || !publicBaseUrl) {
+        return json(res, { ok: false, error: 'object storage signing is not configured' }, 503)
+      }
+      const body = await readJsonBody(req)
+      const contentType = text(body.content_type, 80).toLowerCase()
+      const size = Number(body.size || 0)
+      const filename = safeUploadKey(path.basename(String(body.filename || 'upload.bin')))
+      if (!filename || !uploadContentTypes.has(contentType) || size <= 0 || size > 10 * 1024 * 1024) {
+        return json(res, { ok: false, error: 'only jpg, png, or webp files up to 10 MB are allowed' }, 400)
+      }
+      const datePrefix = new Date().toISOString().slice(0, 7).replace('-', '/')
+      const objectKey = `admin/${datePrefix}/${crypto.randomUUID()}-${filename}`
+      const expiresAt = Date.now() + 5 * 60 * 1000
+      const policy = createUploadPolicy({ key: objectKey, contentType, maxBytes: size, expiresAt, secret: signingSecret })
+      await pool.execute(
+        `INSERT INTO sports_upload_grant
+          (actor_type, actor_id, object_key, content_type, max_bytes, expires_at)
+         VALUES ('platform_admin', ?, ?, ?, ?, FROM_UNIXTIME(? / 1000))`,
+        [admin.id, objectKey, contentType, size, expiresAt],
+      )
+      await recordAdminAudit(pool, req, admin, {
+        action: 'upload.sign', resourceType: 'object', resourceId: objectKey,
+        metadata: { content_type: contentType, max_bytes: size },
+      })
+      return json(res, {
+        ok: true,
+        method: 'PUT',
+        upload_url: `${uploadUrl}${uploadUrl.includes('?') ? '&' : '?'}policy=${policy.payload}&signature=${policy.signature}`,
+        public_url: `${publicBaseUrl.replace(/\/$/, '')}/${objectKey}`,
+        object_key: objectKey,
+        expires_at: new Date(expiresAt).toISOString(),
+        headers: { 'Content-Type': contentType },
+      })
+    }
+
+    if (pathName === '/api/admin/v1/audit' && req.method === 'GET') {
+      requireAdminPermission(admin, 'audit:read')
+      const [items] = await pool.execute(
+        `SELECT l.*, a.username AS admin_username
+         FROM sports_admin_audit l JOIN sports_platform_admin a ON a.id = l.admin_id
+         ORDER BY l.create_time DESC LIMIT 300`,
+      )
+      return json(res, { items })
+    }
+
+    return json(res, { ok: false, error: 'admin endpoint not found' }, 404)
+  } catch (error) {
+    console.error('[admin-api] error', error)
+    return json(res, { ok: false, error: error instanceof Error ? error.message : 'admin api failed' }, error.statusCode || 500)
+  }
+}
+
 const handleSportsApi = async (req, res, requestUrl) => {
   const pathName = requestUrl.pathname
   if (!pathName.startsWith('/api/sports-app/')) return false
@@ -1991,12 +2575,43 @@ const handleSportsApi = async (req, res, requestUrl) => {
 
       const openid = await resolveWechatOpenid(code)
       const authUser = await ensureWechatUser(pool, openid)
-      const token = makeAuthToken(authUser)
+      const token = await createSportsSession(pool, authUser, { role: 'player' })
 
       return json(res, {
         ok: true,
         token,
         user: publicSportsAuthUser(authUser),
+      })
+    }
+
+    if (pathName === '/api/sports-app/auth/venue-login' && req.method === 'POST') {
+      const body = await readJsonBody(req)
+      const phone = text(body.phone, 30)
+      const password = String(body.password || body.code || '')
+      const [[manager]] = await pool.execute(
+        `SELECT m.user_id AS id, COALESCE(u.username, CONCAT('venue_', m.user_id)) AS username,
+           m.password_hash, m.venue_id, v.name AS venue_name
+         FROM sports_venue_manager m
+         JOIN sports_venue v ON v.id = m.venue_id
+         LEFT JOIN user u ON u.id = m.user_id
+         WHERE m.phone = ? AND m.status = 'active' AND v.status = 'approved'
+         LIMIT 1`,
+        [phone],
+      )
+      const passwordOk = Boolean(manager?.password_hash) && await bcrypt.compare(password, manager.password_hash)
+      if (!manager || !passwordOk) return json(res, { ok: false, error: 'invalid venue credentials' }, 401)
+      const token = await createSportsSession(pool, manager, { role: 'venue_admin', venueId: manager.venue_id })
+      return json(res, {
+        ok: true,
+        token,
+        user: {
+          id: Number(manager.id),
+          username: manager.username,
+          nickName: manager.username,
+          role: 'venue_admin',
+          venueId: Number(manager.venue_id),
+          venueName: manager.venue_name,
+        },
       })
     }
 
@@ -2014,7 +2629,9 @@ const handleSportsApi = async (req, res, requestUrl) => {
       }, 501)
     }
 
-    const user = requestUser(req)
+    const user = await authenticateSportsRequest(pool, req)
+    if (pathName.startsWith('/api/sports-app/venue-admin')) assertVenueAdmin(user)
+    const requestVenueScope = user.role === 'venue_admin' ? venueScopeSql(user, 'v') : null
 
     if (pathName === '/api/sports-app/venues' && req.method === 'GET') {
       await trackEvent(pool, user, 'venue_list_view')
@@ -2778,6 +3395,10 @@ const handleSportsApi = async (req, res, requestUrl) => {
          WHERE id = ?`,
         [Number(rule.refund_percent), text(body.reason || '用户申请退款', 255), rule.note, orderId],
       )
+      const refundRequest = await ensureRefundRequest(pool, order, {
+        percent: Number(rule.refund_percent),
+        reason: body.reason || rule.note,
+      })
       if (order.game_id) {
         await pool.execute('UPDATE sports_signup SET payment_status = "refunding" WHERE game_id = ? AND user_id = ?', [order.game_id, user.id])
       }
@@ -2788,7 +3409,13 @@ const handleSportsApi = async (req, res, requestUrl) => {
         order_id: orderId,
         game_id: order.game_id,
       })
-      return json(res, { ok: true, status: 'refunding', refund_percent: Number(rule.refund_percent), timeout_hours: 48 })
+      return json(res, {
+        ok: true,
+        status: 'refunding',
+        refund_percent: Number(rule.refund_percent),
+        refund_request_id: Number(refundRequest.id),
+        timeout_hours: 48,
+      })
     }
 
     const requestMakeupMatch = pathName.match(/^\/api\/sports-app\/orders\/(\d+)\/checkin-makeup$/)
@@ -2831,13 +3458,13 @@ const handleSportsApi = async (req, res, requestUrl) => {
          FROM sports_order o
          LEFT JOIN sports_game g ON g.id = o.game_id
          JOIN sports_venue v ON v.id = o.venue_id
-         WHERE o.checkin_code = ?
+         WHERE o.checkin_code = ? AND ${requestVenueScope.clause}
          ORDER BY o.create_time DESC
          LIMIT 1`,
-        [code],
+        [code, ...requestVenueScope.params],
       )
       if (!order) return json(res, { ok: false, error: '验证码不正确' }, 404)
-      if (Number(order.manager_user_id || 0) !== Number(user.id)) {
+      if (!user.venueId && Number(order.manager_user_id || 0) !== Number(user.id)) {
         return json(res, { ok: false, error: '只能核销本场馆订单' }, 403)
       }
       if (!['checked_in', 'verified'].includes(order.status)) {
@@ -2857,11 +3484,11 @@ const handleSportsApi = async (req, res, requestUrl) => {
          JOIN sports_order o ON o.id = m.order_id
          LEFT JOIN sports_game g ON g.id = o.game_id
          JOIN sports_venue v ON v.id = o.venue_id
-         WHERE v.manager_user_id = ? AND m.status = 'pending'
+         WHERE ${requestVenueScope.clause} AND m.status = 'pending'
            AND (CAST(o.id AS CHAR) LIKE ? OR m.phone LIKE ? OR m.username LIKE ?)
          ORDER BY m.create_time DESC
          LIMIT 30`,
-        [user.id, pattern, pattern, pattern],
+        [...requestVenueScope.params, pattern, pattern, pattern],
       )
       return json(res, { items })
     }
@@ -2875,9 +3502,9 @@ const handleSportsApi = async (req, res, requestUrl) => {
          JOIN sports_order o ON o.id = m.order_id
          LEFT JOIN sports_game g ON g.id = o.game_id
          JOIN sports_venue v ON v.id = o.venue_id
-         WHERE m.id = ?
+         WHERE m.id = ? AND ${requestVenueScope.clause}
          LIMIT 1`,
-        [makeupId],
+        [makeupId, ...requestVenueScope.params],
       )
       if (!makeup) return json(res, { ok: false, error: '未找到补核销记录' }, 404)
       try {
@@ -2895,8 +3522,11 @@ const handleSportsApi = async (req, res, requestUrl) => {
     if (pathName === '/api/sports-app/venue-admin/games' && req.method === 'POST') {
       const body = await readJson(req)
       const venueId = Number(body.venue_id)
-      const [[venue]] = await pool.execute('SELECT * FROM sports_venue WHERE id = ? LIMIT 1', [venueId])
-      if (!venue || Number(venue.manager_user_id || 0) !== Number(user.id)) {
+      const [[venue]] = await pool.execute(
+        `SELECT v.* FROM sports_venue v WHERE v.id = ? AND ${requestVenueScope.clause} LIMIT 1`,
+        [venueId, ...requestVenueScope.params],
+      )
+      if (!venue) {
         return json(res, { ok: false, error: '只能在自己管理的场馆发起球局' }, 403)
       }
       const startTime = text(body.start_time, 40)
@@ -2934,12 +3564,12 @@ const handleSportsApi = async (req, res, requestUrl) => {
          FROM sports_game g
          JOIN sports_venue v ON v.id = g.venue_id
          LEFT JOIN sports_signup s ON s.game_id = g.id
-         WHERE g.id = ?
+         WHERE g.id = ? AND ${requestVenueScope.clause}
          GROUP BY g.id
          LIMIT 1`,
-        [gameId],
+        [gameId, ...requestVenueScope.params],
       )
-      if (!game || Number(game.manager_user_id || 0) !== Number(user.id)) {
+      if (!game) {
         return json(res, { ok: false, error: '未找到可管理的球局' }, 404)
       }
       return json(res, serializeGame(game))
@@ -2951,10 +3581,11 @@ const handleSportsApi = async (req, res, requestUrl) => {
       const [[game]] = await pool.execute(
         `SELECT g.*, v.manager_user_id,
            (SELECT COUNT(*) FROM sports_signup s WHERE s.game_id = g.id AND s.payment_status = 'paid') AS joined_count
-         FROM sports_game g JOIN sports_venue v ON v.id = g.venue_id WHERE g.id = ? LIMIT 1`,
-        [gameId],
+         FROM sports_game g JOIN sports_venue v ON v.id = g.venue_id
+         WHERE g.id = ? AND ${requestVenueScope.clause} LIMIT 1`,
+        [gameId, ...requestVenueScope.params],
       )
-      if (!game || Number(game.manager_user_id || 0) !== Number(user.id)) {
+      if (!game) {
         return json(res, { ok: false, error: '未找到可管理的球局' }, 404)
       }
       const criticalKeys = ['start_time', 'end_time', 'capacity', 'fee_per_person']
@@ -2987,16 +3618,34 @@ const handleSportsApi = async (req, res, requestUrl) => {
     if (cancelVenueGameMatch && req.method === 'POST') {
       const gameId = Number(cancelVenueGameMatch[1])
       const [[game]] = await pool.execute(
-        'SELECT g.*, v.manager_user_id FROM sports_game g JOIN sports_venue v ON v.id = g.venue_id WHERE g.id = ? LIMIT 1',
-        [gameId],
+        `SELECT g.*, v.manager_user_id FROM sports_game g JOIN sports_venue v ON v.id = g.venue_id
+         WHERE g.id = ? AND ${requestVenueScope.clause} LIMIT 1`,
+        [gameId, ...requestVenueScope.params],
       )
-      if (!game || Number(game.manager_user_id || 0) !== Number(user.id)) {
+      if (!game) {
         return json(res, { ok: false, error: '未找到可管理的球局' }, 404)
       }
       const [players] = await pool.execute(
         'SELECT user_id, username FROM sports_signup WHERE game_id = ? AND payment_status = "paid"',
         [gameId],
       )
+      const [refundOrders] = await pool.execute(
+        `SELECT * FROM sports_order
+         WHERE game_id = ? AND status IN ('paid', 'offline_paid', 'pending_verify', 'refunding')`,
+        [gameId],
+      )
+      for (const refundOrder of refundOrders) {
+        const refundRequest = await ensureRefundRequest(pool, refundOrder, {
+          percent: 100,
+          reason: 'venue cancelled game',
+        })
+        await pool.execute(
+          `UPDATE sports_refund_request SET status = 'approved', decision_note = 'venue cancelled game',
+            handled_by_type = 'venue_admin', handled_by_id = ?, handled_at = NOW()
+           WHERE id = ?`,
+          [user.id, refundRequest.id],
+        )
+      }
       await pool.execute('UPDATE sports_game SET status = "cancelled" WHERE id = ?', [gameId])
       await pool.execute('UPDATE sports_signup SET payment_status = "refunded" WHERE game_id = ? AND payment_status = "paid"', [gameId])
       await pool.execute(
@@ -3035,9 +3684,9 @@ const handleSportsApi = async (req, res, requestUrl) => {
          JOIN sports_venue v ON v.id = g.venue_id
          LEFT JOIN sports_player_rating_summary r ON r.user_id = s.user_id
          LEFT JOIN sports_player_profile p ON p.user_id = s.user_id
-         WHERE s.game_id = ? AND s.payment_status = 'paid' AND v.manager_user_id = ?
+         WHERE s.game_id = ? AND s.payment_status = 'paid' AND ${requestVenueScope.clause}
          ORDER BY score DESC`,
-        [gameId, user.id],
+        [gameId, ...requestVenueScope.params],
       )
       return json(res, { players })
     }
@@ -3050,8 +3699,8 @@ const handleSportsApi = async (req, res, requestUrl) => {
         `SELECT s.user_id, s.username FROM sports_signup s
          JOIN sports_game g ON g.id = s.game_id
          JOIN sports_venue v ON v.id = g.venue_id
-         WHERE s.game_id = ? AND s.payment_status = 'paid' AND v.manager_user_id = ?`,
-        [gameId, user.id],
+         WHERE s.game_id = ? AND s.payment_status = 'paid' AND ${requestVenueScope.clause}`,
+        [gameId, ...requestVenueScope.params],
       )
       const redIds = new Set((body.red_team || []).map(Number))
       for (const player of players) {
@@ -3071,10 +3720,11 @@ const handleSportsApi = async (req, res, requestUrl) => {
       const body = await readJson(req)
       const [[order]] = await pool.execute(
         `SELECT o.*, v.manager_user_id FROM sports_order o
-         JOIN sports_venue v ON v.id = o.venue_id WHERE o.id = ? LIMIT 1`,
-        [orderId],
+         JOIN sports_venue v ON v.id = o.venue_id
+         WHERE o.id = ? AND ${requestVenueScope.clause} LIMIT 1`,
+        [orderId, ...requestVenueScope.params],
       )
-      if (!order || Number(order.manager_user_id || 0) !== Number(user.id)) {
+      if (!order) {
         return json(res, { ok: false, error: '未找到可处理的退款订单' }, 404)
       }
       if (order.status !== 'refunding') return json(res, { ok: false, error: '订单当前不在退款处理中' }, 409)
@@ -3090,6 +3740,16 @@ const handleSportsApi = async (req, res, requestUrl) => {
           orderId,
         ],
       )
+      const refundRequest = await ensureRefundRequest(pool, order, {
+        percent: Number(order.refund_percent || 0),
+        reason: order.refund_reason || body.note,
+      })
+      await pool.execute(
+        `UPDATE sports_refund_request SET status = ?, decision_note = ?,
+          handled_by_type = 'venue_admin', handled_by_id = ?, handled_at = NOW()
+         WHERE id = ?`,
+        [approved ? 'approved' : 'rejected', text(body.note, 255), user.id, refundRequest.id],
+      )
       if (order.game_id) {
         await pool.execute('UPDATE sports_signup SET payment_status = ? WHERE game_id = ? AND user_id = ?', [nextStatus, order.game_id, order.user_id])
       }
@@ -3102,7 +3762,7 @@ const handleSportsApi = async (req, res, requestUrl) => {
         order_id: orderId,
         game_id: order.game_id,
       })
-      return json(res, { ok: true, status: nextStatus, mock: true })
+      return json(res, { ok: true, status: nextStatus, refund_request_id: Number(refundRequest.id), mock: true })
     }
 
     const venueAdminCheckinMatch = pathName.match(/^\/api\/sports-app\/venue-admin\/orders\/(\d+)\/checkin$/)
@@ -3113,9 +3773,9 @@ const handleSportsApi = async (req, res, requestUrl) => {
          FROM sports_order o
          LEFT JOIN sports_game g ON g.id = o.game_id
          JOIN sports_venue v ON v.id = o.venue_id
-         WHERE o.id = ?
+         WHERE o.id = ? AND ${requestVenueScope.clause}
          LIMIT 1`,
-        [orderId],
+        [orderId, ...requestVenueScope.params],
       )
       try {
         return json(res, await venueAdminCheckinOrder(pool, user, order))
@@ -3134,10 +3794,10 @@ const handleSportsApi = async (req, res, requestUrl) => {
          FROM sports_order o
          LEFT JOIN sports_game g ON g.id = o.game_id
          JOIN sports_venue v ON v.id = o.venue_id
-         WHERE o.checkin_code = ?
+         WHERE o.checkin_code = ? AND ${requestVenueScope.clause}
          ORDER BY o.create_time DESC
          LIMIT 1`,
-        [code],
+        [code, ...requestVenueScope.params],
       )
       try {
         return json(res, await venueAdminCheckinOrder(pool, user, order))
@@ -3149,9 +3809,12 @@ const handleSportsApi = async (req, res, requestUrl) => {
     const venueAdminUpdateMatch = pathName.match(/^\/api\/sports-app\/venue-admin\/venues\/(\d+)$/)
     if (venueAdminUpdateMatch && req.method === 'PATCH') {
       const venueId = Number(venueAdminUpdateMatch[1])
-      const [[venue]] = await pool.execute('SELECT * FROM sports_venue WHERE id = ? LIMIT 1', [venueId])
+      const [[venue]] = await pool.execute(
+        `SELECT v.* FROM sports_venue v WHERE v.id = ? AND ${requestVenueScope.clause} LIMIT 1`,
+        [venueId, ...requestVenueScope.params],
+      )
       if (!venue) return json(res, { ok: false, error: 'venue not found' }, 404)
-      if (Number(venue.manager_user_id || 0) !== Number(user.id)) {
+      if (!user.venueId && Number(venue.manager_user_id || 0) !== Number(user.id)) {
         return json(res, { ok: false, error: '只能维护自己管理的场馆' }, 403)
       }
 
@@ -3166,14 +3829,13 @@ const handleSportsApi = async (req, res, requestUrl) => {
           contact = COALESCE(NULLIF(?, ''), contact),
           open_slots_json = ?,
           temporary_closed = COALESCE(?, temporary_closed)
-         WHERE id = ? AND manager_user_id = ?`,
+         WHERE id = ?`,
         [
           body.price_per_hour === undefined ? null : Number(body.price_per_hour),
           text(body.contact, 80),
           JSON.stringify(openSlots),
           body.temporary_closed === undefined ? null : Number(Boolean(body.temporary_closed)),
           venueId,
-          user.id,
         ],
       )
       return json(res, { ok: true, id: venueId })
@@ -3257,6 +3919,12 @@ const handleSportsApi = async (req, res, requestUrl) => {
          WHERE id = ?`,
         [nextStatus, cancelRule.note, cancelPenalty, refundSource, Number(cancelRule.refund_percent || 0), cancelRule.note, nextStatus, orderId],
       )
+      const refundRequest = nextStatus === 'refunding'
+        ? await ensureRefundRequest(pool, order, {
+            percent: Number(cancelRule.refund_percent || 0),
+            reason: cancelRule.note,
+          })
+        : null
       if (order.game_id) {
         await pool.execute('UPDATE sports_signup SET payment_status = ? WHERE game_id = ? AND user_id = ?', [nextStatus, order.game_id, order.user_id])
       }
@@ -3282,7 +3950,15 @@ const handleSportsApi = async (req, res, requestUrl) => {
         order_id: orderId,
         game_id: order.game_id,
       })
-      return json(res, { ok: true, status: nextStatus, penalty: cancelPenalty, refund_percent: Number(cancelRule.refund_percent || 0), note: cancelRule.note, refund_source: refundSource })
+      return json(res, {
+        ok: true,
+        status: nextStatus,
+        penalty: cancelPenalty,
+        refund_percent: Number(cancelRule.refund_percent || 0),
+        refund_request_id: refundRequest ? Number(refundRequest.id) : null,
+        note: cancelRule.note,
+        refund_source: refundSource,
+      })
     }
 
     const checkinMatch = pathName.match(/^\/api\/sports-app\/orders\/(\d+)\/checkin$/)
@@ -3797,6 +4473,7 @@ const mockApi = async (req, res, requestUrl) => {
 
   const pathName = requestUrl.pathname
   if (await handleAuthApi(req, res, pathName)) return true
+  if (await handleAdminApi(req, res, requestUrl)) return true
   if (await handleSportsApi(req, res, requestUrl)) return true
 
   const now = new Date().toISOString()

@@ -98,6 +98,116 @@ CREATE TABLE IF NOT EXISTS `sports_order` (
   CONSTRAINT `fk_sports_order_game` FOREIGN KEY (`game_id`) REFERENCES `sports_game` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS `sports_auth_session` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `token_hash` CHAR(64) NOT NULL,
+  `user_id` INT UNSIGNED NOT NULL,
+  `username` VARCHAR(50) NOT NULL,
+  `role` VARCHAR(30) NOT NULL DEFAULT 'player',
+  `venue_id` INT UNSIGNED NULL,
+  `expires_at` DATETIME NOT NULL,
+  `revoked_at` DATETIME NULL,
+  `create_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_sports_auth_token` (`token_hash`),
+  KEY `idx_sports_auth_user` (`user_id`, `expires_at`),
+  KEY `idx_sports_auth_venue` (`venue_id`, `expires_at`),
+  CONSTRAINT `fk_sports_auth_venue` FOREIGN KEY (`venue_id`) REFERENCES `sports_venue` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `sports_venue_manager` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `venue_id` INT UNSIGNED NOT NULL,
+  `user_id` INT UNSIGNED NOT NULL,
+  `phone` VARCHAR(30) NOT NULL DEFAULT '',
+  `password_hash` VARCHAR(255) NOT NULL DEFAULT '',
+  `status` VARCHAR(20) NOT NULL DEFAULT 'active',
+  `create_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_sports_venue_manager_user` (`user_id`),
+  UNIQUE KEY `uk_sports_venue_manager_phone` (`phone`),
+  KEY `idx_sports_venue_manager_venue` (`venue_id`, `status`),
+  CONSTRAINT `fk_sports_venue_manager_venue` FOREIGN KEY (`venue_id`) REFERENCES `sports_venue` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `sports_refund_request` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `order_id` INT UNSIGNED NOT NULL,
+  `venue_id` INT UNSIGNED NOT NULL,
+  `user_id` INT UNSIGNED NOT NULL,
+  `requested_percent` INT NOT NULL DEFAULT 0,
+  `requested_amount` DECIMAL(10,2) NOT NULL DEFAULT 0,
+  `reason` VARCHAR(255) NOT NULL DEFAULT '',
+  `status` VARCHAR(20) NOT NULL DEFAULT 'pending',
+  `decision_note` VARCHAR(255) NOT NULL DEFAULT '',
+  `handled_by_type` VARCHAR(20) NOT NULL DEFAULT '',
+  `handled_by_id` INT UNSIGNED NULL,
+  `handled_at` DATETIME NULL,
+  `create_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_sports_refund_order` (`order_id`, `create_time`),
+  KEY `idx_sports_refund_venue` (`venue_id`, `status`, `create_time`),
+  KEY `idx_sports_refund_user` (`user_id`, `create_time`),
+  CONSTRAINT `fk_sports_refund_order` FOREIGN KEY (`order_id`) REFERENCES `sports_order` (`id`),
+  CONSTRAINT `fk_sports_refund_venue` FOREIGN KEY (`venue_id`) REFERENCES `sports_venue` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `sports_platform_admin` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `username` VARCHAR(50) NOT NULL,
+  `password_hash` VARCHAR(255) NOT NULL,
+  `role` VARCHAR(30) NOT NULL DEFAULT 'auditor',
+  `status` VARCHAR(20) NOT NULL DEFAULT 'active',
+  `last_login_at` DATETIME NULL,
+  `create_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_sports_platform_admin_username` (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `sports_admin_session` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `token_hash` CHAR(64) NOT NULL,
+  `admin_id` INT UNSIGNED NOT NULL,
+  `expires_at` DATETIME NOT NULL,
+  `revoked_at` DATETIME NULL,
+  `create_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_sports_admin_session_token` (`token_hash`),
+  KEY `idx_sports_admin_session_admin` (`admin_id`, `expires_at`),
+  CONSTRAINT `fk_sports_admin_session_admin` FOREIGN KEY (`admin_id`) REFERENCES `sports_platform_admin` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `sports_admin_audit` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `admin_id` INT UNSIGNED NOT NULL,
+  `action` VARCHAR(80) NOT NULL,
+  `resource_type` VARCHAR(50) NOT NULL DEFAULT '',
+  `resource_id` VARCHAR(80) NOT NULL DEFAULT '',
+  `request_id` VARCHAR(80) NOT NULL DEFAULT '',
+  `ip_address` VARCHAR(80) NOT NULL DEFAULT '',
+  `metadata_json` TEXT NULL,
+  `create_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_sports_admin_audit_admin` (`admin_id`, `create_time`),
+  KEY `idx_sports_admin_audit_resource` (`resource_type`, `resource_id`, `create_time`),
+  CONSTRAINT `fk_sports_admin_audit_admin` FOREIGN KEY (`admin_id`) REFERENCES `sports_platform_admin` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `sports_upload_grant` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `actor_type` VARCHAR(20) NOT NULL,
+  `actor_id` INT UNSIGNED NOT NULL,
+  `object_key` VARCHAR(240) NOT NULL,
+  `content_type` VARCHAR(80) NOT NULL,
+  `max_bytes` INT UNSIGNED NOT NULL,
+  `expires_at` DATETIME NOT NULL,
+  `create_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_sports_upload_actor` (`actor_type`, `actor_id`, `create_time`),
+  KEY `idx_sports_upload_key` (`object_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS `sports_credit_event` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_id` INT UNSIGNED NOT NULL,

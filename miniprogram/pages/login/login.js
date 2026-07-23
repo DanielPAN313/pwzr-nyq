@@ -1,4 +1,6 @@
 const { MOCK_USER, getLandingPath, setSession } = require("../../utils/auth");
+const { getConfig } = require("../../utils/config");
+const { post } = require("../../utils/api");
 const { verifyVenueAdmin } = require("../../utils/venue-auth");
 
 function reLaunchByRole(role) {
@@ -37,23 +39,32 @@ Page({
 
   submitPlayerLogin() {
     this.setData({ loading: true, error: "" });
+    const { useMockAuth } = getConfig();
 
-    const finish = () => {
+    if (useMockAuth) {
       setSession({
         user: { ...MOCK_USER, role: "player" },
         token: `dev-token-${MOCK_USER.username}`
       });
       reLaunchByRole("player");
-    };
+      return;
+    }
 
     if (typeof wx.login !== "function") {
-      finish();
+      this.setData({ loading: false, error: "当前环境无法使用微信登录" });
       return;
     }
 
     wx.login({
-      success: finish,
-      fail: finish
+      success: ({ code }) => {
+        post("/api/sports-app/auth/wechat-login", { code }, { auth: false, showLoading: false })
+          .then((session) => {
+            setSession({ ...session, role: "player" });
+            reLaunchByRole("player");
+          })
+          .catch(() => this.setData({ loading: false, error: "微信登录失败，请稍后重试" }));
+      },
+      fail: () => this.setData({ loading: false, error: "微信登录失败，请稍后重试" })
     });
   },
 
@@ -71,11 +82,22 @@ Page({
     }
 
     this.setData({ loading: true, error: "" });
-    const session = verifyVenueAdmin(phone, code);
-    if (!session) {
-      this.setData({ loading: false, error: "手机号或验证码未通过场馆验证" });
+    const { useMockAuth } = getConfig();
+    if (useMockAuth) {
+      const session = verifyVenueAdmin(phone, code);
+      if (!session) {
+        this.setData({ loading: false, error: "手机号或验证码未通过场馆验证" });
+        return;
+      }
+      reLaunchByRole("venue_admin");
       return;
     }
-    reLaunchByRole("venue_admin");
+
+    post("/api/sports-app/auth/venue-login", { phone, code }, { auth: false, showLoading: false })
+      .then((session) => {
+        setSession({ ...session, role: "venue_admin" });
+        reLaunchByRole("venue_admin");
+      })
+      .catch(() => this.setData({ loading: false, error: "场馆账号验证失败，请联系平台管理员" }));
   }
 });
